@@ -29,7 +29,26 @@ class UndoLastTurnUseCase(
      */
     suspend operator fun invoke(): Result<Unit> = runCatching {
         var game = repository.getCurrentGame().getOrThrow()
-        
+
+        // First, undo any trailing COLLISION records
+        while (game.turnHistory.isNotEmpty() &&
+               game.turnHistory.last().outcome == TurnOutcome.COLLISION) {
+            val collisionRecord = game.turnHistory.last()
+
+            // Find the collided player and restore their score
+            val playerIndex = game.players.indexOfFirst { it.id == collisionRecord.playerId }
+            if (playerIndex != -1) {
+                val player = game.players[playerIndex]
+                val restoredPlayer = player.copy(totalScore = collisionRecord.previousScore)
+                val updatedPlayers = game.players.toMutableList()
+                updatedPlayers[playerIndex] = restoredPlayer
+                game = game.copy(players = updatedPlayers)
+            }
+
+            // Remove the COLLISION record from history
+            game = game.undoLastTurn()
+        }
+
         // Check if there's a turn to undo
         val lastTurn = game.getLastTurn()
             ?: throw IllegalStateException("No turns to undo")
@@ -57,6 +76,7 @@ class UndoLastTurnUseCase(
                 TurnOutcome.BUST -> bustCount++
                 TurnOutcome.SCORED -> break
                 TurnOutcome.SKIP -> { /* skip doesn't affect counter */ }
+                TurnOutcome.COLLISION -> { /* collision doesn't affect counter */ }
             }
         }
 

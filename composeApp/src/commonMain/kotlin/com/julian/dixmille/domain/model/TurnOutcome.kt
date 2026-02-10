@@ -23,5 +23,11 @@ enum class TurnOutcome {
      * Player voluntarily skipped their turn.
      * Does NOT count toward the bust penalty.
      */
-    SKIP
+    SKIP,
+
+    /**
+     * Player's score was reverted due to score collision.
+     * Does NOT count toward the bust penalty.
+     */
+    COLLISION
 }

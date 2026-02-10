@@ -168,4 +168,83 @@ data class Game(
      * Gets the last recorded turn, if any.
      */
     fun getLastTurn(): TurnRecord? = turnHistory.lastOrNull()
+
+    /**
+     * Resolves score collisions after a player scores.
+     *
+     * When a player scores and their new total equals another player's total,
+     * that other player's score reverts to their previous score (before their
+     * last scoring turn). This cascades: if the reverted score matches a third
+     * player, that player also reverts, and so on.
+     *
+     * Collisions at score 0 are ignored.
+     *
+     * @param immunePlayerId The player who just scored (immune to collision)
+     * @return Updated game with collisions resolved and COLLISION records added
+     */
+    fun resolveScoreCollisions(immunePlayerId: String): Game {
+        var game = this
+        val immunePlayerIds = mutableSetOf(immunePlayerId)
+        val scoresToCheck = mutableSetOf<Int>()
+
+        // Start by checking the scoring player's new score
+        val scoringPlayer = game.players.find { it.id == immunePlayerId }
+        if (scoringPlayer != null && scoringPlayer.totalScore > 0) {
+            scoresToCheck.add(scoringPlayer.totalScore)
+        }
+
+        // Iteratively check for collisions (BFS approach)
+        while (scoresToCheck.isNotEmpty()) {
+            val scoreToCheck = scoresToCheck.first()
+            scoresToCheck.remove(scoreToCheck)
+
+            // Skip score 0
+            if (scoreToCheck == 0) continue
+
+            // Find all non-immune player IDs at this score
+            val collidedPlayerIds = game.players
+                .filter { player -> player.id !in immunePlayerIds && player.totalScore == scoreToCheck }
+                .map { it.id }
+
+            // Revert each collided player
+            for (playerId in collidedPlayerIds) {
+                // Get current player state from game
+                val collidedPlayer = game.players.find { it.id == playerId } ?: continue
+
+                // Find the last SCORED turn for this player where previousScore < totalScore
+                val revertToScore = game.turnHistory
+                    .filter { it.playerId == playerId && it.outcome == TurnOutcome.SCORED }
+                    .lastOrNull { it.previousScore < collidedPlayer.totalScore }
+                    ?.previousScore
+                    ?: 0
+
+                // Update the player's score
+                val playerIndex = game.players.indexOfFirst { it.id == playerId }
+                if (playerIndex != -1) {
+                    val updatedPlayer = collidedPlayer.copy(totalScore = revertToScore)
+                    val updatedPlayers = game.players.toMutableList()
+                    updatedPlayers[playerIndex] = updatedPlayer
+                    game = game.copy(players = updatedPlayers)
+
+                    // Record the collision
+                    game = game.recordTurn(
+                        playerId = playerId,
+                        points = 0,
+                        outcome = TurnOutcome.COLLISION,
+                        previousScore = scoreToCheck
+                    )
+
+                    // Mark this player as immune (can't be hit twice in same cascade)
+                    immunePlayerIds.add(playerId)
+
+                    // Queue the reverted score for cascade checking
+                    if (revertToScore > 0) {
+                        scoresToCheck.add(revertToScore)
+                    }
+                }
+            }
+        }
+
+        return game
+    }
 }

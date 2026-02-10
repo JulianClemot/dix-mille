@@ -109,10 +109,19 @@ Be the first player to reach 10,000 points (configurable target).
 - Bust counter resets to 0 when player scores points (successful turn)
 - Skip does NOT count as a bust and does NOT reset the bust counter
 
-### 8. Cannot Commit Zero
+### 8. Score Collision Rule
+- When a player scores and their new total equals another player's total, that other player's score reverts to their previous score (before their last scoring turn)
+- This cascades: if the reverted score matches a third player, that player also reverts, and so on
+- The scoring player is immune to collision (they never get reverted)
+- Collisions at score 0 are ignored
+- Collisions only trigger on scoring turns (not on 3-bust penalty reversions)
+- A COLLISION turn record is created for each affected player with `points = 0` and `previousScore` = their score before the reversion
+- Collision does NOT affect `hasEnteredGame` or `consecutiveBusts` counters
+
+### 9. Cannot Commit Zero
 - Player must score at least one point to end their turn
 
-### 9. Winning & Final Round
+### 10. Winning & Final Round
 - When any player reaches the target (10,000), the game enters **Final Round**
 - Each other player gets exactly **one more turn**
 - Triggering player does NOT get another turn
@@ -227,9 +236,10 @@ data class TurnRecord(
 ### TurnOutcome
 ```kotlin
 enum class TurnOutcome {
-    SCORED,  // Player scored points, resets bust counter
-    BUST,    // No scoring dice, counts toward 3-bust penalty
-    SKIP     // Voluntary skip, does NOT count as bust
+    SCORED,     // Player scored points, resets bust counter
+    BUST,       // No scoring dice, counts toward 3-bust penalty
+    SKIP,       // Voluntary skip, does NOT count as bust
+    COLLISION   // Score reverted due to collision, does NOT count as bust
 }
 ```
 

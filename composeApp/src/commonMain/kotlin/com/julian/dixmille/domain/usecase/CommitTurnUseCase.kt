@@ -63,7 +63,10 @@ class CommitTurnUseCase(
         
         // Record turn in history
         game = game.recordTurn(playerId, turnPoints, TurnOutcome.SCORED, previousScore)
-        
+
+        // Resolve score collisions
+        game = game.resolveScoreCollisions(playerId)
+
         // Check if final round should be triggered
         if (ScoreValidator.shouldTriggerFinalRound(game)) {
             game = game.checkAndTriggerFinalRound()
