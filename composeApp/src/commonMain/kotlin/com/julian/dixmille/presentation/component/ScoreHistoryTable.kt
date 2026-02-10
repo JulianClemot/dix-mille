@@ -112,7 +112,7 @@ fun ScoreHistoryTable(
                     
                     // Player scores for this round
                     players.forEach { player ->
-                        val playerTurn = turnsForThisRound.find { it.playerId == player.id }
+                        val playerTurn = turnsForThisRound.filter { it.playerId == player.id }.lastOrNull()
                         
                         Box(
                             modifier = Modifier.weight(1f),
@@ -145,6 +145,16 @@ fun ScoreHistoryTable(
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                playerTurn.outcome == TurnOutcome.COLLISION -> {
+                                    // Player was hit by collision
+                                    Text(
+                                        text = "HIT",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center
                                     )
                                 }
