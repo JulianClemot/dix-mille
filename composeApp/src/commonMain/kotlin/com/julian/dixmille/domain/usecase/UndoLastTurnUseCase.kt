@@ -1,6 +1,7 @@
 package com.julian.dixmille.domain.usecase
 
 import com.julian.dixmille.domain.model.GamePhase
+import com.julian.dixmille.domain.model.TurnOutcome
 import com.julian.dixmille.domain.repository.GameRepository
 import com.julian.dixmille.domain.util.UuidGenerator
 import com.julian.dixmille.domain.validation.ValidationResult
@@ -40,19 +41,32 @@ class UndoLastTurnUseCase(
         }
         
         val player = game.players[playerIndex]
-        
-        // Calculate the previous score (subtract the turn points)
-        val previousScore = player.totalScore - lastTurn.points
-        
+
+        // Restore the previous score from the turn record
+        val previousScore = lastTurn.previousScore
+
         // If this was the player's entry turn (first scoring turn), mark as not entered
-        val wasEntryTurn = lastTurn.outcome == com.julian.dixmille.domain.model.TurnOutcome.SCORED && previousScore == 0 && player.hasEnteredGame
-        
+        val wasEntryTurn = lastTurn.outcome == TurnOutcome.SCORED && previousScore == 0 && player.hasEnteredGame
+
+        // Re-derive consecutive bust count from remaining history
+        val remainingHistory = game.turnHistory.dropLast(1)
+        val playerTurns = remainingHistory.filter { it.playerId == player.id }
+        var bustCount = 0
+        for (turn in playerTurns.reversed()) {
+            when (turn.outcome) {
+                TurnOutcome.BUST -> bustCount++
+                TurnOutcome.SCORED -> break
+                TurnOutcome.SKIP -> { /* skip doesn't affect counter */ }
+            }
+        }
+
         // Update the player with reverted state
         val revertedPlayer = player.copy(
             totalScore = previousScore,
             hasEnteredGame = if (wasEntryTurn) false else player.hasEnteredGame,
             currentTurn = null,  // Clear any active turn
-            hasPlayedFinalRound = false  // Reset final round flag (conservative approach)
+            hasPlayedFinalRound = false,  // Reset final round flag (conservative approach)
+            consecutiveBusts = bustCount
         )
         
         // Update players list

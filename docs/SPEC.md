@@ -103,7 +103,8 @@ Be the first player to reach 10,000 points (configurable target).
 - **Bust**: No scoring dice rolled (0 points, COUNTS toward 3-bust penalty)
 
 ### 7. Three-Bust Penalty Rule
-- If a player busts **3 times in a row**, their score reverts to what it was before the first of those 3 busts
+- If a player busts **3 times in a row**, their score reverts to the `previousScore` of their last successful SCORED turn (where `previousScore < currentScore`)
+- If no such turn exists, score reverts to 0
 - Bust counter resets to 0 after penalty is applied
 - Bust counter resets to 0 when player scores points (successful turn)
 - Skip does NOT count as a bust and does NOT reset the bust counter
@@ -164,7 +165,8 @@ data class Player(
     val totalScore: Int = 0,
     val hasEnteredGame: Boolean = false,
     val currentTurn: Turn? = null,
-    val hasPlayedFinalRound: Boolean = false
+    val hasPlayedFinalRound: Boolean = false,
+    val consecutiveBusts: Int = 0
 )
 ```
 
@@ -214,11 +216,21 @@ data class PresetScore(
 ### TurnRecord
 ```kotlin
 data class TurnRecord(
-    val turnNumber: Int,
+    val roundNumber: Int,
     val playerId: String,
     val points: Int,
-    val wasBust: Boolean
+    val outcome: TurnOutcome,
+    val previousScore: Int
 )
+```
+
+### TurnOutcome
+```kotlin
+enum class TurnOutcome {
+    SCORED,  // Player scored points, resets bust counter
+    BUST,    // No scoring dice, counts toward 3-bust penalty
+    SKIP     // Voluntary skip, does NOT count as bust
+}
 ```
 
 ---
