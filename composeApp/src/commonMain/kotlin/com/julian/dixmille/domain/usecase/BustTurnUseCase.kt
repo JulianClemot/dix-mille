@@ -51,22 +51,15 @@ class BustTurnUseCase(
         
         // Check for 3-bust penalty
         if (updatedPlayer.consecutiveBusts >= 3) {
-            // Find the score before the 3 busts (look back in history)
-            // Get the last 3 turns for this player (if they exist)
-            val playerTurns = game.turnHistory
-                .filter { it.playerId == playerId }
-                .takeLast(3)
-            
-            // If we have at least 1 turn, revert to the score before the first of those busts
-            val revertToScore = if (playerTurns.isNotEmpty()) {
-                playerTurns.first().previousScore
-            } else {
-                0  // No history means revert to 0
-            }
-            
+            val lastScoredTurn = game.turnHistory
+                .filter { it.playerId == playerId && it.outcome == TurnOutcome.SCORED }
+                .lastOrNull { it.previousScore < updatedPlayer.totalScore }
+
+            val revertToScore = lastScoredTurn?.previousScore ?: 0
+
             updatedPlayer = updatedPlayer.copy(
                 totalScore = revertToScore,
-                consecutiveBusts = 0  // Reset after penalty
+                consecutiveBusts = 0
             )
         }
         
