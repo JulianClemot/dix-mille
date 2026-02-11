@@ -102,13 +102,25 @@ class ScoreSheetViewModel(
     private fun addScore(points: Int, isPreset: Boolean, label: String?) {
         viewModelScope.launch {
             val currentPlayer = _state.value.currentPlayer
-            
+            val game = _state.value.game
+
             // Entry validation: Must have 500+ points to enter game
             if (currentPlayer != null && !currentPlayer.hasEnteredGame && points < 500) {
                 _state.update {
                     it.copy(error = "Need at least 500 points to enter the game")
                 }
                 return@launch
+            }
+
+            // Target validation: Score must not exceed target
+            if (currentPlayer != null && game != null) {
+                val remaining = game.targetScore - currentPlayer.totalScore
+                if (points > remaining) {
+                    _state.update {
+                        it.copy(error = "Score of $points would exceed the target ($remaining points remaining)")
+                    }
+                    return@launch
+                }
             }
             
             // Add score entry

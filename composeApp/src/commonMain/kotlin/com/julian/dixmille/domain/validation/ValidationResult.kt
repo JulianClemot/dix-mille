@@ -86,4 +86,18 @@ sealed class ValidationError {
     data object AlreadyPlayedFinalRound : ValidationError() {
         override fun toString(): String = "Player has already played final round"
     }
+
+    /**
+     * Score would cause the player's total to exceed the target score.
+     */
+    data class ScoreExceedsTarget(
+        val points: Int,
+        val currentScore: Int,
+        val targetScore: Int
+    ) : ValidationError() {
+        override fun toString(): String {
+            val remaining = targetScore - currentScore
+            return "Score of $points would exceed the target ($remaining points remaining)"
+        }
+    }
 }

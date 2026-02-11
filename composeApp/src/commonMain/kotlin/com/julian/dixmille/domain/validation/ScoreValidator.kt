@@ -26,14 +26,35 @@ object ScoreValidator {
                 ValidationError.InvalidScoreValue(points)
             )
         }
-        
+
         // For preset scores, must match one of the defined presets
         if (isPreset && points !in PresetScores.validPresetValues) {
             return ValidationResult.Invalid(
                 ValidationError.InvalidScoreValue(points)
             )
         }
-        
+
+        return ValidationResult.Valid
+    }
+
+    /**
+     * Validates that the score would not cause the player to exceed the target score.
+     *
+     * @param points The score points to add
+     * @param playerCurrentScore The player's current total score
+     * @param targetScore The game's target score
+     * @return Validation result
+     */
+    fun validateScoreDoesNotExceedTarget(
+        points: Int,
+        playerCurrentScore: Int,
+        targetScore: Int
+    ): ValidationResult {
+        if (playerCurrentScore + points > targetScore) {
+            return ValidationResult.Invalid(
+                ValidationError.ScoreExceedsTarget(points, playerCurrentScore, targetScore)
+            )
+        }
         return ValidationResult.Valid
     }
     

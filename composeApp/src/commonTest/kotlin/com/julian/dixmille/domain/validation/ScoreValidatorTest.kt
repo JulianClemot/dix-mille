@@ -390,6 +390,83 @@ class ScoreValidatorTest {
         assertEquals(10_500, winner.totalScore)
     }
     
+    // Score Exceeds Target Validation Tests
+
+    @Test
+    fun should_returnValid_when_scoreDoesNotExceedTarget() {
+        // Act
+        val result = ScoreValidator.validateScoreDoesNotExceedTarget(
+            points = 500,
+            playerCurrentScore = 9000,
+            targetScore = 10_000
+        )
+
+        // Assert
+        assertTrue(result.isValid)
+    }
+
+    @Test
+    fun should_returnValid_when_scoreExactlyReachesTarget() {
+        // Act
+        val result = ScoreValidator.validateScoreDoesNotExceedTarget(
+            points = 1000,
+            playerCurrentScore = 9000,
+            targetScore = 10_000
+        )
+
+        // Assert
+        assertTrue(result.isValid)
+    }
+
+    @Test
+    fun should_returnInvalid_when_scoreExceedsTarget() {
+        // Act
+        val result = ScoreValidator.validateScoreDoesNotExceedTarget(
+            points = 1500,
+            playerCurrentScore = 9000,
+            targetScore = 10_000
+        )
+
+        // Assert
+        assertTrue(result.isInvalid)
+        val error = (result as ValidationResult.Invalid).error
+        assertTrue(error is ValidationError.ScoreExceedsTarget)
+        val exceedsError = error as ValidationError.ScoreExceedsTarget
+        assertEquals(1500, exceedsError.points)
+        assertEquals(9000, exceedsError.currentScore)
+        assertEquals(10_000, exceedsError.targetScore)
+    }
+
+    @Test
+    fun should_returnInvalid_when_scoreExceedsCustomTarget() {
+        // Act
+        val result = ScoreValidator.validateScoreDoesNotExceedTarget(
+            points = 600,
+            playerCurrentScore = 4800,
+            targetScore = 5000
+        )
+
+        // Assert
+        assertTrue(result.isInvalid)
+    }
+
+    @Test
+    fun should_formatErrorMessage_when_scoreExceedsTarget() {
+        // Act
+        val result = ScoreValidator.validateScoreDoesNotExceedTarget(
+            points = 2000,
+            playerCurrentScore = 9500,
+            targetScore = 10_000
+        )
+
+        // Assert
+        val error = (result as ValidationResult.Invalid).error
+        assertEquals(
+            "Score of 2000 would exceed the target (500 points remaining)",
+            error.toString()
+        )
+    }
+
     // Helper Methods
     
     private fun createTestGame(
