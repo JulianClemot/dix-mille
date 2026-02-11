@@ -54,7 +54,6 @@ class ScoreSheetViewModel(
             is ScoreSheetEvent.BustTurn -> bustTurn()
             is ScoreSheetEvent.SkipTurn -> skipTurn()
             is ScoreSheetEvent.DismissError -> dismissError()
-            is ScoreSheetEvent.NavigateBack -> navigateBack()
         }
     }
     
@@ -191,7 +190,7 @@ class ScoreSheetViewModel(
         _state.update { it.copy(error = null) }
     }
     
-    private fun navigateBack() {
+    fun navigateBack() {
         viewModelScope.launch {
             _navigationEvents.send(ScoreSheetNavigationEvent.NavigateBack)
         }

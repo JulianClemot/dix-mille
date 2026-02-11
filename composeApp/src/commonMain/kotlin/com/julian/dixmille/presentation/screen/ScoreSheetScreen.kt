@@ -65,6 +65,7 @@ fun ScoreSheetEntryPoint(
     ScoreSheetContent(
         state = state,
         onEvent = viewModel::onEvent,
+        onNavigateBack = viewModel::navigateBack,
     )
 }
 
@@ -86,6 +87,7 @@ fun ScoreSheetEntryPoint(
 fun ScoreSheetContent(
     state: ScoreSheetUiState,
     onEvent: (ScoreSheetEvent) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (state.isLoading) {
@@ -123,7 +125,7 @@ fun ScoreSheetContent(
                 }
             },
             navigationIcon = {
-                IconButton(onClick = { onEvent(ScoreSheetEvent.NavigateBack) }) {
+                IconButton(onClick = onNavigateBack) {
                     Text("◀", style = MaterialTheme.typography.titleLarge)
                 }
             },

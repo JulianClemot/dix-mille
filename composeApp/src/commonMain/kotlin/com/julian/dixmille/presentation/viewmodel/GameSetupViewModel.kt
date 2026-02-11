@@ -43,7 +43,6 @@ class GameSetupViewModel(
             is GameSetupEvent.RemovePlayer -> removePlayer(event.index)
             is GameSetupEvent.UpdateTargetScore -> updateTargetScore(event.score)
             is GameSetupEvent.CreateGame -> createGame()
-            is GameSetupEvent.NavigateBack -> navigateBack()
         }
     }
     
@@ -136,7 +135,7 @@ class GameSetupViewModel(
         }
     }
     
-    private fun navigateBack() {
+    fun navigateBack() {
         viewModelScope.launch {
             _navigationEvents.send(GameSetupNavigationEvent.NavigateBack)
         }
