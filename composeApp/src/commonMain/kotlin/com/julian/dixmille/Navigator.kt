@@ -6,13 +6,14 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
 import com.julian.dixmille.presentation.screen.GameEndEntryPoint
 import com.julian.dixmille.presentation.screen.GameEndRoute
 import com.julian.dixmille.presentation.screen.GameSetupEntryPoint
@@ -22,6 +23,8 @@ import com.julian.dixmille.presentation.screen.HomeRoute
 import com.julian.dixmille.presentation.screen.ScoreSheetEntryPoint
 import com.julian.dixmille.presentation.screen.ScoreSheetRoute
 import kotlinx.coroutines.launch
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 
 /**
  * Main navigator for the Dix Mille app using Navigation 3.
@@ -31,9 +34,21 @@ import kotlinx.coroutines.launch
  * - Back stack management
  * - Centralized error handling via Snackbar
  */
+
+private val config = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(HomeRoute::class, HomeRoute.serializer())
+            subclass(GameEndRoute::class, GameEndRoute.serializer())
+            subclass(GameSetupRoute::class, GameSetupRoute.serializer())
+            subclass(ScoreSheetRoute::class, ScoreSheetRoute.serializer())
+        }
+    }
+}
+
 @Composable
 fun Navigator() {
-    val backStack = rememberNavBackStack(HomeRoute)
+    val backStack = rememberNavBackStack(config, HomeRoute)
     val snackbarHostState = remember { SnackbarHostState() }
 
     val coroutineScope = rememberCoroutineScope()
@@ -41,9 +56,6 @@ fun Navigator() {
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        LaunchedEffect(null) {
-            //TODO handle a global app state to display a snackbar when I receive an error in the navigation events
-        }
         NavDisplay(
             backStack = backStack,
             onBack = {

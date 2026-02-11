@@ -22,7 +22,9 @@ object PresetScores {
     val FIVE_1S_OR_THREE_5S = PresetScore(500, "Five 1s / Three 5s")
     val SIX_1S_OR_THREE_6S = PresetScore(600, "Six 1s / Three 6s")
     val THREE_1S_FIRST_ROLL = PresetScore(1000, "Three 1s (first roll)")
-    
+    val FOUR_1S_FIRST_ROLL = PresetScore(1500, "Four 1s (first roll)")
+    val FIVE_1S_FIRST_ROLL = PresetScore(2000, "Five 1s (first roll)")
+
     /**
      * All preset scores in display order.
      */
@@ -36,20 +38,13 @@ object PresetScores {
         FOUR_1S_OR_THREE_4S,
         FIVE_1S_OR_THREE_5S,
         SIX_1S_OR_THREE_6S,
-        THREE_1S_FIRST_ROLL
+        THREE_1S_FIRST_ROLL,
+        FOUR_1S_FIRST_ROLL,
+        FIVE_1S_FIRST_ROLL
     )
     
     /**
      * Quick access to preset score values.
      */
     val validPresetValues: Set<Int> = all.map { it.points }.toSet()
-    
-    /**
-     * Finds a preset score by point value.
-     * 
-     * @return PresetScore if found, null otherwise
-     */
-    fun findByPoints(points: Int): PresetScore? {
-        return all.find { it.points == points }
-    }
 }
