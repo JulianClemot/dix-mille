@@ -47,6 +47,16 @@ class AddScoreEntryUseCase(
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
+
+        // Validate score does not exceed target
+        val targetValidation = ScoreValidator.validateScoreDoesNotExceedTarget(
+            points = points,
+            playerCurrentScore = game.currentPlayer.totalScore,
+            targetScore = game.targetScore
+        )
+        if (targetValidation is ValidationResult.Invalid) {
+            throw IllegalArgumentException(targetValidation.error.toString())
+        }
         
         // Create score entry
         val entry = ScoreEntry(
