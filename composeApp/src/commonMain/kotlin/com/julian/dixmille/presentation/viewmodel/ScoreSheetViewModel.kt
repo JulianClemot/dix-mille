@@ -53,8 +53,6 @@ class ScoreSheetViewModel(
             is ScoreSheetEvent.UndoLastTurn -> undoLastTurn()
             is ScoreSheetEvent.BustTurn -> bustTurn()
             is ScoreSheetEvent.SkipTurn -> skipTurn()
-            is ScoreSheetEvent.ShowBustDialog -> showBustDialog()
-            is ScoreSheetEvent.HideBustDialog -> hideBustDialog()
             is ScoreSheetEvent.DismissError -> dismissError()
             is ScoreSheetEvent.NavigateBack -> navigateBack()
         }
@@ -163,8 +161,6 @@ class ScoreSheetViewModel(
     
     private fun bustTurn() {
         viewModelScope.launch {
-            _state.update { it.copy(showBustDialog = false) }
-            
             bustTurnUseCase()
                 .onSuccess {
                     loadGame()
@@ -189,14 +185,6 @@ class ScoreSheetViewModel(
                     }
                 }
         }
-    }
-    
-    private fun showBustDialog() {
-        _state.update { it.copy(showBustDialog = true) }
-    }
-    
-    private fun hideBustDialog() {
-        _state.update { it.copy(showBustDialog = false) }
     }
     
     private fun dismissError() {
