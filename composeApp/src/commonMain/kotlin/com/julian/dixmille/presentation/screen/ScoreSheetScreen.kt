@@ -38,6 +38,11 @@ fun ScoreSheetEntryPoint(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // Reload game each time this screen becomes visible
+    LaunchedEffect(Unit) {
+        viewModel.refreshGame()
+    }
+
     // Handle navigation events
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->
