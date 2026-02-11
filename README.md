@@ -1,35 +1,141 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# Dix Mille
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+A Kotlin Multiplatform score sheet app for the French dice game "Dix Mille" (10,000). Players roll physical dice and use the app to track scores with strict rule enforcement. Targets Android and iOS using Compose Multiplatform with Material 3.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## Prerequisites
 
-### Build and Run Android Application
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **JDK** | 17+ | Kotlin compilation, Gradle |
+| **Android Studio** | 2024.1+ | Android development (optional for CLI builds) |
+| **Xcode** | 16.2+ | iOS development (macOS only) |
+| **Android SDK** | Platform 36 | Android build target |
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+The project uses Gradle Wrapper (`./gradlew`), so no separate Gradle installation is needed.
 
-### Build and Run iOS Application
+## Quick Start
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+### Android
 
----
+Build and install on a connected device or emulator:
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+```bash
+./gradlew :composeApp:installDebug
+```
+
+Or build the APK only:
+
+```bash
+./gradlew :composeApp:assembleDebug
+```
+
+The APK is output to `composeApp/build/outputs/apk/debug/`.
+
+### iOS
+
+Build the Kotlin framework, then open Xcode to run on simulator or device:
+
+```bash
+# For iOS Simulator (Apple Silicon)
+./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
+
+# For physical device
+./gradlew :composeApp:linkDebugFrameworkIosArm64
+```
+
+Then open and run from Xcode:
+
+```bash
+open iosApp/iosApp.xcodeproj
+```
+
+Select your target device/simulator in Xcode and press Run. Xcode handles framework embedding via a build phase script that calls `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`.
+
+> **Note:** You must set your development Team ID in `iosApp/Configuration/Config.xcconfig` to run on a physical device.
+
+## Build Commands
+
+| Command | Description |
+|---------|-------------|
+| `./gradlew :composeApp:assembleDebug` | Build Android debug APK |
+| `./gradlew :composeApp:installDebug` | Build and install on Android device/emulator |
+| `./gradlew :composeApp:assembleRelease` | Build Android release APK |
+| `./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64` | Build iOS framework for simulator |
+| `./gradlew :composeApp:linkDebugFrameworkIosArm64` | Build iOS framework for device |
+| `./gradlew build` | Full build (all targets) |
+| `./gradlew clean` | Clean all build outputs |
+
+## Running Tests
+
+All tests are in `composeApp/src/commonTest/` and run on the JVM.
+
+```bash
+# Run all tests
+./gradlew :composeApp:allTests
+
+# Run common tests only
+./gradlew :composeApp:commonTest
+
+# Run a specific test class
+./gradlew :composeApp:commonTest --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest"
+
+# Run a single test method
+./gradlew :composeApp:commonTest --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest.someMethod"
+```
+
+## Project Structure
+
+```
+DixMille/
+├── composeApp/
+│   └── src/
+│       ├── commonMain/        Shared code (domain, data, presentation)
+│       ├── commonTest/        Shared tests
+│       ├── androidMain/       Android-specific (MainActivity, SharedPreferences, DI)
+│       └── iosMain/           iOS-specific (MainViewController, NSUserDefaults, DI)
+├── iosApp/
+│   ├── iosApp.xcodeproj/     Xcode project
+│   └── Configuration/        iOS build config (bundle ID, team)
+├── gradle/
+│   └── libs.versions.toml    Version catalog
+├── docs/
+│   └── SPEC.md               Game rules specification
+└── CLAUDE.md                  Development guidelines
+```
+
+### Architecture
+
+Three-layer Clean Architecture with MVVM:
+
+```
+presentation/          domain/              data/
+  screen/                model/               repository/
+  viewmodel/             usecase/             source/
+  component/             validation/
+  model/                 repository/ (interfaces)
+  navigation/
+```
+
+Platform-specific code uses Kotlin `expect`/`actual` declarations for `LocalStorage` (SharedPreferences on Android, NSUserDefaults on iOS) and `UuidGenerator`. Dependency injection is handled by Koin with platform modules.
+
+## Key Versions
+
+| Dependency | Version |
+|------------|---------|
+| Kotlin | 2.3.10 |
+| Compose Multiplatform | 1.10.0 |
+| AGP | 8.11.2 |
+| Gradle | 8.14.3 |
+| Koin | 4.1.1 |
+| kotlinx-serialization | 1.10.0 |
+| Navigation3 | 1.0.0-alpha06 |
+
+### Android Targets
+
+- **compileSdk**: 36 (Android 15)
+- **minSdk**: 24 (Android 7.0)
+- **targetSdk**: 36
+
+### iOS Target
+
+- **Deployment target**: iOS 18.2
