@@ -38,9 +38,4 @@ sealed class ScoreSheetEvent {
      * Dismiss any error message.
      */
     data object DismissError : ScoreSheetEvent()
-    
-    /**
-     * Navigate back to home.
-     */
-    data object NavigateBack : ScoreSheetEvent()
 }

@@ -62,6 +62,7 @@ fun GameSetupEntryPoint(
     GameSetupContent(
         state = state,
         onEvent = viewModel::onEvent,
+        onNavigateBack = viewModel::navigateBack,
     )
 }
 
@@ -77,6 +78,7 @@ fun GameSetupEntryPoint(
 fun GameSetupContent(
     state: GameSetupUiState,
     onEvent: (GameSetupEvent) -> Unit,
+    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -86,10 +88,11 @@ fun GameSetupContent(
         TopAppBar(
             title = { Text("New Game Setup") },
             navigationIcon = {
-                IconButton(onClick = { onEvent(GameSetupEvent.NavigateBack) }) {
+                IconButton(onClick = onNavigateBack) {
                     Text("◀", style = MaterialTheme.typography.titleLarge)
                 }
-            }
+            },
+            windowInsets = WindowInsets(0.dp),
         )
 
         // Main content

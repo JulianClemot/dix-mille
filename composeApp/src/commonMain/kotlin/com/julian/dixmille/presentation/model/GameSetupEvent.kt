@@ -28,9 +28,4 @@ sealed class GameSetupEvent {
      * Validate and create the game.
      */
     data object CreateGame : GameSetupEvent()
-    
-    /**
-     * Navigate back to home.
-     */
-    data object NavigateBack : GameSetupEvent()
 }
