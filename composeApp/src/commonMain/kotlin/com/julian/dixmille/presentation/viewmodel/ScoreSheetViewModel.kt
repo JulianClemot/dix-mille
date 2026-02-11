@@ -40,9 +40,9 @@ class ScoreSheetViewModel(
     val navigationEvents = _navigationEvents.receiveAsFlow()
     
     init {
-        loadGame()
+        refreshGame()
     }
-    
+
     /**
      * Handles user events from the Score Sheet screen.
      */
@@ -57,10 +57,13 @@ class ScoreSheetViewModel(
         }
     }
     
-    private fun loadGame() {
+    /**
+     * Reloads the current game from storage.
+     * Called on init and when navigating back to the Score Sheet screen.
+     */
+    fun refreshGame() {
+        _state.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            
             getCurrentGameUseCase()
                 .onSuccess { game ->
                     _state.update {
@@ -114,7 +117,7 @@ class ScoreSheetViewModel(
                     // Auto-commit the turn immediately
                     commitTurnUseCase()
                         .onSuccess {
-                            loadGame()
+                            refreshGame()
                         }
                         .onFailure { error ->
                             _state.update {
@@ -134,7 +137,7 @@ class ScoreSheetViewModel(
         viewModelScope.launch {
             undoLastEntryUseCase()
                 .onSuccess {
-                    loadGame()
+                    refreshGame()
                 }
                 .onFailure { error ->
                     _state.update {
@@ -148,7 +151,7 @@ class ScoreSheetViewModel(
         viewModelScope.launch {
             undoLastTurnUseCase()
                 .onSuccess {
-                    loadGame()
+                    refreshGame()
                 }
                 .onFailure { error ->
                     _state.update {
@@ -162,7 +165,7 @@ class ScoreSheetViewModel(
         viewModelScope.launch {
             bustTurnUseCase()
                 .onSuccess {
-                    loadGame()
+                    refreshGame()
                 }
                 .onFailure { error ->
                     _state.update {
@@ -176,7 +179,7 @@ class ScoreSheetViewModel(
         viewModelScope.launch {
             skipTurnUseCase()
                 .onSuccess {
-                    loadGame()
+                    refreshGame()
                 }
                 .onFailure { error ->
                     _state.update {

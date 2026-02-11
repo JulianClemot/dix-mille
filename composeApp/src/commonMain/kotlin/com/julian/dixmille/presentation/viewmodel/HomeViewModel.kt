@@ -33,9 +33,9 @@ class HomeViewModel(
     val navigationEvents = _navigationEvents.receiveAsFlow()
     
     init {
-        loadGameStatus()
+        refreshGameStatus()
     }
-    
+
     /**
      * Handles user events from the Home screen.
      */
@@ -45,14 +45,14 @@ class HomeViewModel(
             is HomeEvent.NavigateToResumeGame -> navigateToResumeGame()
         }
     }
-    
+
     /**
      * Loads the current game status to determine if resume option should be shown.
+     * Called on init and when navigating back to the Home screen.
      */
-    private fun loadGameStatus() {
+    fun refreshGameStatus() {
+        _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            
             getCurrentGameUseCase()
                 .onSuccess { game ->
                     val isGameEnded = game.gamePhase == com.julian.dixmille.domain.model.GamePhase.ENDED

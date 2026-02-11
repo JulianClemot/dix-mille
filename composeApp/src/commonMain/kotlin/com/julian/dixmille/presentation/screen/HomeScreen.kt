@@ -47,6 +47,11 @@ data object HomeRoute : NavKey
 fun HomeEntryPoint(viewModel: HomeViewModel = koinViewModel(), backStack: NavBackStack<NavKey>) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // Refresh game status each time this screen becomes visible
+    LaunchedEffect(Unit) {
+        viewModel.refreshGameStatus()
+    }
+
     // Handle navigation events
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->
