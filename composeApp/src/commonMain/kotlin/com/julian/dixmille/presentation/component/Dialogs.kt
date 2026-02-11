@@ -9,31 +9,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 /**
- * Dialog for confirming bust action.
- */
-@Composable
-fun BustDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Bust Turn?") },
-        text = { Text("No scoring dice rolled. All turn points will be lost.") },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text("Bust")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-/**
  * Dialog for entering a custom score.
  * 
  * Note: This is kept for backward compatibility but is no longer used.

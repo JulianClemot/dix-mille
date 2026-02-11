@@ -35,16 +35,6 @@ sealed class ScoreSheetEvent {
     data object SkipTurn : ScoreSheetEvent()
     
     /**
-     * Show the bust confirmation dialog.
-     */
-    data object ShowBustDialog : ScoreSheetEvent()
-    
-    /**
-     * Hide the bust confirmation dialog.
-     */
-    data object HideBustDialog : ScoreSheetEvent()
-    
-    /**
      * Dismiss any error message.
      */
     data object DismissError : ScoreSheetEvent()

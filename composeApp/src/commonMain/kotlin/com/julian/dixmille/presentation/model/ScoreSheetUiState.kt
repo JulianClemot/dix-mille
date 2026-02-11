@@ -11,8 +11,7 @@ import com.julian.dixmille.domain.model.ScoreEntry
 data class ScoreSheetUiState(
     val game: Game? = null,
     val isLoading: Boolean = false,
-    val error: String? = null,
-    val showBustDialog: Boolean = false
+    val error: String? = null
 ) {
     /**
      * The current player whose turn it is.

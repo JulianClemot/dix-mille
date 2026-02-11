@@ -1,9 +1,9 @@
 package com.julian.dixmille.presentation.component
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -36,6 +36,7 @@ import com.julian.dixmille.domain.model.TurnRecord
 @Composable
 fun ScoreHistoryTable(
     game: Game,
+    scrollState: ScrollState,
     modifier: Modifier = Modifier
 ) {
     val players = game.players
@@ -89,8 +90,8 @@ fun ScoreHistoryTable(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 200.dp)
-                .verticalScroll(rememberScrollState())
+                .weight(1f)
+                .verticalScroll(scrollState)
         ) {
             for (roundNum in 1..maxRound) {
                 val turnsForThisRound = turnsByRound[roundNum] ?: emptyList()
@@ -189,24 +190,24 @@ fun ScoreHistoryTable(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.secondaryContainer)
-                .padding(8.dp)
+                .padding(12.dp)
         ) {
             // "TOTAL" label
             Text(
                 text = "TOTAL",
                 modifier = Modifier.width(50.dp),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            
+
             // Player totals
             players.forEach { player ->
                 Text(
                     text = player.totalScore.toString(),
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
