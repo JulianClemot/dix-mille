@@ -116,8 +116,20 @@ fun PresetScoreButtons(
             ) {
                 Text("1000")
             }
-            // Custom button removed - now inline input
-            Spacer(modifier = Modifier.weight(1f))
+            FilledTonalButton(
+                onClick = { onScoreClick(1500, PresetScores.FOUR_1S_FIRST_ROLL.label) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("1500")
+            }
+            FilledTonalButton(
+                onClick = { onScoreClick(2000, PresetScores.FIVE_1S_FIRST_ROLL.label) },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("2000")
+            }
         }
     }
 }
