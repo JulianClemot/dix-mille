@@ -1,15 +1,40 @@
 package com.julian.dixmille.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.*
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
@@ -26,7 +51,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @Serializable
 data object GameSetupRoute : NavKey
 
-
 /**
  * Game Setup screen EntryPoint - handles ViewModel injection and state collection.
  */
@@ -34,7 +58,7 @@ data object GameSetupRoute : NavKey
 fun GameSetupEntryPoint(
     viewModel: GameSetupViewModel = koinViewModel(),
     backStack: NavBackStack<NavKey>,
-    onShowSnackbar : (message : String?) -> Unit,
+    onShowSnackbar: (message: String?) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -68,12 +92,7 @@ fun GameSetupEntryPoint(
 
 /**
  * Game Setup screen Content - pure UI composable.
- *
- * @param state UI state from GameSetupViewModel
- * @param onEvent Event handler for user actions
- * @param modifier Optional modifier for the screen
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameSetupContent(
     state: GameSetupUiState,
@@ -81,75 +100,159 @@ fun GameSetupContent(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        errorBorderColor = MaterialTheme.colorScheme.error,
+        cursorColor = MaterialTheme.colorScheme.primary,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // TopAppBar with back button
-        TopAppBar(
-            title = { Text("New Game Setup") },
-            navigationIcon = {
+        // Custom top bar (matching ScoreSheet style)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(onClick = onNavigateBack) {
-                    Text("◀", style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        text = "\u25C0",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
-            },
-            windowInsets = WindowInsets(0.dp),
-        )
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "NEW GAME",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = 2.sp
+                    )
+                }
+
+                // Spacer to balance the back button
+                Spacer(modifier = Modifier.size(48.dp))
+            }
+        }
 
         // Main content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = "Players (2-6)",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Spacer(modifier = Modifier.height(4.dp))
 
+            // Players section header
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "PLAYERS",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    letterSpacing = 1.sp
+                )
+                Text(
+                    text = "(2-6)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Player input cards
             state.playerNames.forEachIndexed { index, name ->
-                Row(
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { newName ->
-                            onEvent(GameSetupEvent.UpdatePlayerName(index, newName))
-                        },
-                        label = { Text("Player ${index + 1}") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = { newName ->
+                                onEvent(GameSetupEvent.UpdatePlayerName(index, newName))
+                            },
+                            label = { Text("Player ${index + 1}") },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            shape = RoundedCornerShape(8.dp),
+                            colors = textFieldColors
+                        )
 
-                    if (state.playerNames.size > 2) {
-                        TextButton(
-                            onClick = { onEvent(GameSetupEvent.RemovePlayer(index)) }
-                        ) {
-                            Text("✕")
+                        if (state.playerNames.size > 2) {
+                            TextButton(
+                                onClick = { onEvent(GameSetupEvent.RemovePlayer(index)) }
+                            ) {
+                                Text(
+                                    text = "\u2715",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
             }
 
+            // Add Player button
             if (state.playerNames.size < 6) {
                 OutlinedButton(
                     onClick = { onEvent(GameSetupEvent.AddPlayer) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    Text("➕ Add Player")
+                    Text(
+                        text = "ADD PLAYER",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        letterSpacing = 0.5.sp
+                    )
                 }
             }
 
-            HorizontalDivider()
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
 
+            // Target Score section header
             Text(
-                text = "Target Score",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                text = "TARGET SCORE",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                letterSpacing = 1.sp
             )
 
             OutlinedTextField(
@@ -157,7 +260,9 @@ fun GameSetupContent(
                 onValueChange = { onEvent(GameSetupEvent.UpdateTargetScore(it)) },
                 label = { Text("Target Score") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = textFieldColors
             )
 
             state.error?.let { errorMsg ->
@@ -170,10 +275,17 @@ fun GameSetupContent(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // Start Game button
             Button(
                 onClick = { onEvent(GameSetupEvent.CreateGame) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isCreating
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                enabled = !state.isCreating,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 if (state.isCreating) {
                     CircularProgressIndicator(
@@ -181,9 +293,16 @@ fun GameSetupContent(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Start Game")
+                    Text(
+                        text = "START GAME",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

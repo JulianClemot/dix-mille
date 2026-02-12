@@ -1,20 +1,45 @@
 package com.julian.dixmille.presentation.screen
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import com.julian.dixmille.presentation.component.*
+import com.julian.dixmille.presentation.component.CustomScoreInput
+import com.julian.dixmille.presentation.component.PlayerScoreCard
+import com.julian.dixmille.presentation.component.PresetScoreButtons
+import com.julian.dixmille.presentation.component.ScoreHistoryTable
 import com.julian.dixmille.presentation.model.ScoreSheetEvent
 import com.julian.dixmille.presentation.model.ScoreSheetUiState
 import com.julian.dixmille.presentation.navigation.ScoreSheetNavigationEvent
@@ -76,16 +101,6 @@ fun ScoreSheetEntryPoint(
 
 /**
  * Score Sheet screen Content - pure UI composable.
- *
- * Features:
- * - Score history table at top
- * - Sticky bottom bar with controls
- * - Auto-commit on valid score entry
- * - Back button to return to home (auto-saves)
- *
- * @param state UI state from ScoreSheetViewModel
- * @param onEvent Event handler for user actions
- * @param modifier Optional modifier for the screen
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,164 +128,211 @@ fun ScoreSheetContent(
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // TopAppBar with back button
-        CenterAlignedTopAppBar(
-            title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Dix Mille")
+        // 1. Custom top bar
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onNavigateBack) {
                     Text(
-                        text = "Turn ${game.roundNumber}",
-                        style = MaterialTheme.typography.titleMedium
+                        text = "\u25C0",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Text("◀", style = MaterialTheme.typography.titleLarge)
-                }
-            },
-            windowInsets = WindowInsets(0.dp),
-        )
 
-        // Sticky: Final round banner
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "DIX MILLE",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = 2.sp
+                    )
+                    Text(
+                        text = "ROUND ${game.roundNumber}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.5.sp
+                    )
+                }
+
+                // Spacer to balance the back button
+                Spacer(modifier = Modifier.size(48.dp))
+            }
+        }
+
+        // Final round banner
         if (state.isFinalRound) {
-            Card(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .background(
+                        MaterialTheme.colorScheme.errorContainer,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = "🏁 FINAL ROUND - Last chance for all players!",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "FINAL ROUND - Last chance for all players!",
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onErrorContainer
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
             }
         }
 
-        // Sticky: Current player banner
+        // 2. Player cards row
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(game.players, key = { it.id }) { player ->
+                PlayerScoreCard(
+                    player = player,
+                    isCurrentPlayer = player.id == state.currentPlayer?.id
+                )
+            }
+        }
+
+        // Entry warning under player cards
         state.currentPlayer?.let { currentPlayer ->
-            Card(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+            if (!currentPlayer.hasEnteredGame && state.currentTurnTotal > 0 && state.currentTurnTotal < 500) {
+                Text(
+                    text = "Need ${500 - state.currentTurnTotal} more points to enter",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.error
                 )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = "${currentPlayer.name}'s Turn",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    if (state.currentTurnTotal > 0) {
-                        Text(
-                            text = "Current turn: ${state.currentTurnTotal} points",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-
-                    // Entry warning
-                    if (!currentPlayer.hasEnteredGame && state.currentTurnTotal > 0 && state.currentTurnTotal < 500) {
-                        Text(
-                            text = "⚠️ Need ${500 - state.currentTurnTotal} more points to enter",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
             }
         }
 
-        // Scrollable: Score history table (fills remaining space)
+        // 3. Recent Rounds card (fills remaining space)
         ScoreHistoryTable(
             game = game,
             scrollState = scrollState,
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
         )
 
-        // Sticky bottom bar with controls
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            tonalElevation = 3.dp,
-            shadowElevation = 8.dp
+        // 4. Bottom controls area
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
+                .padding(bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Custom score input (inline)
-                CustomScoreInput(
-                    onScoreSubmit = { points ->
-                        onEvent(ScoreSheetEvent.AddScore(points, isPreset = false))
-                    }
-                )
+            // Custom score input
+            CustomScoreInput(
+                onScoreSubmit = { points ->
+                    onEvent(ScoreSheetEvent.AddScore(points, isPreset = false))
+                }
+            )
 
-                // Preset score buttons
-                PresetScoreButtons(
-                    onScoreClick = { points, label ->
-                        onEvent(
-                            ScoreSheetEvent.AddScore(
-                                points,
-                                isPreset = true,
-                                label = label
-                            )
+            // Preset score buttons (4x4 grid)
+            PresetScoreButtons(
+                onScoreClick = { points, label ->
+                    onEvent(
+                        ScoreSheetEvent.AddScore(
+                            points,
+                            isPreset = true,
+                            label = label
+                        )
+                    )
+                }
+            )
+
+            // 5. Action buttons row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Undo button
+                Surface(
+                    onClick = { onEvent(ScoreSheetEvent.UndoLastTurn) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    enabled = state.canUndoTurn
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "UNDO",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = if (state.canUndoTurn) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                            }
                         )
                     }
-                )
+                }
 
-                // Action buttons row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Skip button
+                Surface(
+                    onClick = { onEvent(ScoreSheetEvent.SkipTurn) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    // Undo Turn button
-                    OutlinedButton(
-                        onClick = { onEvent(ScoreSheetEvent.UndoLastTurn) },
-                        modifier = Modifier.weight(1f),
-                        enabled = state.canUndoTurn,
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("🔄 Undo")
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "SKIP",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+                }
 
-                    // Skip button
-                    FilledTonalButton(
-                        onClick = { onEvent(ScoreSheetEvent.SkipTurn) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("⏭️ Skip")
-                    }
-
-                    // Bust button
-                    FilledTonalButton(
-                        onClick = { onEvent(ScoreSheetEvent.BustTurn) },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.onErrorContainer
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("💥 Bust")
+                // Bust button
+                Surface(
+                    onClick = { onEvent(ScoreSheetEvent.BustTurn) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(42.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "BUST",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }
