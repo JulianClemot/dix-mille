@@ -46,7 +46,6 @@ import com.julian.dixmille.presentation.model.ScoreSheetUiState
 import com.julian.dixmille.presentation.navigation.ScoreSheetNavigationEvent
 import com.julian.dixmille.presentation.viewmodel.ScoreSheetViewModel
 import dixmille.composeapp.generated.resources.Res
-import dixmille.composeapp.generated.resources.add_diamond
 import dixmille.composeapp.generated.resources.arrow_back
 import dixmille.composeapp.generated.resources.bomb
 import dixmille.composeapp.generated.resources.skip_next
@@ -154,7 +153,10 @@ fun ScoreSheetContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(painter = painterResource(Res.drawable.arrow_back), contentDescription = null)
+                    Icon(
+                        painter = painterResource(Res.drawable.arrow_back),
+                        contentDescription = null
+                    )
                 }
 
                 Column(
