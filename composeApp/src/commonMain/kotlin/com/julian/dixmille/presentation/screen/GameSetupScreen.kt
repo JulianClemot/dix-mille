@@ -22,11 +22,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -105,8 +104,6 @@ fun GameSetupContent(
         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
         errorBorderColor = MaterialTheme.colorScheme.error,
         cursorColor = MaterialTheme.colorScheme.primary,
-        focusedContainerColor = MaterialTheme.colorScheme.surface,
-        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
         focusedLabelColor = MaterialTheme.colorScheme.primary,
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
@@ -186,40 +183,32 @@ fun GameSetupContent(
 
             // Player input cards
             state.playerNames.forEachIndexed { index, name ->
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { newName ->
-                                onEvent(GameSetupEvent.UpdatePlayerName(index, newName))
-                            },
-                            label = { Text("Player ${index + 1}") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                            shape = RoundedCornerShape(8.dp),
-                            colors = textFieldColors
-                        )
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { newName ->
+                            onEvent(GameSetupEvent.UpdatePlayerName(index, newName))
+                        },
+                        label = { Text("Player ${index + 1}") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        colors = textFieldColors
+                    )
 
-                        if (state.playerNames.size > 2) {
-                            TextButton(
-                                onClick = { onEvent(GameSetupEvent.RemovePlayer(index)) }
-                            ) {
-                                Text(
-                                    text = "\u2715",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                    if (state.playerNames.size > 2) {
+                        TextButton(
+                            onClick = { onEvent(GameSetupEvent.RemovePlayer(index)) }
+                        ) {
+                            Text(
+                                text = "\u2715",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -261,7 +250,6 @@ fun GameSetupContent(
                 label = { Text("Target Score") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
                 colors = textFieldColors
             )
 
