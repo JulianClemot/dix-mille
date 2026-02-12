@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -51,8 +50,8 @@ import com.julian.dixmille.presentation.model.GameSetupUiState
 import com.julian.dixmille.presentation.navigation.GameSetupNavigationEvent
 import com.julian.dixmille.presentation.viewmodel.GameSetupViewModel
 import dixmille.composeapp.generated.resources.Res
-import dixmille.composeapp.generated.resources.add_diamond
 import dixmille.composeapp.generated.resources.arrow_back
+import dixmille.composeapp.generated.resources.person_add
 import dixmille.composeapp.generated.resources.play_arrow
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
@@ -244,6 +243,11 @@ fun GameSetupContent(
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.person_add),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "ADD PLAYER",
                         style = MaterialTheme.typography.labelLarge,
