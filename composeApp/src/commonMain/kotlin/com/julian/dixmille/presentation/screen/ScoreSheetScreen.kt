@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,11 +17,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +45,14 @@ import com.julian.dixmille.presentation.model.ScoreSheetEvent
 import com.julian.dixmille.presentation.model.ScoreSheetUiState
 import com.julian.dixmille.presentation.navigation.ScoreSheetNavigationEvent
 import com.julian.dixmille.presentation.viewmodel.ScoreSheetViewModel
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.add_diamond
+import dixmille.composeapp.generated.resources.arrow_back
+import dixmille.composeapp.generated.resources.bomb
+import dixmille.composeapp.generated.resources.skip_next
+import dixmille.composeapp.generated.resources.undo
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -146,11 +154,7 @@ fun ScoreSheetContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onNavigateBack) {
-                    Text(
-                        text = "\u25C0",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Icon(painter = painterResource(Res.drawable.arrow_back), contentDescription = null)
                 }
 
                 Column(
@@ -272,68 +276,75 @@ fun ScoreSheetContent(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // Undo button
-                Surface(
+                OutlinedButton(
                     onClick = { onEvent(ScoreSheetEvent.UndoLastTurn) },
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     enabled = state.canUndoTurn
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "UNDO",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = if (state.canUndoTurn) {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                            }
-                        )
-                    }
+                    Icon(painter = painterResource(Res.drawable.undo), contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "UNDO",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = if (state.canUndoTurn) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        }
+                    )
                 }
 
                 // Skip button
-                Surface(
+                OutlinedButton(
                     onClick = { onEvent(ScoreSheetEvent.SkipTurn) },
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surface,
+                    colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "SKIP",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(Res.drawable.skip_next),
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "SKIP",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
                 // Bust button
-                Surface(
+                OutlinedButton(
                     onClick = { onEvent(ScoreSheetEvent.BustTurn) },
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.errorContainer,
+                    colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f))
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "BUST",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(Res.drawable.bomb),
+                        tint = MaterialTheme.colorScheme.error,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "BUST",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }

@@ -10,12 +10,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +38,14 @@ import com.julian.dixmille.presentation.model.HomeEvent
 import com.julian.dixmille.presentation.model.HomeUiState
 import com.julian.dixmille.presentation.navigation.HomeNavigationEvent
 import com.julian.dixmille.presentation.viewmodel.HomeViewModel
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.add_diamond
+import dixmille.composeapp.generated.resources.arrow_back
+import dixmille.composeapp.generated.resources.casino
+import dixmille.composeapp.generated.resources.compose_multiplatform
+import dixmille.composeapp.generated.resources.undo
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -175,6 +186,8 @@ fun HomeContent(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
+                Icon(painter = painterResource(Res.drawable.casino), contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "RESUME GAME",
                     style = MaterialTheme.typography.labelLarge,
@@ -196,6 +209,8 @@ fun HomeContent(
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
+                Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "NEW GAME",
                     style = MaterialTheme.typography.labelLarge,
@@ -215,6 +230,8 @@ fun HomeContent(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
+                Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "NEW GAME",
                     style = MaterialTheme.typography.labelLarge,

@@ -145,7 +145,7 @@ fun ScoreHistoryTable(
 
                     // Player scores
                     players.forEach { player ->
-                        val playerTurn = turnsForThisRound.filter { it.playerId == player.id }.lastOrNull()
+                        val playerTurn = turnsForThisRound.lastOrNull { it.playerId == player.id }
 
                         Box(
                             modifier = Modifier.weight(1f),
@@ -227,7 +227,6 @@ fun ScoreHistoryTable(
         ) {
             Text(
                 text = "TOTAL",
-                modifier = Modifier.width(32.dp),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,

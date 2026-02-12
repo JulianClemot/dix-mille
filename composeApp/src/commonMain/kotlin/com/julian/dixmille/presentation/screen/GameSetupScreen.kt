@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -41,7 +43,12 @@ import com.julian.dixmille.presentation.model.GameSetupEvent
 import com.julian.dixmille.presentation.model.GameSetupUiState
 import com.julian.dixmille.presentation.navigation.GameSetupNavigationEvent
 import com.julian.dixmille.presentation.viewmodel.GameSetupViewModel
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.add_diamond
+import dixmille.composeapp.generated.resources.arrow_back
+import dixmille.composeapp.generated.resources.play_arrow
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -127,11 +134,7 @@ fun GameSetupContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onNavigateBack) {
-                    Text(
-                        text = "\u25C0",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Icon(painter = painterResource(Res.drawable.arrow_back), contentDescription = null)
                 }
 
                 Column(
@@ -281,6 +284,8 @@ fun GameSetupContent(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
+                    Icon(painter = painterResource(Res.drawable.play_arrow), contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "START GAME",
                         style = MaterialTheme.typography.labelLarge,
