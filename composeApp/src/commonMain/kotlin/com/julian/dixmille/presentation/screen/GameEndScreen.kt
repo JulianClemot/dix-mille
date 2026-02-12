@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -59,8 +60,12 @@ import com.julian.dixmille.domain.model.Player
 import com.julian.dixmille.presentation.model.GameEndEvent
 import com.julian.dixmille.presentation.navigation.GameEndNavigationEvent
 import com.julian.dixmille.presentation.viewmodel.GameEndViewModel
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.add_diamond
+import dixmille.composeapp.generated.resources.home
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.random.Random
 
@@ -429,6 +434,8 @@ private fun AnimatedButton(
             containerColor = MaterialTheme.colorScheme.primary
         )
     ) {
+        Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "NEW GAME",
             style = MaterialTheme.typography.labelLarge,
@@ -463,6 +470,8 @@ private fun AnimatedOutlinedButton(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
+        Icon(painter = painterResource(Res.drawable.home), contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "HOME",
             style = MaterialTheme.typography.labelLarge,
