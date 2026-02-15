@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <filter id="glowCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#00F3FF" flood-opacity="0.4"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Single die showing 5 (cyan neon) -->
+  <g filter="url(#glowCyan)">
+    <rect x="6" y="6" width="36" height="36" rx="6" fill="#0A0F14" stroke="#00F3FF" stroke-width="2"/>
+    <!-- 5 dots pattern -->
+    <circle cx="14" cy="14" r="3" fill="#00F3FF"/>
+    <circle cx="34" cy="14" r="3" fill="#00F3FF"/>
+    <circle cx="24" cy="24" r="3" fill="#00F3FF"/>
+    <circle cx="14" cy="34" r="3" fill="#00F3FF"/>
+    <circle cx="34" cy="34" r="3" fill="#00F3FF"/>
+  </g>
+</svg>

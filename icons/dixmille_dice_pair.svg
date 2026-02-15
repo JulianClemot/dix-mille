@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <filter id="glowCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feFlood flood-color="#00F3FF" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowPurple" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feFlood flood-color="#BC13FE" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Die 5 (cyan) - left, tilted -->
+  <g transform="translate(2, 6) rotate(10, 12, 12)" filter="url(#glowCyan)">
+    <rect x="0" y="0" width="24" height="24" rx="4" fill="#0A0F14" stroke="#00F3FF" stroke-width="1.5"/>
+    <circle cx="6" cy="6" r="1.8" fill="#00F3FF"/>
+    <circle cx="18" cy="6" r="1.8" fill="#00F3FF"/>
+    <circle cx="12" cy="12" r="1.8" fill="#00F3FF"/>
+    <circle cx="6" cy="18" r="1.8" fill="#00F3FF"/>
+    <circle cx="18" cy="18" r="1.8" fill="#00F3FF"/>
+  </g>
+  <!-- Die 1 (purple) - right, tilted opposite -->
+  <g transform="translate(22, 16) rotate(-10, 12, 12)" filter="url(#glowPurple)">
+    <rect x="0" y="0" width="24" height="24" rx="4" fill="#0A0F14" stroke="#BC13FE" stroke-width="1.5"/>
+    <circle cx="12" cy="12" r="2.5" fill="#BC13FE"/>
+  </g>
+</svg>

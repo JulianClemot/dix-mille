@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <radialGradient id="meshBg1" cx="0" cy="0" r="0.7">
+      <stop offset="0%" stop-color="#0D7FF2" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="meshBg2" cx="1" cy="1" r="0.7">
+      <stop offset="0%" stop-color="#BC13FE" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glowCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feFlood flood-color="#00F3FF" flood-opacity="0.4"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowPurple" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feFlood flood-color="#BC13FE" flood-opacity="0.4"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background rounded square (iOS icon shape) -->
+  <rect x="0" y="0" width="48" height="48" rx="10.5" ry="10.5" fill="#0A0F14"/>
+  <!-- Mesh gradient overlays -->
+  <rect x="0" y="0" width="48" height="48" rx="10.5" ry="10.5" fill="url(#meshBg1)"/>
+  <rect x="0" y="0" width="48" height="48" rx="10.5" ry="10.5" fill="url(#meshBg2)"/>
+  <!-- Die showing 5 (cyan, rotated slightly) -->
+  <g transform="translate(8, 12) rotate(8, 10, 10)" filter="url(#glowCyan)">
+    <rect x="0" y="0" width="20" height="20" rx="3" fill="#0A0F14" fill-opacity="0.8" stroke="#00F3FF" stroke-width="1.2"/>
+    <!-- 5 dots -->
+    <circle cx="5.5" cy="5.5" r="1.5" fill="#00F3FF"/>
+    <circle cx="14.5" cy="5.5" r="1.5" fill="#00F3FF"/>
+    <circle cx="10" cy="10" r="1.5" fill="#00F3FF"/>
+    <circle cx="5.5" cy="14.5" r="1.5" fill="#00F3FF"/>
+    <circle cx="14.5" cy="14.5" r="1.5" fill="#00F3FF"/>
+  </g>
+  <!-- Die showing 1 (purple, rotated opposite, offset) -->
+  <g transform="translate(21, 18) rotate(-8, 10, 10)" filter="url(#glowPurple)">
+    <rect x="0" y="0" width="20" height="20" rx="3" fill="#0A0F14" fill-opacity="0.8" stroke="#BC13FE" stroke-width="1.2"/>
+    <!-- 1 dot -->
+    <circle cx="10" cy="10" r="2" fill="#BC13FE"/>
+  </g>
+  <!-- Glassmorphism reflection overlay -->
+  <rect x="0" y="0" width="48" height="24" rx="10.5" ry="10.5" fill="white" fill-opacity="0.05"/>
+</svg>
