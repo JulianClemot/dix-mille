@@ -399,7 +399,7 @@ class GameCollisionTest {
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
-            createdAt = System.currentTimeMillis(),
+            createdAt = 0L,
             turnHistory = emptyList(),
             roundNumber = 1
         )

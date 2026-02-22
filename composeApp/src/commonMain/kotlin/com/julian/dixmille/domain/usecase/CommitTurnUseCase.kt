@@ -43,18 +43,18 @@ class CommitTurnUseCase(
         }
         
         // Validate turn can be committed
-        val commitValidation = ScoreValidator.validateCommitTurn(game.currentPlayer)
+        val commitValidation = ScoreValidator.validateCommitTurn(game.currentPlayer, game.rules)
         if (commitValidation is ValidationResult.Invalid) {
             throw IllegalStateException(commitValidation.error.toString())
         }
-        
+
         // Get data before committing
         val turnPoints = game.currentPlayer.currentTurn?.turnTotal ?: 0
         val playerId = game.currentPlayer.id
         val previousScore = game.currentPlayer.totalScore
-        
+
         // Commit the turn (adds points to total, enters game if applicable)
-        var updatedPlayer = game.currentPlayer.commitTurn()
+        var updatedPlayer = game.currentPlayer.commitTurn(game.rules.entryMinimumScore)
         
         // Reset consecutive busts on successful turn
         updatedPlayer = updatedPlayer.copy(consecutiveBusts = 0)
@@ -67,11 +67,17 @@ class CommitTurnUseCase(
         // Resolve score collisions
         game = game.resolveScoreCollisions(playerId)
 
-        // Check if final round should be triggered
+        // Check if final round should be triggered (or game ends immediately if final round disabled)
         if (ScoreValidator.shouldTriggerFinalRound(game)) {
             game = game.checkAndTriggerFinalRound()
         }
-        
+
+        // If game ended immediately (final round disabled), save and return
+        if (game.gamePhase == GamePhase.ENDED) {
+            repository.saveGame(game).getOrThrow()
+            return@runCatching
+        }
+
         // If in final round, mark player as having played
         if (game.gamePhase == GamePhase.FINAL_ROUND) {
             val playerWithFinalRound = game.currentPlayer.markFinalRoundPlayed()

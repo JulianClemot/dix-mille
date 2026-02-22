@@ -32,10 +32,10 @@ sealed class ValidationResult {
  */
 sealed class ValidationError {
     /**
-     * Player has not yet entered the game (needs 500+ points in a turn).
+     * Player has not yet entered the game (needs minimum points in a turn).
      */
-    data object InsufficientPointsToEnter : ValidationError() {
-        override fun toString(): String = "Need at least 500 points in a turn to enter the game"
+    data class InsufficientPointsToEnter(val minimum: Int = 500) : ValidationError() {
+        override fun toString(): String = "Need at least $minimum points in a turn to enter the game"
     }
     
     /**

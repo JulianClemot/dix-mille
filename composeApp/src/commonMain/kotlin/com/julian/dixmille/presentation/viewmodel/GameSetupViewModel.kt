@@ -2,6 +2,8 @@ package com.julian.dixmille.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.julian.dixmille.domain.model.GameRules
+import com.julian.dixmille.domain.repository.GameRulesRepository
 import com.julian.dixmille.domain.usecase.CreateGameUseCase
 import com.julian.dixmille.presentation.model.GameSetupEvent
 import com.julian.dixmille.presentation.model.GameSetupUiState
@@ -24,14 +26,36 @@ import kotlinx.coroutines.launch
  * - Emit navigation events
  */
 class GameSetupViewModel(
-    private val createGameUseCase: CreateGameUseCase
+    private val createGameUseCase: CreateGameUseCase,
+    private val gameRulesRepository: GameRulesRepository
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(GameSetupUiState())
     val state: StateFlow<GameSetupUiState> = _state.asStateFlow()
-    
+
     private val _navigationEvents = Channel<GameSetupNavigationEvent>()
     val navigationEvents = _navigationEvents.receiveAsFlow()
+
+    init {
+        loadRules()
+    }
+
+    private fun loadRules() {
+        viewModelScope.launch {
+            val rules = gameRulesRepository.getRules().getOrElse { GameRules.DEFAULT }
+            _state.update {
+                it.copy(
+                    targetScore = rules.targetScore.toString(),
+                    minPlayers = rules.minPlayers,
+                    maxPlayers = rules.maxPlayers
+                )
+            }
+        }
+    }
+
+    fun refreshRules() {
+        loadRules()
+    }
     
     /**
      * Handles user events from the Game Setup screen.
@@ -62,7 +86,7 @@ class GameSetupViewModel(
     
     private fun addPlayer() {
         _state.update { currentState ->
-            if (currentState.playerNames.size < 6) {
+            if (currentState.playerNames.size < currentState.maxPlayers) {
                 currentState.copy(
                     playerNames = currentState.playerNames + ""
                 )
@@ -71,10 +95,10 @@ class GameSetupViewModel(
             }
         }
     }
-    
+
     private fun removePlayer(index: Int) {
         _state.update { currentState ->
-            if (currentState.playerNames.size > 2 && index in currentState.playerNames.indices) {
+            if (currentState.playerNames.size > currentState.minPlayers && index in currentState.playerNames.indices) {
                 currentState.copy(
                     playerNames = currentState.playerNames.toMutableList().apply {
                         removeAt(index)
@@ -99,15 +123,15 @@ class GameSetupViewModel(
         val currentState = _state.value
         val names = currentState.playerNames.map { it.trim() }.filter { it.isNotBlank() }
         val target = currentState.targetScore.toIntOrNull()
-        
+
         // Validation
         when {
-            names.size < 2 -> {
-                _state.update { it.copy(error = "Need at least 2 players") }
+            names.size < currentState.minPlayers -> {
+                _state.update { it.copy(error = "Need at least ${currentState.minPlayers} players") }
                 return
             }
-            names.size > 6 -> {
-                _state.update { it.copy(error = "Maximum 6 players") }
+            names.size > currentState.maxPlayers -> {
+                _state.update { it.copy(error = "Maximum ${currentState.maxPlayers} players") }
                 return
             }
             target == null || target <= 0 -> {
@@ -138,6 +162,12 @@ class GameSetupViewModel(
     fun navigateBack() {
         viewModelScope.launch {
             _navigationEvents.send(GameSetupNavigationEvent.NavigateBack)
+        }
+    }
+
+    fun navigateToRulesSettings() {
+        viewModelScope.launch {
+            _navigationEvents.send(GameSetupNavigationEvent.NavigateToRulesSettings)
         }
     }
 }

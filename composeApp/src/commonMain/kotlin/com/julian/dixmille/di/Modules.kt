@@ -1,12 +1,15 @@
 package com.julian.dixmille.di
 
 import com.julian.dixmille.data.repository.GameRepositoryImpl
+import com.julian.dixmille.data.repository.GameRulesRepositoryImpl
 import com.julian.dixmille.domain.repository.GameRepository
+import com.julian.dixmille.domain.repository.GameRulesRepository
 import com.julian.dixmille.domain.usecase.*
-import com.julian.dixmille.presentation.viewmodel.HomeViewModel
-import com.julian.dixmille.presentation.viewmodel.GameSetupViewModel
-import com.julian.dixmille.presentation.viewmodel.ScoreSheetViewModel
 import com.julian.dixmille.presentation.viewmodel.GameEndViewModel
+import com.julian.dixmille.presentation.viewmodel.GameRulesSettingsViewModel
+import com.julian.dixmille.presentation.viewmodel.GameSetupViewModel
+import com.julian.dixmille.presentation.viewmodel.HomeViewModel
+import com.julian.dixmille.presentation.viewmodel.ScoreSheetViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -17,6 +20,7 @@ import org.koin.dsl.module
  */
 val dataModule = module {
     single { GameRepositoryImpl(get()) } bind GameRepository::class
+    single { GameRulesRepositoryImpl(get()) } bind GameRulesRepository::class
 }
 
 /**
@@ -43,6 +47,7 @@ val presentationModule = module {
     viewModelOf(::GameSetupViewModel)
     viewModelOf(::ScoreSheetViewModel)
     viewModelOf(::GameEndViewModel)
+    viewModelOf(::GameRulesSettingsViewModel)
 }
 
 /**

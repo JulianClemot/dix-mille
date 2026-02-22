@@ -17,6 +17,8 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.julian.dixmille.presentation.screen.GameEndEntryPoint
 import com.julian.dixmille.presentation.screen.GameEndRoute
+import com.julian.dixmille.presentation.screen.GameRulesSettingsEntryPoint
+import com.julian.dixmille.presentation.screen.GameRulesSettingsRoute
 import com.julian.dixmille.presentation.screen.GameSetupEntryPoint
 import com.julian.dixmille.presentation.screen.GameSetupRoute
 import com.julian.dixmille.presentation.screen.HomeEntryPoint
@@ -42,6 +44,7 @@ private val config = SavedStateConfiguration {
             subclass(HomeRoute::class, HomeRoute.serializer())
             subclass(GameEndRoute::class, GameEndRoute.serializer())
             subclass(GameSetupRoute::class, GameSetupRoute.serializer())
+            subclass(GameRulesSettingsRoute::class, GameRulesSettingsRoute.serializer())
             subclass(ScoreSheetRoute::class, ScoreSheetRoute.serializer())
         }
     }
@@ -85,6 +88,11 @@ fun Navigator() {
                             }
                         }
                     }
+                }
+
+                // Game Rules Settings Screen
+                entry<GameRulesSettingsRoute> {
+                    GameRulesSettingsEntryPoint(backStack = backStack)
                 }
 
                 // Score Sheet Screen

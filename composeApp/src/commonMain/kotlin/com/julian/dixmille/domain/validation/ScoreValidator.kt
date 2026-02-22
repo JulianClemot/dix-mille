@@ -2,6 +2,7 @@ package com.julian.dixmille.domain.validation
 
 import com.julian.dixmille.domain.model.Game
 import com.julian.dixmille.domain.model.GamePhase
+import com.julian.dixmille.domain.model.GameRules
 import com.julian.dixmille.domain.model.Player
 import com.julian.dixmille.domain.model.PresetScores
 
@@ -60,33 +61,36 @@ object ScoreValidator {
     
     /**
      * Validates that a turn can be committed for the given player.
-     * 
-     * Entry Rule: Player must score at least 500 points in a turn to "enter the game".
+     *
+     * Entry Rule: Player must score at least the entry minimum in a turn to "enter the game".
      * Until entered, turn points are lost (treated like a bust).
-     * 
+     *
      * @param player The player attempting to commit their turn
+     * @param rules The game rules (used for entry minimum)
      * @return Validation result
      */
-    fun validateCommitTurn(player: Player): ValidationResult {
+    fun validateCommitTurn(player: Player, rules: GameRules = GameRules.DEFAULT): ValidationResult {
         val currentTurn = player.currentTurn
             ?: return ValidationResult.Invalid(ValidationError.NoTurnInProgress)
-        
+
         if (currentTurn.isBusted) {
             return ValidationResult.Invalid(ValidationError.TurnAlreadyBusted)
         }
-        
+
         val turnTotal = currentTurn.turnTotal
-        
+
         // Cannot commit zero points
         if (turnTotal == 0) {
             return ValidationResult.Invalid(ValidationError.MustScoreToCommit)
         }
-        
-        // Entry rule: if player hasn't entered, must score at least 500
-        if (!player.hasEnteredGame && turnTotal < 500) {
-            return ValidationResult.Invalid(ValidationError.InsufficientPointsToEnter)
+
+        // Entry rule: if player hasn't entered, must score at least the entry minimum
+        if (!player.hasEnteredGame && turnTotal < rules.entryMinimumScore) {
+            return ValidationResult.Invalid(
+                ValidationError.InsufficientPointsToEnter(rules.entryMinimumScore)
+            )
         }
-        
+
         return ValidationResult.Valid
     }
     

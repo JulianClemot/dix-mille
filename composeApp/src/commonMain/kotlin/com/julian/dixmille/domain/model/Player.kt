@@ -51,20 +51,21 @@ data class Player(
     
     /**
      * Commits the current turn, adding points to the total score.
-     * 
-     * The player enters the game if the turn total is at least 500.
-     * 
+     *
+     * The player enters the game if the turn total meets the entry minimum.
+     *
+     * @param entryMinimumScore Minimum points in a turn to enter the game
      * @return Updated player with committed turn
      * @throws IllegalStateException if no turn is in progress or turn is busted
      */
-    fun commitTurn(): Player {
+    fun commitTurn(entryMinimumScore: Int = 500): Player {
         require(currentTurn != null) { "No turn in progress" }
         require(!currentTurn.isBusted) { "Cannot commit a busted turn" }
-        
+
         val turnPoints = currentTurn.turnTotal
         val newTotalScore = totalScore + turnPoints
-        val nowEntered = hasEnteredGame || turnPoints >= 500
-        
+        val nowEntered = hasEnteredGame || turnPoints >= entryMinimumScore
+
         return copy(
             totalScore = if (nowEntered) newTotalScore else totalScore,
             hasEnteredGame = nowEntered,

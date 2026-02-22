@@ -49,8 +49,8 @@ class BustTurnUseCase(
             consecutiveBusts = game.currentPlayer.consecutiveBusts + 1
         )
         
-        // Check for 3-bust penalty
-        if (updatedPlayer.consecutiveBusts >= 3) {
+        // Check for bust penalty
+        if (game.rules.enableBustPenalty && updatedPlayer.consecutiveBusts >= game.rules.consecutiveBustsForPenalty) {
             val lastScoredTurn = game.turnHistory
                 .filter { it.playerId == playerId && it.outcome == TurnOutcome.SCORED }
                 .lastOrNull { it.previousScore < updatedPlayer.totalScore }

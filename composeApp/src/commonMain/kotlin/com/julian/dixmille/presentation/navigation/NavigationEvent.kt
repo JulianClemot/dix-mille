@@ -19,6 +19,14 @@ sealed class HomeNavigationEvent {
 sealed class GameSetupNavigationEvent {
     data object NavigateToScoreSheet : GameSetupNavigationEvent()
     data object NavigateBack : GameSetupNavigationEvent()
+    data object NavigateToRulesSettings : GameSetupNavigationEvent()
+}
+
+/**
+ * Navigation events from GameRulesSettingsScreen.
+ */
+sealed class GameRulesSettingsNavigationEvent {
+    data object NavigateBack : GameRulesSettingsNavigationEvent()
 }
 
 /**

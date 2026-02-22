@@ -32,7 +32,7 @@ class UndoLastTurnUseCaseTest {
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
-            createdAt = System.currentTimeMillis(),
+            createdAt = 0L,
             turnHistory = listOf(
                 com.julian.dixmille.domain.model.TurnRecord(
                     roundNumber = 1,
@@ -83,7 +83,7 @@ class UndoLastTurnUseCaseTest {
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
-            createdAt = System.currentTimeMillis(),
+            createdAt = 0L,
             turnHistory = listOf(
                 com.julian.dixmille.domain.model.TurnRecord(
                     roundNumber = 1,
@@ -155,7 +155,7 @@ class UndoLastTurnUseCaseTest {
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
-            createdAt = System.currentTimeMillis(),
+            createdAt = 0L,
             turnHistory = listOf(
                 com.julian.dixmille.domain.model.TurnRecord(
                     roundNumber = 1,
@@ -221,7 +221,7 @@ class UndoLastTurnUseCaseTest {
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
-            createdAt = System.currentTimeMillis(),
+            createdAt = 0L,
             turnHistory = listOf(
                 com.julian.dixmille.domain.model.TurnRecord(
                     roundNumber = 1,
@@ -293,7 +293,7 @@ class UndoLastTurnUseCaseTest {
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
-            createdAt = System.currentTimeMillis(),
+            createdAt = 0L,
             turnHistory = listOf(
                 com.julian.dixmille.domain.model.TurnRecord(
                     roundNumber = 1,

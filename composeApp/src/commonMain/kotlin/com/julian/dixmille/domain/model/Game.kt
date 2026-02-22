@@ -15,10 +15,13 @@ data class Game(
     val triggeringPlayerId: String? = null,
     val createdAt: Long,
     val turnHistory: List<TurnRecord> = emptyList(),
-    val roundNumber: Int = 1
+    val roundNumber: Int = 1,
+    val rules: GameRules = GameRules()
 ) {
     init {
-        require(players.size in 2..6) { "Game must have 2-6 players" }
+        require(players.size in rules.minPlayers..rules.maxPlayers) {
+            "Game must have ${rules.minPlayers}-${rules.maxPlayers} players"
+        }
         require(targetScore > 0) { "Target score must be positive" }
         require(currentPlayerIndex in players.indices) { "Invalid player index" }
     }
@@ -63,14 +66,17 @@ data class Game(
         if (gamePhase != GamePhase.IN_PROGRESS) {
             return this
         }
-        
+
         if (currentPlayer.totalScore >= targetScore) {
+            if (!rules.enableFinalRound) {
+                return copy(gamePhase = GamePhase.ENDED)
+            }
             return copy(
                 gamePhase = GamePhase.FINAL_ROUND,
                 triggeringPlayerId = currentPlayer.id
             )
         }
-        
+
         return this
     }
     

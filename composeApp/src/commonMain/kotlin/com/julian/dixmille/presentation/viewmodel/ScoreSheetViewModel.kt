@@ -104,10 +104,11 @@ class ScoreSheetViewModel(
             val currentPlayer = _state.value.currentPlayer
             val game = _state.value.game
 
-            // Entry validation: Must have 500+ points to enter game
-            if (currentPlayer != null && !currentPlayer.hasEnteredGame && points < 500) {
+            // Entry validation: Must have enough points to enter game
+            val entryMinimum = game?.rules?.entryMinimumScore ?: 500
+            if (currentPlayer != null && !currentPlayer.hasEnteredGame && points < entryMinimum) {
                 _state.update {
-                    it.copy(error = "Need at least 500 points to enter the game")
+                    it.copy(error = "Need at least $entryMinimum points to enter the game")
                 }
                 return@launch
             }

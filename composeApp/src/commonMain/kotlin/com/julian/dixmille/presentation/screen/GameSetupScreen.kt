@@ -53,6 +53,7 @@ import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.arrow_back
 import dixmille.composeapp.generated.resources.person_add
 import dixmille.composeapp.generated.resources.play_arrow
+import dixmille.composeapp.generated.resources.settings
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -86,8 +87,17 @@ fun GameSetupEntryPoint(
                 is GameSetupNavigationEvent.NavigateBack -> {
                     backStack.removeLastOrNull()
                 }
+
+                is GameSetupNavigationEvent.NavigateToRulesSettings -> {
+                    backStack += GameRulesSettingsRoute
+                }
             }
         }
+    }
+
+    // Refresh rules when returning from settings (backStack size changes)
+    LaunchedEffect(backStack.size) {
+        viewModel.refreshRules()
     }
 
     // Handle errors via snackbar
@@ -99,6 +109,7 @@ fun GameSetupEntryPoint(
         state = state,
         onEvent = viewModel::onEvent,
         onNavigateBack = viewModel::navigateBack,
+        onNavigateToRulesSettings = viewModel::navigateToRulesSettings,
     )
 }
 
@@ -110,6 +121,7 @@ fun GameSetupContent(
     state: GameSetupUiState,
     onEvent: (GameSetupEvent) -> Unit,
     onNavigateBack: () -> Unit,
+    onNavigateToRulesSettings: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val textFieldColors = OutlinedTextFieldDefaults.colors(
@@ -156,8 +168,9 @@ fun GameSetupContent(
                     )
                 }
 
-                // Spacer to balance the back button
-                Spacer(modifier = Modifier.size(48.dp))
+                IconButton(onClick = onNavigateToRulesSettings) {
+                    Icon(painter = painterResource(Res.drawable.settings), contentDescription = null)
+                }
             }
         }
 
@@ -184,7 +197,7 @@ fun GameSetupContent(
                     letterSpacing = 1.sp
                 )
                 Text(
-                    text = "(2-6)",
+                    text = "(${state.minPlayers}-${state.maxPlayers})",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -222,7 +235,7 @@ fun GameSetupContent(
                         colors = textFieldColors
                     )
 
-                    if (state.playerNames.size > 2) {
+                    if (state.playerNames.size > state.minPlayers) {
                         TextButton(
                             onClick = { onEvent(GameSetupEvent.RemovePlayer(index)) }
                         ) {
@@ -236,7 +249,7 @@ fun GameSetupContent(
             }
 
             // Add Player button
-            if (state.playerNames.size < 6) {
+            if (state.playerNames.size < state.maxPlayers) {
                 OutlinedButton(
                     onClick = { onEvent(GameSetupEvent.AddPlayer) },
                     modifier = Modifier.fillMaxWidth(),
