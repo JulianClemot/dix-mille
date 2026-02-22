@@ -12,8 +12,6 @@ Every commit message MUST follow this format:
 <gitmoji> <type>(<scope>): <subject>
 
 <body>
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ```
 
 ### Rules
