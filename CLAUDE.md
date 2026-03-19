@@ -85,6 +85,23 @@ presentation/          domain/              data/
 
 Managed via Gradle Version Catalog (`gradle/libs.versions.toml`). Key: Kotlin 2.3.x, Compose Multiplatform 1.10.x, Koin 4.x, Navigation3, kotlinx-serialization, kotlinx-coroutines.
 
+## Feature Development Workflow
+
+New features follow a strict BDD + TDD pipeline using dedicated slash commands:
+
+```
+/new-feature      → Collaborative spec refinement → writes Gherkin to docs/SPEC.md
+/plan-increments  → Break spec into smallest independent increments
+/design-tests     → Design exhaustive test conditions for current increment
+/tdd-step         → Red-green-refactor cycle (repeat per increment)
+/feature-review   → Integration tests, E2E tests, then /commit on approval
+```
+
+**Repeat `/design-tests` + `/tdd-step` for each increment before running `/feature-review`.**
+
+BDD format: strict Gherkin (Feature / Scenario / Given / When / Then).
+Tests: written in `commonTest` before implementation. Named `should_<behavior>_when_<condition>`.
+
 ## Development Status
 
 Phases 1-7 complete (domain, data, presentation, components). Phases 8-11 (turn history, UI redesign, dark theme, winner animations) are in progress. See `docs/SPEC.md` for detailed phase tracking.

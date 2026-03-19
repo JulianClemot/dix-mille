@@ -233,6 +233,59 @@ fun stateFlow_shouldEmitCorrectStates() = runTest {
 4. **Repositories** - 70%+ (data operations)
 5. **UI components** - Test critical paths only
 
+## TDD Cycle (Red-Green-Refactor)
+
+Follow this cycle strictly — never write implementation before a failing test:
+
+### RED
+1. Write one test for the next behavior
+2. Run: `./gradlew :composeApp:commonTest --tests "com.julian.dixmille.<TestClass>"`
+3. Confirm it **fails** with the expected reason
+   - If it passes immediately → the test is wrong, fix it before proceeding
+
+### GREEN
+4. Write the **minimum** code to make the test pass
+5. Run tests again — confirm **passes**
+6. If still failing → debug, do not add more code speculatively
+
+### REFACTOR
+7. Remove duplication, improve naming, simplify
+8. Run tests again — confirm **still green**
+9. Only then move to the next test
+
+### Increment Loop
+- Implement test conditions from simplest to most complex
+- After all conditions in an increment are green, run the full suite:
+  `./gradlew :composeApp:commonTest`
+- Fix any regressions before marking the increment complete
+
+## Integration Testing
+
+Integration tests verify that multiple units work together correctly. Use when:
+- A use case interacts with a real (or close-to-real) repository
+- A ViewModel drives a use case that modifies domain state
+- A full game-state transition spans multiple operations
+
+```kotlin
+class AddScoreAndCommitIntegrationTest {
+    private lateinit var repository: FakeGameRepository
+    private lateinit var addScore: AddScoreEntryUseCase
+    private lateinit var commitTurn: CommitTurnUseCase
+
+    @BeforeTest
+    fun setup() {
+        repository = FakeGameRepository()
+        addScore = AddScoreEntryUseCase(repository)
+        commitTurn = CommitTurnUseCase(repository)
+    }
+
+    @Test
+    fun should_advanceToNextPlayer_when_scoreAddedAndTurnCommitted() = runTest {
+        // Tests the full flow across two use cases
+    }
+}
+```
+
 ## What NOT to Test
 
 - Simple data classes with no logic

@@ -62,6 +62,47 @@ Ravi Mehta: "Learn how to sketch, learn Balsamiq. Having that ability to think a
 - **Specs that no one reads** - If engineers aren't using the document, it's the wrong format or fidelity
 - **Temporary decisions that persist** - Recognize that early shortcuts may last decades
 
+## BDD Scenario Writing (Gherkin)
+
+When writing feature specs for DixMille, use strict Gherkin format:
+
+```gherkin
+Feature: <Feature Name>
+  As a <role>
+  I want <capability>
+  So that <benefit>
+
+  Background:
+    Given <shared preconditions for all scenarios>
+
+  Scenario: <happy path>
+    Given <precondition>
+    When <action>
+    Then <outcome>
+
+  Scenario: <edge case>
+    Given <precondition>
+    When <action>
+    Then <outcome>
+
+  Scenario Outline: <parameterized case>
+    Given <precondition with <param>>
+    When <action with <param>>
+    Then <outcome with <expected>>
+
+    Examples:
+      | param | expected |
+      | ...   | ...      |
+```
+
+### DixMille BDD Rules
+- Use domain vocabulary: bust, skip, entry threshold, final round, score collision, consecutive busts
+- Each scenario must be independent (no shared state between scenarios)
+- Use `Background` only when ALL scenarios share the same precondition
+- Cover: happy path, every edge case, every error state
+- Error scenarios need explicit `Then` clauses — never leave failure implicit
+- Insert BDD under a `### BDD Scenarios` subsection within the relevant Phase in `docs/SPEC.md`
+
 ## Deep Dive
 
 For all 10 insights from 7 guests, see `references/guest-insights.md`
