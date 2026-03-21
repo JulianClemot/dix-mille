@@ -2,6 +2,7 @@ package com.julian.dixmille.domain.usecase
 
 import com.julian.dixmille.domain.model.Game
 import com.julian.dixmille.domain.model.GamePhase
+import com.julian.dixmille.domain.model.GameRules
 import com.julian.dixmille.domain.model.Player
 import com.julian.dixmille.domain.model.TurnOutcome
 import com.julian.dixmille.domain.util.UuidGenerator
@@ -511,6 +512,102 @@ class BustTurnUseCaseTest {
         val updatedGame = repository.getCurrentGame().getOrThrow()
         assertEquals(1, updatedGame.players[0].consecutiveBusts)
         assertEquals(0, updatedGame.players[0].totalScore)
+    }
+
+    @Test
+    fun should_notApplyPenalty_when_bustPenaltyIsDisabled() = runTest {
+        // Arrange - bust penalty disabled, Alice has 2 consecutive busts, busts a 3rd time
+        val rules = GameRules.DEFAULT.copy(enableBustPenalty = false)
+        var game = createGameWithTwoPlayers().copy(rules = rules)
+        var player1 = game.players[0].copy(
+            totalScore = 700,
+            hasEnteredGame = true,
+            consecutiveBusts = 2
+        )
+        player1 = player1.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+
+        // Act
+        bustTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        val updatedPlayer = updatedGame.players[0]
+        assertEquals(700, updatedPlayer.totalScore)
+        assertEquals(3, updatedPlayer.consecutiveBusts)
+    }
+
+    @Test
+    fun should_applyPenalty_when_customThresholdReached() = runTest {
+        // Arrange - threshold is 2 busts; Alice has 1 consecutive bust and a SCORED history entry
+        val rules = GameRules.DEFAULT.copy(consecutiveBustsForPenalty = 2)
+        var game = createGameWithTwoPlayers().copy(rules = rules)
+
+        // Set up Alice with score 700, 1 consecutive bust, and a SCORED turn history entry
+        // (previousScore = 0, i.e. she scored 700 from 0)
+        var player1 = game.players[0].copy(
+            totalScore = 700,
+            hasEnteredGame = true,
+            consecutiveBusts = 1
+        )
+        player1 = player1.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player1)
+        game = game.recordTurn(player1.id, 700, TurnOutcome.SCORED, 0)
+        repository.saveGame(game)
+
+        // Act – 2nd bust, should trigger penalty
+        bustTurnUseCase()
+
+        // Assert – score reverts to previousScore of last SCORED turn (0)
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        val updatedPlayer = updatedGame.players[0]
+        assertEquals(0, updatedPlayer.totalScore)
+        assertEquals(0, updatedPlayer.consecutiveBusts)
+    }
+
+    @Test
+    fun should_resetBustCounter_when_playerScoresBetweenBusts() = runTest {
+        // Arrange - Alice has 2 busts, then scores 200 via CommitTurnUseCase (counter resets),
+        // then busts once; consecutiveBusts should be 1 and no penalty
+        var game = createGameWithTwoPlayers()
+        var player1 = game.players[0].copy(
+            totalScore = 500,
+            hasEnteredGame = true,
+            consecutiveBusts = 2
+        )
+        player1 = player1.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player1)
+        game = game.recordTurn(player1.id, 500, TurnOutcome.SCORED, 0)
+
+        // Score 200 via CommitTurnUseCase (resets bust counter to 0)
+        player1 = game.players[0].addScoreEntry(createScoreEntry(200))
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+        commitTurnUseCase()
+        game = repository.getCurrentGame().getOrThrow()
+
+        // Now it's player 2's turn — advance back to player 1 for the bust
+        var player2 = game.currentPlayer.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player2)
+        repository.saveGame(game)
+        skipTurnUseCase()
+        game = repository.getCurrentGame().getOrThrow()
+
+        // Player 1 busts once
+        player1 = game.players[0].startTurn(UuidGenerator.generate())
+        game = game.copy(currentPlayerIndex = 0)
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+
+        // Act
+        bustTurnUseCase()
+
+        // Assert – counter is 1 and no penalty (score unchanged from committed value)
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        val updatedPlayer = updatedGame.players[0]
+        assertEquals(1, updatedPlayer.consecutiveBusts)
+        assertEquals(700, updatedPlayer.totalScore) // 500 + 200, penalty not triggered
     }
 
     private fun createGameWithTwoPlayers(): Game {
