@@ -429,6 +429,90 @@ class BustTurnUseCaseTest {
         assertEquals(0, player1.consecutiveBusts)
     }
 
+    // ── New BDD-aligned tests ─────────────────────────────────────────────────
+
+    @Test
+    fun should_discardTurnPoints_when_playerBusts() = runTest {
+        // Arrange
+        var game = createGameWithTwoPlayers()
+        var player1 = game.players[0].copy(
+            totalScore = 500,
+            hasEnteredGame = true,
+            consecutiveBusts = 0
+        )
+        player1 = player1.startTurn(UuidGenerator.generate())
+        player1 = player1.addScoreEntry(createScoreEntry(300))
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+
+        // Act
+        bustTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        assertEquals(500, updatedGame.players[0].totalScore)
+    }
+
+    @Test
+    fun should_recordBustTurnInHistory_when_playerBusts() = runTest {
+        // Arrange
+        var game = createGameWithTwoPlayers()
+        var player1 = game.players[0].copy(
+            totalScore = 500,
+            hasEnteredGame = true
+        )
+        player1 = player1.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+
+        // Act
+        bustTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        assertEquals(1, updatedGame.turnHistory.size)
+        val record = updatedGame.turnHistory[0]
+        assertEquals(com.julian.dixmille.domain.model.TurnOutcome.BUST, record.outcome)
+        assertEquals(0, record.points)
+        assertEquals(500, record.previousScore)
+    }
+
+    @Test
+    fun should_advanceToNextPlayer_when_playerBusts() = runTest {
+        // Arrange
+        var game = createGameWithTwoPlayers()
+        var player1 = game.players[0].copy(hasEnteredGame = true, totalScore = 500)
+        player1 = player1.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+
+        // Act
+        bustTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        assertEquals(1, updatedGame.currentPlayerIndex)
+        kotlin.test.assertNotNull(updatedGame.players[1].currentTurn)
+    }
+
+    @Test
+    fun should_incrementBustCounter_when_unenteredPlayerBusts() = runTest {
+        // Arrange
+        var game = createGameWithTwoPlayers()
+        var player1 = game.players[0] // hasEnteredGame=false, totalScore=0
+        player1 = player1.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(player1)
+        repository.saveGame(game)
+
+        // Act
+        bustTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        assertEquals(1, updatedGame.players[0].consecutiveBusts)
+        assertEquals(0, updatedGame.players[0].totalScore)
+    }
+
     private fun createGameWithTwoPlayers(): Game {
         val player1 = Player(id = "p1", name = "Alice")
         val player2 = Player(id = "p2", name = "Bob")
