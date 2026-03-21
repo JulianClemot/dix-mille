@@ -1,6 +1,9 @@
 ---
 name: kmp-expect-actual
 description: Implement platform-specific code in Kotlin Multiplatform using expect/actual declarations correctly. Use when accessing platform APIs, creating platform abstractions, or adding new expect/actual declarations.
+effort: medium
+allowed-tools: Read, Grep, Glob, Write, Edit
+tags: [kotlin, multiplatform, expect-actual, platform, kmp]
 ---
 
 ## What I do
@@ -173,6 +176,38 @@ expect fun createVibrator(): Vibrator
 - Duplicating code across platforms (extract common logic to commonMain)
 - Exposing platform types in expect declarations (use common types in signatures)
 - Not handling platform differences gracefully (design APIs that work on all platforms)
+
+## Implementation Workflow
+
+```
+1. Define the expect declaration in commonMain
+   → Keep the API surface minimal and platform-agnostic
+
+2. Implement actual for androidMain
+   → Use Android SDK APIs (Context, SharedPreferences, etc.)
+
+3. Implement actual for iosMain
+   → Use platform.* APIs (NSUserDefaults, NSUUID, etc.)
+
+4. Wire into DI via platformModule (expect in commonMain, actual per platform)
+
+5. Write tests in commonTest using a fake or stub
+   → actual implementations are not directly unit-testable in commonTest
+```
+
+## Decision Tree
+
+```
+Need platform feature?
+        │
+        ├─ Does a multiplatform library exist? → Use the library
+        │
+        ├─ Is the API identical on both platforms? → expect fun / expect class
+        │
+        ├─ Is the API different but abstractable? → expect interface + factory
+        │
+        └─ Is it a DI dependency? → expect platformModule, actual per platform
+```
 
 ## Questions to Ask
 

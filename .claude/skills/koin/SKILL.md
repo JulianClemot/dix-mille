@@ -1,6 +1,9 @@
 ---
 name: koin
 description: Koin dependency injection framework for Kotlin. Use for DI setup, module definitions, ViewModel injection, scope management, and Compose Multiplatform DI patterns.
+effort: medium
+allowed-tools: Read
+tags: [di, koin, dependency-injection, kotlin, multiplatform]
 ---
 
 # Koin Skill
@@ -139,6 +142,37 @@ class MyScopedComponent(val dep: MyDependency)
 - **Singletons for stateless services**: Use `single` for repositories, use cases
 - **Factory for stateful objects**: Use `factory` for objects that need fresh instances
 - **ViewModel via `viewModelOf`**: Proper lifecycle management in Compose
+
+## Adding a New Dependency — Workflow
+
+```
+1. Identify the scope: singleton (repository) or factory (use case)?
+
+2. Add to the correct module:
+   - dataModule    → repositories, data sources, LocalStorage
+   - domainModule  → use cases
+   - platformModule → platform-specific bindings (expect/actual)
+   - presentationModule → ViewModels
+
+3. Use constructor injection in the class:
+   class MyUseCase(private val repo: MyRepository)
+
+4. Register in module:
+   factory { MyUseCase(get()) }          // use case
+   single<MyRepository> { MyRepositoryImpl(get()) }  // repository
+
+5. Inject in ViewModel via koinViewModel() in Compose,
+   or get() inside another module definition
+```
+
+## Common Troubleshooting
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `No definition found for 'X'` | Not registered in any module | Add to the appropriate module |
+| `Instance already exists` | `single` created twice | Check for duplicate module loading |
+| `NoBeanDefFoundException` in test | DI not started in test | Use `KoinTest` or inject manually |
+| ViewModel not found in Compose | Missing `viewModelOf` | Replace `single` with `viewModelOf` |
 
 ## Reference Files
 

@@ -1,6 +1,9 @@
 ---
 name: compose-screen-architecture
 description: Screen architecture pattern for Compose Multiplatform using EntryPoint + Content separation. Use when creating new screens, structuring screen composables, or splitting ViewModel concerns from UI.
+effort: medium
+allowed-tools: Read
+tags: [compose, architecture, screen, viewmodel, multiplatform]
 ---
 
 # Compose Multiplatform Screen Architecture

@@ -1,6 +1,9 @@
 ---
 name: writing-specs-designs
 description: Help write effective specs and design documents. Use when creating technical specs, feature specs, design docs, or communicating product requirements to engineering and design teams.
+effort: medium
+allowed-tools: Read, Write, Edit
+tags: [spec, design, bdd, gherkin, documentation]
 ---
 
 # Writing Specs & Designs

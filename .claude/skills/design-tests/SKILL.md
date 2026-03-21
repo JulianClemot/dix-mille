@@ -2,6 +2,9 @@
 name: design-tests
 description: Design exhaustive test conditions for the current increment before writing any code. Covers happy paths, edge cases, and error states. Use after /plan-increments, before /tdd-step.
 user-invocable: true
+effort: medium
+allowed-tools: Read
+tags: [testing, tdd, bdd, test-design, workflow]
 ---
 
 # New Feature Workflow — Step 3: Test Design

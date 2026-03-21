@@ -2,6 +2,9 @@
 name: tdd-step
 description: Execute one TDD red-green-refactor cycle for the current increment. Writes a failing test, runs it, implements minimum code, runs tests again. Use after /design-tests for each increment.
 user-invocable: true
+effort: high
+allowed-tools: Read, Bash, Agent
+tags: [tdd, workflow, testing, red-green-refactor, implementation]
 ---
 
 # New Feature Workflow — Step 4: TDD Implementation
@@ -30,6 +33,42 @@ The agent runs tests automatically — no manual intervention needed during the 
 ## RED phase is mandatory
 
 If a test passes before any implementation is written, the test is wrong. The agent will catch this and fix the test before proceeding.
+
+## What a Healthy RED→GREEN Cycle Looks Like
+
+**RED** — the test fails for the right reason:
+```
+> Task :composeApp:compileKotlinMetadata FAILED
+
+e: BustTurnUseCaseTest.kt:42: Unresolved reference: consecutiveBusts
+
+BUILD FAILED — 1 error
+```
+This is correct: the property doesn't exist yet. Proceed to implementation.
+
+**GREEN** — minimum code passes:
+```
+> Task :composeApp:commonTest
+
+BustTurnUseCaseTest > should_incrementConsecutiveBusts_when_playerBusts PASSED
+
+BUILD SUCCESSFUL — 1 test passed
+```
+
+**Wrong RED** (test passes immediately → test is wrong):
+```
+BustTurnUseCaseTest > should_revertScore_when_thirdConsecutiveBust PASSED
+```
+Stop. The test asserts nothing meaningful. Fix the assertion before proceeding.
+
+## Common Failure Modes to Watch
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| Test passes before impl | Assertion always true | Strengthen the assertion |
+| Compile error in wrong file | Import missing | Add the import, re-run |
+| Test fails after GREEN | Regression from refactor | Revert refactor, step smaller |
+| `runTest` hangs | Missing `advanceUntilIdle()` | Add after the action |
 
 ## After the agent completes
 

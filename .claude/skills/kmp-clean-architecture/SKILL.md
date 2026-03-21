@@ -1,6 +1,9 @@
 ---
 name: kmp-clean-architecture
 description: Implement Clean Architecture patterns in Kotlin Multiplatform projects with proper layer separation. Use when creating features, refactoring architecture, designing domain models, or setting up ViewModels.
+effort: high
+allowed-tools: Read, Grep, Glob, Write, Edit
+tags: [architecture, clean-architecture, kotlin, multiplatform, domain]
 ---
 
 ## What I do
@@ -158,6 +161,30 @@ suspend fun saveGame(game: Game): Result<Unit>
 - Direct database/network calls from ViewModels
 - Mutable state exposure from ViewModels
 - Use Cases with multiple responsibilities
+
+## Implementation Workflow
+
+Follow this order — never skip layers or build top-down:
+
+```
+1. Domain model (data class, immutable)
+        ↓
+2. Repository interface (in domain/repository/)
+        ↓
+3. Use case (in domain/usecase/, depends only on interface)
+        ↓
+4. Repository implementation (in data/repository/)
+        ↓
+5. DI wiring (add to dataModule / domainModule)
+        ↓
+6. UiState + Event sealed classes
+        ↓
+7. ViewModel (depends on use case via DI)
+        ↓
+8. Composable screen (depends only on UiState + events)
+```
+
+Each step should have tests before you move to the next.
 
 ## Questions to Ask
 

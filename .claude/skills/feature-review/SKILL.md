@@ -2,6 +2,9 @@
 name: feature-review
 description: Review a completed feature, propose integration and E2E tests, then commit on user approval. Final step of the feature development workflow.
 user-invocable: true
+effort: high
+allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+tags: [review, testing, integration, e2e, workflow]
 ---
 
 # New Feature Workflow — Step 5: Feature Review

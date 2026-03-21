@@ -1,6 +1,9 @@
 ---
 name: kmp-testing
 description: Write comprehensive tests for Kotlin Multiplatform projects with proper test organization and coverage. Use when writing tests, adding coverage, testing edge cases, or verifying state transitions.
+effort: medium
+allowed-tools: Read, Grep, Glob, Write, Edit, Bash
+tags: [testing, tdd, kotlin, multiplatform, unit-test]
 ---
 
 ## What I do

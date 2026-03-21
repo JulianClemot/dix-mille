@@ -2,7 +2,16 @@
 name: commit
 description: Format and create git commits using gitmoji convention with explicit, descriptive messages. Use when the user asks to commit, create a commit, or says /commit.
 user_invocable: true
+effort: low
+allowed-tools: Bash, Read
+tags: [git, commit, gitmoji, version-control]
 ---
+
+## When to Use
+
+- User says `/commit` or "commit this", "create a commit", "commit my changes"
+- After completing an increment or feature, to persist the work
+- Do **not** commit proactively — always wait for an explicit request
 
 ## Commit Message Format
 

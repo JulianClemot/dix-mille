@@ -1,6 +1,9 @@
 ---
 name: compose-multiplatform-navigation3
 description: Type-safe navigation with Jetpack Navigation 3 for Compose Multiplatform. Use when implementing navigation, adding routes, managing back stack, or setting up adaptive layouts.
+effort: medium
+allowed-tools: Read
+tags: [compose, navigation, navigation3, kotlin, multiplatform]
 ---
 
 # Compose Multiplatform Navigation 3

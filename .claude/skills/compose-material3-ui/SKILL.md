@@ -1,6 +1,9 @@
 ---
 name: compose-material3-ui
 description: Build Material 3 UIs with Compose Multiplatform following design system principles. Use when creating screens, UI components, implementing Material 3 patterns, or optimizing Compose performance.
+effort: medium
+allowed-tools: Read
+tags: [compose, material3, ui, kotlin, multiplatform]
 ---
 
 ## What I do
@@ -304,6 +307,44 @@ IconButton(
         imageVector = Icons.Default.Delete,
         contentDescription = "Delete player" // For screen readers
     )
+}
+```
+
+## Implementation Workflow
+
+Follow this order when building a new screen or component:
+
+```
+1. Define UiState (data class, all val, no logic)
+        ↓
+2. Define Event (sealed class, one subclass per user action)
+        ↓
+3. Sketch the states: loading / error / empty / success
+        ↓
+4. Build Content composable (stateless, accepts UiState + onEvent)
+        ↓
+5. Add Scaffold / TopAppBar / FAB at the Content level
+        ↓
+6. Add @Preview with sample data for each state
+        ↓
+7. Wire EntryPoint (ViewModel injection, state collection)
+```
+
+## State-Driven UI Pattern
+
+Every screen should handle all states explicitly:
+
+```kotlin
+@Composable
+fun ScoreSheetContent(state: ScoreSheetUiState, onEvent: (ScoreSheetEvent) -> Unit) {
+    when {
+        state.isLoading -> Box(Modifier.fillMaxSize()) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
+        state.error != null -> ErrorMessage(state.error)
+        state.game == null  -> EmptyState("No game in progress")
+        else -> ScoreSheetBody(state.game, onEvent)
+    }
 }
 ```
 
