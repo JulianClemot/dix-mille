@@ -1,10 +1,11 @@
-package com.julian.dixmille.domain.model
+package com.julian.dixmille.domain.usecase
 
-import com.julian.dixmille.domain.usecase.BustTurnUseCase
-import com.julian.dixmille.domain.usecase.CommitTurnUseCase
-import com.julian.dixmille.domain.usecase.FakeGameRepository
-import com.julian.dixmille.domain.usecase.SkipTurnUseCase
-import com.julian.dixmille.domain.usecase.UndoLastTurnUseCase
+import com.julian.dixmille.domain.model.Game
+import com.julian.dixmille.domain.model.GamePhase
+import com.julian.dixmille.domain.model.Player
+import com.julian.dixmille.domain.model.ScoreEntry
+import com.julian.dixmille.domain.model.TurnOutcome
+import com.julian.dixmille.domain.model.TurnRecord
 import com.julian.dixmille.domain.util.UuidGenerator
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
