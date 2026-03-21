@@ -64,6 +64,65 @@ presentation/          domain/              data/
 - **State updates**: Immutable data classes with `.copy()`. Coroutine-based. Auto-save to local storage on every state change.
 - **Auto-commit UX**: Adding a valid score immediately commits the turn and advances to the next player (no manual "End Turn" step).
 
+## Feature-Based Architecture
+
+Each feature is a **vertical slice** that owns every layer it needs — domain, data, and presentation — as if it were an independent Gradle module. Features must not import from each other. Shared primitives live in `core/`.
+
+```
+com.julian.dixmille/
+  feature/
+    score_sheet/                  # Main gameplay screen (example feature)
+      domain/
+        model/                    # Feature-specific models (e.g. ScoreSheetSummary)
+        usecase/                  # AddScoreEntryUseCase, CommitTurnUseCase, …
+        repository/               # ScoreRepository interface (if needed)
+      data/
+        repository/               # ScoreRepositoryImpl
+      presentation/
+        screen/ScoreSheetScreen.kt
+        viewmodel/ScoreSheetViewModel.kt
+        model/ScoreSheetUiState.kt
+        model/ScoreSheetEvent.kt
+        component/                # Composables used only by this feature
+          PlayerScoreCard.kt
+          PresetScoreButtons.kt
+      di/ScoreSheetModule.kt      # Koin module for this feature only
+    home/
+      domain/usecase/…
+      presentation/screen/…
+      di/HomeModule.kt
+    game_setup/
+      domain/usecase/…
+      data/repository/…
+      presentation/screen/…
+      di/GameSetupModule.kt
+    game_end/
+      …
+    game_rules/
+      …
+  core/
+    domain/
+      model/                      # Shared primitives: Game, Player, Turn, ScoreEntry
+      repository/                 # Shared repository interfaces
+      util/                       # UuidGenerator (expect/actual)
+    data/
+      source/                     # LocalStorage (expect/actual)
+    presentation/
+      theme/                      # DixMilleTheme, Color
+      navigation/                 # Navigator.kt, NavigationEvent
+      component/                  # Composables shared by 2+ features
+  di/
+    AppModule.kt                  # Aggregates all feature + core Koin modules
+```
+
+### Rules
+
+- **No cross-feature imports.** `feature/score_sheet` must never import from `feature/game_setup`. Shared logic belongs in `core/`.
+- **Feature-local layers are optional.** If a feature needs no custom repository, omit the `data/` folder entirely.
+- **Shared models stay in `core/domain/model/`.** Domain primitives (`Game`, `Player`, `Turn`, `ScoreEntry`) are used by multiple features and live in core.
+- **Each feature registers its own Koin module** in `di/FeatureNameModule.kt`, aggregated in `AppModule.kt`.
+- **Components follow the same rule**: a composable goes in `feature/<name>/presentation/component/` until a second feature needs it, then it moves to `core/presentation/component/`.
+
 ## Game Rules (Quick Reference)
 
 - 2-6 players, target 10,000 points (configurable)
