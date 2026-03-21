@@ -1,5 +1,6 @@
 package com.julian.dixmille.domain.usecase
 
+import com.julian.dixmille.feature.game_setup.domain.usecase.CreateGameUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

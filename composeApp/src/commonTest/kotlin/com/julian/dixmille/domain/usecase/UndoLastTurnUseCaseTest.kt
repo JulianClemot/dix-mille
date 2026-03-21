@@ -1,10 +1,12 @@
 package com.julian.dixmille.domain.usecase
 
-import com.julian.dixmille.domain.model.Game
-import com.julian.dixmille.domain.model.GamePhase
-import com.julian.dixmille.domain.model.Player
-import com.julian.dixmille.domain.model.TurnOutcome
-import com.julian.dixmille.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.model.Game
+import com.julian.dixmille.core.domain.model.GamePhase
+import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.TurnRecord
+import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastTurnUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -34,14 +36,14 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 500,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 2,
                     playerId = "p1",
                     points = 0,
@@ -85,35 +87,35 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 500,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 2,
                     playerId = "p1",
                     points = 200,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 500
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 3,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.BUST,
                     previousScore = 700
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 4,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.BUST,
                     previousScore = 700
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 5,
                     playerId = "p1",
                     points = 0,
@@ -157,28 +159,28 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 500,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 2,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.BUST,
                     previousScore = 500
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 3,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.BUST,
                     previousScore = 500
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 4,
                     playerId = "p1",
                     points = 200,
@@ -223,35 +225,35 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 500,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 2,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.BUST,
                     previousScore = 500
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 3,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.BUST,
                     previousScore = 500
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 4,
                     playerId = "p1",
                     points = 0,
                     outcome = TurnOutcome.SKIP,
                     previousScore = 500
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 5,
                     playerId = "p1",
                     points = 200,
@@ -295,14 +297,14 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 500,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 2,
                     playerId = "p1",
                     points = 0,
@@ -339,14 +341,14 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 500,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 2,
                     playerId = "p1",
                     points = 300,
@@ -384,7 +386,7 @@ class UndoLastTurnUseCaseTest {
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 600,
@@ -423,14 +425,14 @@ class UndoLastTurnUseCaseTest {
             triggeringPlayerId = "p1",
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 10_000,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p2",
                     points = 200,
@@ -468,14 +470,14 @@ class UndoLastTurnUseCaseTest {
             triggeringPlayerId = "p1",
             createdAt = 0L,
             turnHistory = listOf(
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p1",
                     points = 10_000,
                     outcome = TurnOutcome.SCORED,
                     previousScore = 0
                 ),
-                com.julian.dixmille.domain.model.TurnRecord(
+                TurnRecord(
                     roundNumber = 1,
                     playerId = "p2",
                     points = 200,

@@ -1,4 +1,4 @@
-package com.julian.dixmille.domain.util
+package com.julian.dixmille.core.domain.util
 
 import java.util.UUID
 

@@ -1,10 +1,15 @@
 package com.julian.dixmille.domain.model
 
-import com.julian.dixmille.domain.usecase.BustTurnUseCase
-import com.julian.dixmille.domain.usecase.CommitTurnUseCase
+import com.julian.dixmille.core.domain.model.Game
+import com.julian.dixmille.core.domain.model.GamePhase
+import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.ScoreEntry
+import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.domain.usecase.FakeGameRepository
-import com.julian.dixmille.domain.usecase.SkipTurnUseCase
-import com.julian.dixmille.domain.util.UuidGenerator
+import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
+import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
+import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

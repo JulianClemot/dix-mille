@@ -1,4 +1,4 @@
-package com.julian.dixmille.data.source
+package com.julian.dixmille.core.data.source
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -9,19 +9,19 @@ class AndroidLocalStorage(context: Context) : LocalStorage {
         "dixmille_prefs",
         Context.MODE_PRIVATE
     )
-    
+
     override fun saveString(key: String, value: String) {
         prefs.edit { putString(key, value) }
     }
-    
+
     override fun getString(key: String): String? {
         return prefs.getString(key, null)
     }
-    
+
     override fun remove(key: String) {
         prefs.edit { remove(key) }
     }
-    
+
     override fun clear() {
         prefs.edit { clear() }
     }

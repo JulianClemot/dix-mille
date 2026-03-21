@@ -1,6 +1,7 @@
 package com.julian.dixmille.data.repository
 
-import com.julian.dixmille.domain.model.GameRules
+import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.feature.game_rules.data.repository.GameRulesRepositoryImpl
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

@@ -1,9 +1,12 @@
 package com.julian.dixmille.domain.validation
 
-import com.julian.dixmille.domain.model.Game
-import com.julian.dixmille.domain.model.GamePhase
-import com.julian.dixmille.domain.model.Player
-import com.julian.dixmille.domain.model.ScoreEntry
+import com.julian.dixmille.core.domain.model.Game
+import com.julian.dixmille.core.domain.model.GamePhase
+import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.ScoreEntry
+import com.julian.dixmille.core.domain.validation.ScoreValidator
+import com.julian.dixmille.core.domain.validation.ValidationError
+import com.julian.dixmille.core.domain.validation.ValidationResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

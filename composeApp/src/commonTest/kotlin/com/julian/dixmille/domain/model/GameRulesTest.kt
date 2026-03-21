@@ -1,5 +1,6 @@
 package com.julian.dixmille.domain.model
 
+import com.julian.dixmille.core.domain.model.GameRules
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

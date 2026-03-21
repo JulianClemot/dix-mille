@@ -1,11 +1,14 @@
 package com.julian.dixmille.domain.usecase
 
-import com.julian.dixmille.domain.model.Game
-import com.julian.dixmille.domain.model.GamePhase
-import com.julian.dixmille.domain.model.GameRules
-import com.julian.dixmille.domain.model.Player
-import com.julian.dixmille.domain.model.TurnOutcome
-import com.julian.dixmille.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.model.Game
+import com.julian.dixmille.core.domain.model.GamePhase
+import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
+import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
+import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -473,7 +476,7 @@ class BustTurnUseCaseTest {
         val updatedGame = repository.getCurrentGame().getOrThrow()
         assertEquals(1, updatedGame.turnHistory.size)
         val record = updatedGame.turnHistory[0]
-        assertEquals(com.julian.dixmille.domain.model.TurnOutcome.BUST, record.outcome)
+        assertEquals(com.julian.dixmille.core.domain.model.TurnOutcome.BUST, record.outcome)
         assertEquals(0, record.points)
         assertEquals(500, record.previousScore)
     }
@@ -625,8 +628,8 @@ class BustTurnUseCaseTest {
         )
     }
 
-    private fun createScoreEntry(points: Int): com.julian.dixmille.domain.model.ScoreEntry {
-        return com.julian.dixmille.domain.model.ScoreEntry(
+    private fun createScoreEntry(points: Int): com.julian.dixmille.core.domain.model.ScoreEntry {
+        return com.julian.dixmille.core.domain.model.ScoreEntry(
             id = UuidGenerator.generate(),
             points = points
         )

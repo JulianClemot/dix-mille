@@ -1,7 +1,7 @@
 package com.julian.dixmille
 
 import androidx.compose.runtime.Composable
-import com.julian.dixmille.presentation.theme.DixMilleTheme
+import com.julian.dixmille.core.presentation.theme.DixMilleTheme
 
 /**
  * Main application composable.

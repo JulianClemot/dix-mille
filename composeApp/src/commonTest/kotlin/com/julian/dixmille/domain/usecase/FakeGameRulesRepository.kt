@@ -1,7 +1,7 @@
 package com.julian.dixmille.domain.usecase
 
-import com.julian.dixmille.domain.model.GameRules
-import com.julian.dixmille.domain.repository.GameRulesRepository
+import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.core.domain.repository.GameRulesRepository
 
 class FakeGameRulesRepository : GameRulesRepository {
     private var rules: GameRules? = null
