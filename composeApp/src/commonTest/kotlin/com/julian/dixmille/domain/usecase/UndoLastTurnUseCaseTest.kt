@@ -325,4 +325,175 @@ class UndoLastTurnUseCaseTest {
         assertEquals(500, updatedPlayer.totalScore)
         assertEquals(0, updatedPlayer.consecutiveBusts)
     }
+
+    @Test
+    fun should_revertScoreAndRestoreTurn_when_undoingScoredTurn() = runTest {
+        // Arrange - Alice committed 300 points (500->800), now Bob's turn
+        val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 800)
+        val player2 = Player(id = "p2", name = "Bob")
+        var game = Game(
+            id = "game1",
+            players = listOf(player1, player2),
+            targetScore = 10_000,
+            currentPlayerIndex = 1,
+            gamePhase = GamePhase.IN_PROGRESS,
+            createdAt = 0L,
+            turnHistory = listOf(
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 1,
+                    playerId = "p1",
+                    points = 500,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 0
+                ),
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 2,
+                    playerId = "p1",
+                    points = 300,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 500
+                )
+            ),
+            roundNumber = 2
+        )
+        val currentPlayer = game.players[1].startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        val updatedAlice = updatedGame.players[0]
+        assertEquals(500, updatedAlice.totalScore)
+        assertEquals(0, updatedGame.currentPlayerIndex)
+        assertEquals(1, updatedGame.turnHistory.size) // SCORED record for 300 pts removed
+    }
+
+    @Test
+    fun should_revertHasEnteredGame_when_undoingEntryTurn() = runTest {
+        // Arrange - Alice entered game with 600 pts (0->600, hasEnteredGame=true), now Bob's turn
+        val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 600)
+        val player2 = Player(id = "p2", name = "Bob")
+        var game = Game(
+            id = "game1",
+            players = listOf(player1, player2),
+            targetScore = 10_000,
+            currentPlayerIndex = 1,
+            gamePhase = GamePhase.IN_PROGRESS,
+            createdAt = 0L,
+            turnHistory = listOf(
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 1,
+                    playerId = "p1",
+                    points = 600,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 0
+                )
+            ),
+            roundNumber = 1
+        )
+        val currentPlayer = game.players[1].startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        val updatedAlice = updatedGame.players[0]
+        assertEquals(0, updatedAlice.totalScore)
+        assertEquals(false, updatedAlice.hasEnteredGame)
+    }
+
+    @Test
+    fun should_revertHasPlayedFinalRound_when_undoingFinalRoundTurn() = runTest {
+        // Arrange - FINAL_ROUND, Alice is triggering player
+        // Bob committed his final turn (hasPlayedFinalRound=true, 300->500), now Alice's turn (index=0)
+        val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 10_000)
+        val player2 = Player(id = "p2", name = "Bob", hasEnteredGame = true, totalScore = 500, hasPlayedFinalRound = true)
+        var game = Game(
+            id = "game1",
+            players = listOf(player1, player2),
+            targetScore = 10_000,
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = "p1",
+            createdAt = 0L,
+            turnHistory = listOf(
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 1,
+                    playerId = "p1",
+                    points = 10_000,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 0
+                ),
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 1,
+                    playerId = "p2",
+                    points = 200,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 300
+                )
+            ),
+            roundNumber = 1
+        )
+        val currentPlayer = game.players[0].startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        val updatedBob = updatedGame.players[1]
+        assertEquals(false, updatedBob.hasPlayedFinalRound)
+        assertEquals(1, updatedGame.currentPlayerIndex) // Bob's turn again
+    }
+
+    @Test
+    fun should_revertGamePhaseToFinalRound_when_undoingLastTurnOfGame() = runTest {
+        // Arrange - Game just ENDED after Bob's final round turn
+        val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 10_000)
+        val player2 = Player(id = "p2", name = "Bob", hasEnteredGame = true, totalScore = 500, hasPlayedFinalRound = true)
+        var game = Game(
+            id = "game1",
+            players = listOf(player1, player2),
+            targetScore = 10_000,
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.ENDED,
+            triggeringPlayerId = "p1",
+            createdAt = 0L,
+            turnHistory = listOf(
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 1,
+                    playerId = "p1",
+                    points = 10_000,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 0
+                ),
+                com.julian.dixmille.domain.model.TurnRecord(
+                    roundNumber = 1,
+                    playerId = "p2",
+                    points = 200,
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = 300
+                )
+            ),
+            roundNumber = 1
+        )
+        val currentPlayer = game.players[0].startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert
+        val updatedGame = repository.getCurrentGame().getOrThrow()
+        assertEquals(GamePhase.FINAL_ROUND, updatedGame.gamePhase)
+    }
 }
