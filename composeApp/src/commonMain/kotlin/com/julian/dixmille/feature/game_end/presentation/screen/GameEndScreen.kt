@@ -95,6 +95,11 @@ fun GameEndEntryPoint(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // Reload rankings each time the screen is displayed (handles ViewModel reuse across games)
+    LaunchedEffect(Unit) {
+        viewModel.loadFinalRankings()
+    }
+
     // Handle navigation events
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->

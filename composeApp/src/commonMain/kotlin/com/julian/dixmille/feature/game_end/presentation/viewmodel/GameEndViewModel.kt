@@ -50,8 +50,9 @@ class GameEndViewModel(
 
     /**
      * Loads final rankings from the current game.
+     * Called on init and each time the screen is displayed to ensure fresh data.
      */
-    private fun loadFinalRankings() {
+    fun loadFinalRankings() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
