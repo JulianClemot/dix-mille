@@ -19,6 +19,7 @@ class GameCollisionTest {
     private lateinit var commitTurnUseCase: CommitTurnUseCase
     private lateinit var undoLastTurnUseCase: UndoLastTurnUseCase
     private lateinit var skipTurnUseCase: SkipTurnUseCase
+    private lateinit var bustTurnUseCase: BustTurnUseCase
 
     @BeforeTest
     fun setup() {
@@ -26,6 +27,7 @@ class GameCollisionTest {
         commitTurnUseCase = CommitTurnUseCase(repository)
         undoLastTurnUseCase = UndoLastTurnUseCase(repository)
         skipTurnUseCase = SkipTurnUseCase(repository)
+        bustTurnUseCase = BustTurnUseCase(repository)
     }
 
     @Test
@@ -387,6 +389,64 @@ class GameCollisionTest {
         val finalGame = repository.getCurrentGame().getOrThrow()
         assertEquals(0, finalGame.players[0].totalScore)
         assertTrue(finalGame.players[0].hasEnteredGame) // Still entered
+    }
+
+    @Test
+    fun should_notTriggerCollision_when_bustPenaltyRevertsToMatchingScore() = runTest {
+        // Arrange: Bob has 500 points; Alice has 1000 points with 2 consecutive busts
+        // Alice's last SCORED turn had previousScore=500, so the three-bust penalty reverts her to 500
+        val alice = Player(
+            id = "p1",
+            name = "Alice",
+            totalScore = 1000,
+            hasEnteredGame = true,
+            consecutiveBusts = 2
+        )
+        val bob = Player(
+            id = "p2",
+            name = "Bob",
+            totalScore = 500,
+            hasEnteredGame = true
+        )
+        // Record Alice's last SCORED turn with previousScore=500 so the penalty reverts to 500
+        val aliceScoredRecord = TurnRecord(
+            roundNumber = 1,
+            playerId = "p1",
+            points = 500,
+            outcome = TurnOutcome.SCORED,
+            previousScore = 500
+        )
+        var game = Game(
+            id = "game1",
+            players = listOf(alice, bob),
+            targetScore = 10_000,
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.IN_PROGRESS,
+            createdAt = 0L,
+            turnHistory = listOf(aliceScoredRecord),
+            roundNumber = 1
+        )
+
+        // Start Alice's turn
+        var aliceWithTurn = alice.startTurn(UuidGenerator.generate())
+        game = game.updateCurrentPlayer(aliceWithTurn)
+        repository.saveGame(game)
+
+        // Act: Alice busts (3rd consecutive bust — penalty reverts score to 500)
+        bustTurnUseCase()
+
+        // Assert
+        val finalGame = repository.getCurrentGame().getOrThrow()
+
+        // Alice's score should have been reverted to 500 (bust penalty)
+        assertEquals(500, finalGame.players[0].totalScore)
+
+        // Bob's score must remain 500 — no collision should have been triggered
+        assertEquals(500, finalGame.players[1].totalScore)
+
+        // No COLLISION record should exist — bust penalty is not a SCORED turn
+        val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
+        assertEquals(0, collisionRecords.size)
     }
 
     private fun createGameWithThreePlayers(): Game {
