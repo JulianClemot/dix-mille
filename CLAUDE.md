@@ -12,25 +12,19 @@ DixMille is a Kotlin Multiplatform Mobile (KMM) score sheet app for the French d
 ## Build Commands
 
 ```bash
-# Android
-./gradlew :composeApp:assembleDebug
-./gradlew :composeApp:installDebug
+# Android (entry point is now :androidApp)
+./gradlew :androidApp:assembleDebug
+./gradlew :androidApp:installDebug
 
-# iOS
+# iOS (framework still comes from :composeApp shared library)
 ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64
 open iosApp/iosApp.xcodeproj
 
 # All tests
 ./gradlew :composeApp:allTests
 
-# Common tests only
-./gradlew :composeApp:commonTest
-
-# Single test class
-./gradlew :composeApp:commonTest --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest"
-
-# Single test method
-./gradlew :composeApp:commonTest --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest.someMethod"
+# Single test class (use iosSimulatorArm64Test or allTests)
+./gradlew :composeApp:allTests --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest"
 
 # Full build (all targets)
 ./gradlew build
