@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -235,7 +237,10 @@ fun ScoreSheetContent(
         state.currentPlayer?.let { currentPlayer ->
             if (!currentPlayer.hasEnteredGame && state.currentTurnTotal > 0 && state.currentTurnTotal < 500) {
                 Text(
-                    text = stringResource(Res.string.score_sheet_entry_warning, 500 - state.currentTurnTotal),
+                    text = stringResource(
+                        Res.string.score_sheet_entry_warning,
+                        500 - state.currentTurnTotal
+                    ),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
@@ -303,6 +308,9 @@ fun ScoreSheetContent(
                         text = stringResource(Res.string.score_sheet_undo_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
                         color = if (state.canUndoTurn) {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         } else {
@@ -330,6 +338,9 @@ fun ScoreSheetContent(
                         text = stringResource(Res.string.score_sheet_skip_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -354,6 +365,9 @@ fun ScoreSheetContent(
                         text = stringResource(Res.string.score_sheet_bust_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
