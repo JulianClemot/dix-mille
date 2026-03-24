@@ -1,5 +1,5 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -56,6 +56,11 @@ kotlin {
     }
 }
 
+val keystoreProperties = Properties().also { props ->
+    val file = rootProject.file("buildsystem/keystore.properties")
+    if (file.exists()) props.load(file.inputStream())
+}
+
 android {
     namespace = "com.julian.dixmille"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -72,9 +77,22 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        create("release") {
+            storeFile = (keystoreProperties["STORE_FILE"] as String?)?.let { file(it) }
+            storePassword = keystoreProperties["STORE_PASSWORD"] as String?
+            keyAlias = keystoreProperties["KEY_ALIAS"] as String?
+            keyPassword = keystoreProperties["KEY_PASSWORD"] as String?
+        }
+    }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
