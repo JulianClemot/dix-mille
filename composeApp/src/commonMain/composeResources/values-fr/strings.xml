@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen -->
+    <string name="home_title">DIX MILLE</string>
+    <string name="home_subtitle">COMPTEUR DE POINTS</string>
+    <string name="home_game_in_progress">PARTIE EN COURS</string>
+    <string name="home_resume_game_button">REPRENDRE</string>
+    <string name="home_new_game_button">NOUVELLE PARTIE</string>
+    <string name="home_new_game_warning">Démarrer une nouvelle partie remplacera la partie en cours</string>
+
+    <!-- Game setup screen -->
+    <string name="game_setup_title">NOUVELLE PARTIE</string>
+    <string name="game_setup_players_header">JOUEURS</string>
+    <string name="game_setup_player_label">Joueur %1$d</string>
+    <string name="game_setup_add_player_button">AJOUTER UN JOUEUR</string>
+    <string name="game_setup_target_score_header">SCORE CIBLE</string>
+    <string name="game_setup_target_score_label">Score cible</string>
+    <string name="game_setup_start_game_button">DÉMARRER</string>
+
+    <!-- Score sheet screen -->
+    <string name="score_sheet_title">DIX MILLE</string>
+    <string name="score_sheet_round">MANCHE %1$d</string>
+    <string name="score_sheet_final_round_banner">DERNIÈRE MANCHE - Dernière chance pour tous !</string>
+    <string name="score_sheet_entry_warning">Il manque %1$d points pour entrer</string>
+    <string name="score_sheet_undo_button">ANNULER</string>
+    <string name="score_sheet_skip_button">PASSER</string>
+    <string name="score_sheet_bust_button">PERDU</string>
+
+    <!-- Score sheet components -->
+    <string name="score_sheet_current_turn_badge">TOUR</string>
+    <string name="custom_score_input_placeholder">Score personnalisé</string>
+    <string name="custom_score_input_error_invalid">Nombre invalide</string>
+    <string name="custom_score_input_error_positive">Doit être positif</string>
+    <string name="custom_score_input_error_multiple">Doit être un multiple de 50</string>
+    <string name="custom_score_input_add_button">AJOUTER</string>
+    <string name="turn_summary_title">Tour actuel</string>
+    <string name="turn_summary_empty">Aucun score</string>
+    <string name="turn_summary_total">Total du tour</string>
+
+    <!-- Score history table -->
+    <string name="score_history_title">MANCHES RÉCENTES</string>
+    <string name="score_history_target_badge">CIBLE : %1$d</string>
+    <string name="score_history_round_header">M</string>
+    <string name="score_history_bust">PERDU</string>
+    <string name="score_history_skip">PASSE</string>
+    <string name="score_history_hit">MARQUÉ</string>
+    <string name="score_history_total_row">TOTAL</string>
+
+    <!-- Game end screen -->
+    <string name="game_end_winner_text">%1$s GAGNE !</string>
+    <string name="game_end_score_display">%1$d points</string>
+    <string name="game_end_standings_title">CLASSEMENT FINAL</string>
+    <string name="game_end_new_game_button">NOUVELLE PARTIE</string>
+    <string name="game_end_home_button">ACCUEIL</string>
+
+    <!-- Game rules settings screen -->
+    <string name="game_rules_title">RÈGLES DU JEU</string>
+    <string name="game_rules_section_scoring">POINTS</string>
+    <string name="game_rules_target_score_label">Score cible</string>
+    <string name="game_rules_entry_minimum_label">Score minimum d\'entrée</string>
+    <string name="game_rules_section_players">JOUEURS</string>
+    <string name="game_rules_min_players_label">Joueurs minimum</string>
+    <string name="game_rules_max_players_label">Joueurs maximum</string>
+    <string name="game_rules_section_penalties">PÉNALITÉS</string>
+    <string name="game_rules_bust_penalty_label">Pénalité de perdu</string>
+    <string name="game_rules_bust_penalty_description">Annuler le score après des perdus consécutifs</string>
+    <string name="game_rules_consecutive_busts_label">Perdus consécutifs pour pénalité</string>
+    <string name="game_rules_section_game_flow">DÉROULEMENT</string>
+    <string name="game_rules_final_round_label">Dernière manche</string>
+    <string name="game_rules_final_round_description">Les autres joueurs ont un tour supplémentaire quand le score cible est atteint</string>
+    <string name="game_rules_reset_all_button">RÉINITIALISER</string>
+    <string name="game_rules_save_button">ENREGISTRER</string>
+    <string name="game_rules_discard_dialog_title">Abandonner les modifications ?</string>
+    <string name="game_rules_discard_dialog_message">Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir les abandonner ?</string>
+    <string name="game_rules_discard_confirm">Abandonner</string>
+    <string name="game_rules_discard_cancel">Continuer</string>
+    <string name="game_rules_reset_to_default_cd">Réinitialiser à la valeur par défaut</string>
+</resources>

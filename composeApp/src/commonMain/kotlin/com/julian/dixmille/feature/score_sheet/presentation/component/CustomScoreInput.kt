@@ -25,6 +25,13 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.custom_score_input_add_button
+import dixmille.composeapp.generated.resources.custom_score_input_error_invalid
+import dixmille.composeapp.generated.resources.custom_score_input_error_multiple
+import dixmille.composeapp.generated.resources.custom_score_input_error_positive
+import dixmille.composeapp.generated.resources.custom_score_input_placeholder
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Compact custom score input styled to match the dark theme preset buttons.
@@ -37,12 +44,16 @@ fun CustomScoreInput(
     var text by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
+    val errorInvalid = stringResource(Res.string.custom_score_input_error_invalid)
+    val errorPositive = stringResource(Res.string.custom_score_input_error_positive)
+    val errorMultiple = stringResource(Res.string.custom_score_input_error_multiple)
+
     fun submit() {
         val score = text.toIntOrNull()
         when {
-            score == null -> error = "Invalid number"
-            score <= 0 -> error = "Must be positive"
-            score % 50 != 0 -> error = "Must be a multiple of 50"
+            score == null -> error = errorInvalid
+            score <= 0 -> error = errorPositive
+            score % 50 != 0 -> error = errorMultiple
             else -> {
                 onScoreSubmit(score)
                 text = ""
@@ -70,7 +81,7 @@ fun CustomScoreInput(
                 .height(48.dp),
             placeholder = {
                 Text(
-                    text = "Custom score",
+                    text = stringResource(Res.string.custom_score_input_placeholder),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -114,7 +125,7 @@ fun CustomScoreInput(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Text(
-                text = "ADD",
+                text = stringResource(Res.string.custom_score_input_add_button),
                 style = MaterialTheme.typography.labelMedium,
                 color = if (text.isNotBlank()) {
                     MaterialTheme.colorScheme.onSurface

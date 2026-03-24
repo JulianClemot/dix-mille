@@ -49,10 +49,18 @@ import com.julian.dixmille.feature.score_sheet.presentation.viewmodel.ScoreSheet
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.arrow_back
 import dixmille.composeapp.generated.resources.bomb
+import dixmille.composeapp.generated.resources.score_sheet_bust_button
+import dixmille.composeapp.generated.resources.score_sheet_entry_warning
+import dixmille.composeapp.generated.resources.score_sheet_final_round_banner
+import dixmille.composeapp.generated.resources.score_sheet_round
+import dixmille.composeapp.generated.resources.score_sheet_skip_button
+import dixmille.composeapp.generated.resources.score_sheet_title
+import dixmille.composeapp.generated.resources.score_sheet_undo_button
 import dixmille.composeapp.generated.resources.skip_next
 import dixmille.composeapp.generated.resources.undo
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -165,14 +173,14 @@ fun ScoreSheetContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "DIX MILLE",
+                        text = stringResource(Res.string.score_sheet_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
                         letterSpacing = 2.sp
                     )
                     Text(
-                        text = "ROUND ${game.roundNumber}",
+                        text = stringResource(Res.string.score_sheet_round, game.roundNumber),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -198,7 +206,7 @@ fun ScoreSheetContent(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = "FINAL ROUND - Last chance for all players!",
+                    text = stringResource(Res.string.score_sheet_final_round_banner),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error,
@@ -227,7 +235,7 @@ fun ScoreSheetContent(
         state.currentPlayer?.let { currentPlayer ->
             if (!currentPlayer.hasEnteredGame && state.currentTurnTotal > 0 && state.currentTurnTotal < 500) {
                 Text(
-                    text = "Need ${500 - state.currentTurnTotal} more points to enter",
+                    text = stringResource(Res.string.score_sheet_entry_warning, 500 - state.currentTurnTotal),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
@@ -292,7 +300,7 @@ fun ScoreSheetContent(
                     Icon(painter = painterResource(Res.drawable.undo), contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "UNDO",
+                        text = stringResource(Res.string.score_sheet_undo_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
                         color = if (state.canUndoTurn) {
@@ -319,7 +327,7 @@ fun ScoreSheetContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "SKIP",
+                        text = stringResource(Res.string.score_sheet_skip_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -343,7 +351,7 @@ fun ScoreSheetContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "BUST",
+                        text = stringResource(Res.string.score_sheet_bust_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.error

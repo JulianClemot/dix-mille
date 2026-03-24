@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen -->
+    <string name="home_title">TEN THOUSAND</string>
+    <string name="home_subtitle">SCORE KEEPER</string>
+    <string name="home_game_in_progress">GAME IN PROGRESS</string>
+    <string name="home_resume_game_button">RESUME GAME</string>
+    <string name="home_new_game_button">NEW GAME</string>
+    <string name="home_new_game_warning">Starting a new game will replace the current one</string>
+
+    <!-- Game setup screen -->
+    <string name="game_setup_title">NEW GAME</string>
+    <string name="game_setup_players_header">PLAYERS</string>
+    <string name="game_setup_player_label">Player %1$d</string>
+    <string name="game_setup_add_player_button">ADD PLAYER</string>
+    <string name="game_setup_target_score_header">TARGET SCORE</string>
+    <string name="game_setup_target_score_label">Target Score</string>
+    <string name="game_setup_start_game_button">START GAME</string>
+
+    <!-- Score sheet screen -->
+    <string name="score_sheet_title">TEN THOUSAND</string>
+    <string name="score_sheet_round">ROUND %1$d</string>
+    <string name="score_sheet_final_round_banner">FINAL ROUND - Last chance for all players!</string>
+    <string name="score_sheet_entry_warning">Need %1$d more points to enter</string>
+    <string name="score_sheet_undo_button">UNDO</string>
+    <string name="score_sheet_skip_button">SKIP</string>
+    <string name="score_sheet_bust_button">BUST</string>
+
+    <!-- Score sheet components -->
+    <string name="score_sheet_current_turn_badge">TURN</string>
+    <string name="custom_score_input_placeholder">Custom score</string>
+    <string name="custom_score_input_error_invalid">Invalid number</string>
+    <string name="custom_score_input_error_positive">Must be positive</string>
+    <string name="custom_score_input_error_multiple">Must be a multiple of 50</string>
+    <string name="custom_score_input_add_button">ADD</string>
+    <string name="turn_summary_title">Current Turn</string>
+    <string name="turn_summary_empty">No scores yet</string>
+    <string name="turn_summary_total">Turn Total</string>
+
+    <!-- Score history table -->
+    <string name="score_history_title">RECENT ROUNDS</string>
+    <string name="score_history_target_badge">TARGET: %1$d</string>
+    <string name="score_history_round_header">RD</string>
+    <string name="score_history_bust">BUST</string>
+    <string name="score_history_skip">SKIP</string>
+    <string name="score_history_hit">HIT</string>
+    <string name="score_history_total_row">TOTAL</string>
+
+    <!-- Game end screen -->
+    <string name="game_end_winner_text">%1$s WINS!</string>
+    <string name="game_end_score_display">%1$d points</string>
+    <string name="game_end_standings_title">FINAL STANDINGS</string>
+    <string name="game_end_new_game_button">NEW GAME</string>
+    <string name="game_end_home_button">HOME</string>
+
+    <!-- Game rules settings screen -->
+    <string name="game_rules_title">GAME RULES</string>
+    <string name="game_rules_section_scoring">SCORING</string>
+    <string name="game_rules_target_score_label">Target Score</string>
+    <string name="game_rules_entry_minimum_label">Entry Minimum Score</string>
+    <string name="game_rules_section_players">PLAYERS</string>
+    <string name="game_rules_min_players_label">Min Players</string>
+    <string name="game_rules_max_players_label">Max Players</string>
+    <string name="game_rules_section_penalties">PENALTIES</string>
+    <string name="game_rules_bust_penalty_label">Bust Penalty</string>
+    <string name="game_rules_bust_penalty_description">Revert score after consecutive busts</string>
+    <string name="game_rules_consecutive_busts_label">Consecutive Busts for Penalty</string>
+    <string name="game_rules_section_game_flow">GAME FLOW</string>
+    <string name="game_rules_final_round_label">Final Round</string>
+    <string name="game_rules_final_round_description">Other players get one more turn after target is reached</string>
+    <string name="game_rules_reset_all_button">RESET ALL TO DEFAULTS</string>
+    <string name="game_rules_save_button">SAVE</string>
+    <string name="game_rules_discard_dialog_title">Discard changes?</string>
+    <string name="game_rules_discard_dialog_message">You have unsaved changes. Are you sure you want to discard them?</string>
+    <string name="game_rules_discard_confirm">Discard</string>
+    <string name="game_rules_discard_cancel">Keep Editing</string>
+    <string name="game_rules_reset_to_default_cd">Reset to default</string>
+</resources>

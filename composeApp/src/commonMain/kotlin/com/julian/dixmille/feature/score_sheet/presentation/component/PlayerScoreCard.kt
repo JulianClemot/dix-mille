@@ -20,6 +20,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.julian.dixmille.core.domain.model.Player
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.score_sheet_current_turn_badge
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Compact player score card for the score sheet header.
@@ -88,7 +91,7 @@ fun PlayerScoreCard(
                 color = MaterialTheme.colorScheme.secondary
             ) {
                 Text(
-                    text = "TURN",
+                    text = stringResource(Res.string.score_sheet_current_turn_badge),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                     fontWeight = FontWeight.Bold,

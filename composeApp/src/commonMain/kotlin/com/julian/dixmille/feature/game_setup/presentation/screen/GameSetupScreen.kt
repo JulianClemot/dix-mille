@@ -53,11 +53,19 @@ import com.julian.dixmille.feature.game_setup.presentation.viewmodel.GameSetupVi
 import com.julian.dixmille.feature.score_sheet.presentation.screen.ScoreSheetRoute
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.arrow_back
+import dixmille.composeapp.generated.resources.game_setup_add_player_button
+import dixmille.composeapp.generated.resources.game_setup_player_label
+import dixmille.composeapp.generated.resources.game_setup_players_header
+import dixmille.composeapp.generated.resources.game_setup_start_game_button
+import dixmille.composeapp.generated.resources.game_setup_target_score_header
+import dixmille.composeapp.generated.resources.game_setup_target_score_label
+import dixmille.composeapp.generated.resources.game_setup_title
 import dixmille.composeapp.generated.resources.person_add
 import dixmille.composeapp.generated.resources.play_arrow
 import dixmille.composeapp.generated.resources.settings
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -162,7 +170,7 @@ fun GameSetupContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "NEW GAME",
+                        text = stringResource(Res.string.game_setup_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -192,7 +200,7 @@ fun GameSetupContent(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "PLAYERS",
+                    text = stringResource(Res.string.game_setup_players_header),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -231,7 +239,7 @@ fun GameSetupContent(
                                 focusManager.clearFocus()
                             }
                         ),
-                        label = { Text("Player ${index + 1}") },
+                        label = { Text(stringResource(Res.string.game_setup_player_label, index + 1)) },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         colors = textFieldColors
@@ -264,7 +272,7 @@ fun GameSetupContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "ADD PLAYER",
+                        text = stringResource(Res.string.game_setup_add_player_button),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 0.5.sp
@@ -278,7 +286,7 @@ fun GameSetupContent(
 
             // Target Score section header
             Text(
-                text = "TARGET SCORE",
+                text = stringResource(Res.string.game_setup_target_score_header),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -288,7 +296,7 @@ fun GameSetupContent(
             OutlinedTextField(
                 value = state.targetScore,
                 onValueChange = { onEvent(GameSetupEvent.UpdateTargetScore(it)) },
-                label = { Text("Target Score") },
+                label = { Text(stringResource(Res.string.game_setup_target_score_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 colors = textFieldColors
@@ -325,7 +333,7 @@ fun GameSetupContent(
                     Icon(painter = painterResource(Res.drawable.play_arrow), contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "START GAME",
+                        text = stringResource(Res.string.game_setup_start_game_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp

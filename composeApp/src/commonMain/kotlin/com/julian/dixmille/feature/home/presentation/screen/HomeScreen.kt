@@ -41,8 +41,15 @@ import com.julian.dixmille.feature.score_sheet.presentation.screen.ScoreSheetRou
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.add_diamond
 import dixmille.composeapp.generated.resources.casino
+import dixmille.composeapp.generated.resources.home_game_in_progress
+import dixmille.composeapp.generated.resources.home_new_game_button
+import dixmille.composeapp.generated.resources.home_new_game_warning
+import dixmille.composeapp.generated.resources.home_resume_game_button
+import dixmille.composeapp.generated.resources.home_subtitle
+import dixmille.composeapp.generated.resources.home_title
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -115,7 +122,7 @@ fun HomeContent(
     ) {
         // App title
         Text(
-            text = "DIX MILLE",
+            text = stringResource(Res.string.home_title),
             style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -127,7 +134,7 @@ fun HomeContent(
 
         // Subtitle
         Text(
-            text = "SCORE KEEPER",
+            text = stringResource(Res.string.home_subtitle),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.primary,
@@ -154,7 +161,7 @@ fun HomeContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "GAME IN PROGRESS",
+                        text = stringResource(Res.string.home_game_in_progress),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -186,7 +193,7 @@ fun HomeContent(
                 Icon(painter = painterResource(Res.drawable.casino), contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "RESUME GAME",
+                    text = stringResource(Res.string.home_resume_game_button),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -209,7 +216,7 @@ fun HomeContent(
                 Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "NEW GAME",
+                    text = stringResource(Res.string.home_new_game_button),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -230,7 +237,7 @@ fun HomeContent(
                 Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "NEW GAME",
+                    text = stringResource(Res.string.home_new_game_button),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -241,7 +248,7 @@ fun HomeContent(
         if (state.hasExistingGame) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Starting a new game will replace the current one",
+                text = stringResource(Res.string.home_new_game_warning),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

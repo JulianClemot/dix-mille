@@ -46,9 +46,31 @@ import com.julian.dixmille.feature.game_rules.presentation.model.GameRulesSettin
 import com.julian.dixmille.feature.game_rules.presentation.viewmodel.GameRulesSettingsViewModel
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.arrow_back
+import dixmille.composeapp.generated.resources.game_rules_bust_penalty_description
+import dixmille.composeapp.generated.resources.game_rules_bust_penalty_label
+import dixmille.composeapp.generated.resources.game_rules_consecutive_busts_label
+import dixmille.composeapp.generated.resources.game_rules_discard_cancel
+import dixmille.composeapp.generated.resources.game_rules_discard_confirm
+import dixmille.composeapp.generated.resources.game_rules_discard_dialog_message
+import dixmille.composeapp.generated.resources.game_rules_discard_dialog_title
+import dixmille.composeapp.generated.resources.game_rules_entry_minimum_label
+import dixmille.composeapp.generated.resources.game_rules_final_round_description
+import dixmille.composeapp.generated.resources.game_rules_final_round_label
+import dixmille.composeapp.generated.resources.game_rules_max_players_label
+import dixmille.composeapp.generated.resources.game_rules_min_players_label
+import dixmille.composeapp.generated.resources.game_rules_reset_all_button
+import dixmille.composeapp.generated.resources.game_rules_reset_to_default_cd
+import dixmille.composeapp.generated.resources.game_rules_save_button
+import dixmille.composeapp.generated.resources.game_rules_section_game_flow
+import dixmille.composeapp.generated.resources.game_rules_section_penalties
+import dixmille.composeapp.generated.resources.game_rules_section_players
+import dixmille.composeapp.generated.resources.game_rules_section_scoring
+import dixmille.composeapp.generated.resources.game_rules_target_score_label
+import dixmille.composeapp.generated.resources.game_rules_title
 import dixmille.composeapp.generated.resources.restart_alt
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Serializable
@@ -92,20 +114,25 @@ fun GameRulesSettingsContent(
         unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
+    val discardDialogTitle = stringResource(Res.string.game_rules_discard_dialog_title)
+    val discardDialogMessage = stringResource(Res.string.game_rules_discard_dialog_message)
+    val discardConfirmLabel = stringResource(Res.string.game_rules_discard_confirm)
+    val discardCancelLabel = stringResource(Res.string.game_rules_discard_cancel)
+
     // Discard dialog
     if (state.showDiscardDialog) {
         AlertDialog(
             onDismissRequest = { onEvent(GameRulesSettingsEvent.DismissDiscardDialog) },
-            title = { Text("Discard changes?") },
-            text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
+            title = { Text(discardDialogTitle) },
+            text = { Text(discardDialogMessage) },
             confirmButton = {
                 TextButton(onClick = { onEvent(GameRulesSettingsEvent.ConfirmDiscard) }) {
-                    Text("Discard")
+                    Text(discardConfirmLabel)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { onEvent(GameRulesSettingsEvent.DismissDiscardDialog) }) {
-                    Text("Keep Editing")
+                    Text(discardCancelLabel)
                 }
             }
         )
@@ -138,7 +165,7 @@ fun GameRulesSettingsContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "GAME RULES",
+                        text = stringResource(Res.string.game_rules_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -162,10 +189,10 @@ fun GameRulesSettingsContent(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Scoring section
-            SectionHeader("SCORING")
+            SectionHeader(stringResource(Res.string.game_rules_section_scoring))
 
             NumericRuleField(
-                label = "Target Score",
+                label = stringResource(Res.string.game_rules_target_score_label),
                 value = state.targetScore,
                 defaultValue = GameRules.DEFAULT_TARGET_SCORE.toString(),
                 onValueChange = { onEvent(GameRulesSettingsEvent.UpdateTargetScore(it)) },
@@ -174,7 +201,7 @@ fun GameRulesSettingsContent(
             )
 
             NumericRuleField(
-                label = "Entry Minimum Score",
+                label = stringResource(Res.string.game_rules_entry_minimum_label),
                 value = state.entryMinimumScore,
                 defaultValue = GameRules.DEFAULT_ENTRY_MINIMUM_SCORE.toString(),
                 onValueChange = { onEvent(GameRulesSettingsEvent.UpdateEntryMinimumScore(it)) },
@@ -185,10 +212,10 @@ fun GameRulesSettingsContent(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             // Players section
-            SectionHeader("PLAYERS")
+            SectionHeader(stringResource(Res.string.game_rules_section_players))
 
             NumericRuleField(
-                label = "Min Players",
+                label = stringResource(Res.string.game_rules_min_players_label),
                 value = state.minPlayers,
                 defaultValue = GameRules.DEFAULT_MIN_PLAYERS.toString(),
                 onValueChange = { onEvent(GameRulesSettingsEvent.UpdateMinPlayers(it)) },
@@ -197,7 +224,7 @@ fun GameRulesSettingsContent(
             )
 
             NumericRuleField(
-                label = "Max Players",
+                label = stringResource(Res.string.game_rules_max_players_label),
                 value = state.maxPlayers,
                 defaultValue = GameRules.DEFAULT_MAX_PLAYERS.toString(),
                 onValueChange = { onEvent(GameRulesSettingsEvent.UpdateMaxPlayers(it)) },
@@ -208,18 +235,18 @@ fun GameRulesSettingsContent(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             // Penalties section
-            SectionHeader("PENALTIES")
+            SectionHeader(stringResource(Res.string.game_rules_section_penalties))
 
             BooleanRuleField(
-                label = "Bust Penalty",
-                description = "Revert score after consecutive busts",
+                label = stringResource(Res.string.game_rules_bust_penalty_label),
+                description = stringResource(Res.string.game_rules_bust_penalty_description),
                 checked = state.enableBustPenalty,
                 onCheckedChange = { onEvent(GameRulesSettingsEvent.UpdateEnableBustPenalty(it)) }
             )
 
             if (state.enableBustPenalty) {
                 NumericRuleField(
-                    label = "Consecutive Busts for Penalty",
+                    label = stringResource(Res.string.game_rules_consecutive_busts_label),
                     value = state.consecutiveBustsForPenalty,
                     defaultValue = GameRules.DEFAULT_CONSECUTIVE_BUSTS_FOR_PENALTY.toString(),
                     onValueChange = { onEvent(GameRulesSettingsEvent.UpdateConsecutiveBustsForPenalty(it)) },
@@ -231,11 +258,11 @@ fun GameRulesSettingsContent(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             // Game flow section
-            SectionHeader("GAME FLOW")
+            SectionHeader(stringResource(Res.string.game_rules_section_game_flow))
 
             BooleanRuleField(
-                label = "Final Round",
-                description = "Other players get one more turn after target is reached",
+                label = stringResource(Res.string.game_rules_final_round_label),
+                description = stringResource(Res.string.game_rules_final_round_description),
                 checked = state.enableFinalRound,
                 onCheckedChange = { onEvent(GameRulesSettingsEvent.UpdateEnableFinalRound(it)) }
             )
@@ -253,7 +280,7 @@ fun GameRulesSettingsContent(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("RESET ALL TO DEFAULTS")
+                Text(stringResource(Res.string.game_rules_reset_all_button))
             }
 
             // Error
@@ -279,7 +306,7 @@ fun GameRulesSettingsContent(
                 )
             ) {
                 Text(
-                    text = "SAVE",
+                    text = stringResource(Res.string.game_rules_save_button),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
@@ -331,7 +358,7 @@ private fun NumericRuleField(
             IconButton(onClick = onReset) {
                 Icon(
                     painter = painterResource(Res.drawable.restart_alt),
-                    contentDescription = "Reset to default",
+                    contentDescription = stringResource(Res.string.game_rules_reset_to_default_cd),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

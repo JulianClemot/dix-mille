@@ -25,6 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.score_history_bust
+import dixmille.composeapp.generated.resources.score_history_hit
+import dixmille.composeapp.generated.resources.score_history_round_header
+import dixmille.composeapp.generated.resources.score_history_skip
+import dixmille.composeapp.generated.resources.score_history_target_badge
+import dixmille.composeapp.generated.resources.score_history_title
+import dixmille.composeapp.generated.resources.score_history_total_row
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * RECENT ROUNDS card displaying score history in a table layout.
@@ -58,7 +67,7 @@ fun ScoreHistoryTable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "RECENT ROUNDS",
+                text = stringResource(Res.string.score_history_title),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
@@ -74,7 +83,7 @@ fun ScoreHistoryTable(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "TARGET: ${game.targetScore}",
+                    text = stringResource(Res.string.score_history_target_badge, game.targetScore),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -90,7 +99,7 @@ fun ScoreHistoryTable(
                 .padding(horizontal = 12.dp, vertical = 4.dp)
         ) {
             Text(
-                text = "RD",
+                text = stringResource(Res.string.score_history_round_header),
                 modifier = Modifier.width(32.dp),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
@@ -162,7 +171,7 @@ fun ScoreHistoryTable(
                                 }
                                 playerTurn.outcome == TurnOutcome.BUST -> {
                                     Text(
-                                        text = "BUST",
+                                        text = stringResource(Res.string.score_history_bust),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.error,
                                         fontWeight = FontWeight.Bold,
@@ -171,7 +180,7 @@ fun ScoreHistoryTable(
                                 }
                                 playerTurn.outcome == TurnOutcome.SKIP -> {
                                     Text(
-                                        text = "SKIP",
+                                        text = stringResource(Res.string.score_history_skip),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontWeight = FontWeight.Medium,
@@ -180,7 +189,7 @@ fun ScoreHistoryTable(
                                 }
                                 playerTurn.outcome == TurnOutcome.COLLISION -> {
                                     Text(
-                                        text = "HIT",
+                                        text = stringResource(Res.string.score_history_hit),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.error,
                                         fontWeight = FontWeight.Bold,
@@ -226,7 +235,7 @@ fun ScoreHistoryTable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "TOTAL",
+                text = stringResource(Res.string.score_history_total_row),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,

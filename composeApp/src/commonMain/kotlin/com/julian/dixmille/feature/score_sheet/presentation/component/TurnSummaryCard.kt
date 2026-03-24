@@ -17,6 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.julian.dixmille.core.domain.model.ScoreEntry
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.turn_summary_empty
+import dixmille.composeapp.generated.resources.turn_summary_title
+import dixmille.composeapp.generated.resources.turn_summary_total
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Card displaying the current turn's score entries and total.
@@ -42,7 +47,7 @@ fun TurnSummaryCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Current Turn",
+                text = stringResource(Res.string.turn_summary_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -51,7 +56,7 @@ fun TurnSummaryCard(
 
             if (entries.isEmpty()) {
                 Text(
-                    text = "No scores yet",
+                    text = stringResource(Res.string.turn_summary_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -97,7 +102,7 @@ fun TurnSummaryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Turn Total",
+                    text = stringResource(Res.string.turn_summary_total),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

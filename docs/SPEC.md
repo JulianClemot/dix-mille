@@ -921,6 +921,232 @@ Feature: Configurable Game Rules
 
 ---
 
+### Feature: Internationalization (English / French)
+
+```gherkin
+Feature: Internationalization (English / French)
+  As a player
+  I want the app to display in my language (French or English)
+  So that I can understand all labels, messages, and game terms without translation effort
+
+  # --- Locale Detection ---
+
+  Scenario: App displays in French when device locale is French
+    Given the device locale is "fr"
+    When the app launches
+    Then all visible strings are displayed in French
+
+  Scenario: App displays in English when device locale is English
+    Given the device locale is "en"
+    When the app launches
+    Then all visible strings are displayed in English
+
+  Scenario: App falls back to English for unsupported locales
+    Given the device locale is "de"
+    When the app launches
+    Then all visible strings are displayed in English
+
+  Scenario: App uses language from locale even with regional variant
+    Given the device locale is "fr-CA"
+    When the app launches
+    Then all visible strings are displayed in French
+
+  Scenario: App falls back to English for English regional variants
+    Given the device locale is "en-GB"
+    When the app launches
+    Then all visible strings are displayed in English
+
+  # --- App Title Translation ---
+
+  Scenario: App title is "Ten Thousand" in English
+    Given the device locale is "en"
+    When the app displays the title
+    Then the title reads "Ten Thousand"
+
+  Scenario: App title is "Dix Mille" in French
+    Given the device locale is "fr"
+    When the app displays the title
+    Then the title reads "Dix Mille"
+
+  # --- Game Term Translation ---
+
+  Scenario: Game terms are translated to French
+    Given the device locale is "fr"
+    When the app displays game action labels
+    Then "Bust" is displayed as "Perdu"
+    And "Skip" is displayed as "Passer"
+    And "Undo" is displayed as "Annuler"
+    And "New Game" is displayed as "Nouvelle partie"
+
+  Scenario: Game terms are displayed in English
+    Given the device locale is "en"
+    When the app displays game action labels
+    Then "Bust" is displayed as "Bust"
+    And "Skip" is displayed as "Skip"
+    And "Undo" is displayed as "Undo"
+    And "New Game" is displayed as "New Game"
+
+  # --- Screen Titles and Labels ---
+
+  Scenario: Home screen labels are translated
+    Given the device locale is "fr"
+    When the Home screen is displayed
+    Then the "Continue Game" button reads "Reprendre la partie"
+    And the "New Game" button reads "Nouvelle partie"
+
+  Scenario: Game setup screen labels are translated
+    Given the device locale is "fr"
+    When the Game Setup screen is displayed
+    Then the "Add Player" label reads "Ajouter un joueur"
+    And the "Target Score" label reads "Score cible"
+    And the "Start Game" button reads "Commencer la partie"
+
+  Scenario: Score sheet screen labels are translated
+    Given the device locale is "fr"
+    When the Score Sheet screen is displayed
+    Then the "Round" label reads "Manche"
+    And the "Custom Score" label reads "Score personnalisé"
+
+  Scenario: Game end screen labels are translated
+    Given the device locale is "fr"
+    When the Game End screen is displayed
+    Then the winner announcement uses French phrasing
+    And the "New Game" button reads "Nouvelle partie"
+
+  # --- Number Formatting ---
+
+  Scenario: Scores use French number formatting
+    Given the device locale is "fr"
+    And a player has a total score of 10000
+    When the score is displayed
+    Then it is formatted as "10 000"
+
+  Scenario: Scores use English number formatting
+    Given the device locale is "en"
+    And a player has a total score of 10000
+    When the score is displayed
+    Then it is formatted as "10,000"
+
+  Scenario: Target score uses locale-specific formatting
+    Given the device locale is "fr"
+    And the target score is 10000
+    When the target score is displayed
+    Then it is formatted as "10 000"
+
+  Scenario: Small scores below 1000 display without separators
+    Given the device locale is "en"
+    And a player has a total score of 500
+    When the score is displayed
+    Then it is formatted as "500"
+
+  # --- Dynamic Strings with Parameters ---
+
+  Scenario: Entry threshold error message includes formatted minimum
+    Given the device locale is "fr"
+    And the entry minimum is 500
+    When a player fails to meet the entry threshold
+    Then the error message includes "500" formatted according to French locale
+
+  Scenario: Final round announcement includes triggering player name
+    Given the device locale is "fr"
+    And Alice triggers the final round
+    When the final round announcement is displayed
+    Then the message includes "Alice" and is phrased in French
+
+  Scenario: Score collision message names the affected player
+    Given the device locale is "en"
+    And Bob's score is reverted due to a collision
+    When the collision notification is displayed
+    Then the message includes "Bob" and is phrased in English
+
+  Scenario: Three-bust penalty message includes reverted score
+    Given the device locale is "fr"
+    And Alice's score reverts to 500 due to the three-bust penalty
+    When the penalty notification is displayed
+    Then the message includes "500" formatted as French locale
+    And the message is phrased in French
+
+  # --- Preset Score Labels ---
+
+  Scenario: Preset score labels are translated to French
+    Given the device locale is "fr"
+    When the preset score buttons are displayed
+    Then "One 5" is displayed as "Un 5"
+    And "One 1" is displayed as "Un 1"
+    And "Three 1s" is displayed as "Trois 1"
+
+  Scenario: Preset score labels are displayed in English
+    Given the device locale is "en"
+    When the preset score buttons are displayed
+    Then "One 5" is displayed as "One 5"
+    And "One 1" is displayed as "One 1"
+    And "Three 1s" is displayed as "Three 1s"
+
+  # --- Error Messages ---
+
+  Scenario: Validation error messages are translated to French
+    Given the device locale is "fr"
+    When a GameAlreadyEnded error occurs
+    Then the error message is displayed in French
+
+  Scenario: Validation error messages are displayed in English
+    Given the device locale is "en"
+    When a GameAlreadyEnded error occurs
+    Then the error message is displayed in English
+
+  Scenario Outline: All validation errors are translated
+    Given the device locale is "<locale>"
+    When a <error_type> error occurs
+    Then the error message is displayed in "<language>"
+
+    Examples:
+      | locale | error_type                 | language |
+      | en     | InvalidScoreValue          | English  |
+      | fr     | InvalidScoreValue          | French   |
+      | en     | InsufficientPointsToEnter  | English  |
+      | fr     | InsufficientPointsToEnter  | French   |
+      | en     | GameAlreadyEnded           | English  |
+      | fr     | GameAlreadyEnded           | French   |
+      | en     | ScoreExceedsTarget         | English  |
+      | fr     | ScoreExceedsTarget         | French   |
+      | en     | MustScoreToCommit          | English  |
+      | fr     | MustScoreToCommit          | French   |
+      | en     | TurnAlreadyBusted          | English  |
+      | fr     | TurnAlreadyBusted          | French   |
+      | en     | NotPlayersTurn             | English  |
+      | fr     | NotPlayersTurn             | French   |
+
+  # --- Game Phase Indicators ---
+
+  Scenario: Game phase labels are translated
+    Given the device locale is "fr"
+    When the game is in FINAL_ROUND phase
+    Then the phase indicator reads "Dernière manche"
+
+  Scenario: Game phase labels are displayed in English
+    Given the device locale is "en"
+    When the game is in FINAL_ROUND phase
+    Then the phase indicator reads "Final Round"
+
+  # --- Turn Outcome Labels in History ---
+
+  Scenario: Turn outcome labels in history are translated to French
+    Given the device locale is "fr"
+    When the score history table is displayed
+    Then BUST outcomes are labeled "Perdu"
+    And SKIP outcomes are labeled "Passé"
+    And COLLISION outcomes are labeled "Collision"
+
+  Scenario: Turn outcome labels in history are displayed in English
+    Given the device locale is "en"
+    When the score history table is displayed
+    Then BUST outcomes are labeled "Bust"
+    And SKIP outcomes are labeled "Skip"
+    And COLLISION outcomes are labeled "Collision"
+```
+
+---
+
 ## Implementation Phases
 
 ### Phase 1: Domain Models ✅
@@ -1002,6 +1228,17 @@ Feature: Configurable Game Rules
 - [ ] Winner name scale-in animation
 - [ ] Final scores ranking
 - [ ] Navigate to `GameEndScreen` on game end
+
+### Phase 12: Internationalization (English / French) 🌍
+- [ ] Locale detection (expect/actual: device locale on Android/iOS)
+- [ ] String resource system with English and French translations
+- [ ] Translate all static labels (screen titles, button labels, game terms)
+- [ ] Translate all dynamic strings with parameter interpolation
+- [ ] Translate preset score labels
+- [ ] Translate validation error messages
+- [ ] Translate game phase indicators and turn outcome labels
+- [ ] Locale-aware number formatting (French: space separator, English: comma separator)
+- [ ] Fallback to English for unsupported locales
 
 ---
 
@@ -1145,7 +1382,7 @@ composeApp/src/commonMain/kotlin/com/julian/dixmille/
 - Game statistics (average score, win rate)
 - Sound effects
 - Export game results
-- Multi-language support
+- ~~Multi-language support~~ (specified in Phase 12)
 - Game replay / review mode
 
 ---

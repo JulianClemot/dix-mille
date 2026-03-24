@@ -64,10 +64,16 @@ import com.julian.dixmille.feature.game_setup.presentation.screen.GameSetupRoute
 import com.julian.dixmille.feature.home.presentation.screen.HomeRoute
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.add_diamond
+import dixmille.composeapp.generated.resources.game_end_home_button
+import dixmille.composeapp.generated.resources.game_end_new_game_button
+import dixmille.composeapp.generated.resources.game_end_score_display
+import dixmille.composeapp.generated.resources.game_end_standings_title
+import dixmille.composeapp.generated.resources.game_end_winner_text
 import dixmille.composeapp.generated.resources.home
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.random.Random
 
@@ -277,7 +283,7 @@ private fun AnimatedWinnerName(
     )
 
     Text(
-        text = "$winnerName WINS!",
+        text = stringResource(Res.string.game_end_winner_text, winnerName),
         style = MaterialTheme.typography.headlineLarge,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary,
@@ -303,7 +309,7 @@ private fun AnimatedScore(
     )
 
     Text(
-        text = "$score points",
+        text = stringResource(Res.string.game_end_score_display, score),
         style = MaterialTheme.typography.titleLarge,
         color = MaterialTheme.colorScheme.secondary,
         fontWeight = FontWeight.Medium,
@@ -324,7 +330,7 @@ private fun FinalRankings(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "FINAL STANDINGS",
+            text = stringResource(Res.string.game_end_standings_title),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -444,7 +450,7 @@ private fun AnimatedButton(
         Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "NEW GAME",
+            text = stringResource(Res.string.game_end_new_game_button),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.5.sp,
@@ -480,7 +486,7 @@ private fun AnimatedOutlinedButton(
         Icon(painter = painterResource(Res.drawable.home), contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "HOME",
+            text = stringResource(Res.string.game_end_home_button),
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.5.sp,
