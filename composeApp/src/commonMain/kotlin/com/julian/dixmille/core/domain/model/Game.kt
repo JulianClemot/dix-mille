@@ -1,5 +1,6 @@
 package com.julian.dixmille.core.domain.model
 
+import com.julian.dixmille.core.domain.model.event.DomainEvent
 import kotlinx.serialization.Serializable
 
 /**
@@ -60,34 +61,42 @@ data class Game(
     /**
      * Checks if the current player has reached the target score and triggers final round if needed.
      *
-     * @return Updated game in FINAL_ROUND phase if triggered, otherwise unchanged
+     * @return GameResult with updated game and emitted domain events
      */
-    fun checkAndTriggerFinalRound(): Game {
+    fun checkAndTriggerFinalRound(): GameResult {
         if (gamePhase != GamePhase.IN_PROGRESS) {
-            return this
+            return GameResult(game = this, events = emptyList())
         }
 
         if (currentPlayer.totalScore >= targetScore) {
             if (!rules.enableFinalRound) {
-                return copy(gamePhase = GamePhase.ENDED)
+                val endedGame = copy(gamePhase = GamePhase.ENDED)
+                return GameResult(
+                    game = endedGame,
+                    events = listOf(DomainEvent.GameEnded(winnerId = currentPlayer.id))
+                )
             }
-            return copy(
+            val finalRoundGame = copy(
                 gamePhase = GamePhase.FINAL_ROUND,
                 triggeringPlayerId = currentPlayer.id
             )
+            return GameResult(
+                game = finalRoundGame,
+                events = listOf(DomainEvent.FinalRoundStarted(triggeringPlayerId = currentPlayer.id))
+            )
         }
 
-        return this
+        return GameResult(game = this, events = emptyList())
     }
 
     /**
      * Checks if the game should end (all non-triggering players have played final round).
      *
-     * @return Updated game in ENDED phase if complete, otherwise unchanged
+     * @return GameResult with updated game and emitted domain events
      */
-    fun checkAndEndGame(): Game {
+    fun checkAndEndGame(): GameResult {
         if (gamePhase != GamePhase.FINAL_ROUND) {
-            return this
+            return GameResult(game = this, events = emptyList())
         }
 
         val allNonTriggeringPlayersFinished = players
@@ -95,9 +104,13 @@ data class Game(
             .all { it.hasPlayedFinalRound }
 
         return if (allNonTriggeringPlayersFinished) {
-            copy(gamePhase = GamePhase.ENDED)
+            val endedGame = copy(gamePhase = GamePhase.ENDED)
+            GameResult(
+                game = endedGame,
+                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id ?: ""))
+            )
         } else {
-            this
+            GameResult(game = this, events = emptyList())
         }
     }
 

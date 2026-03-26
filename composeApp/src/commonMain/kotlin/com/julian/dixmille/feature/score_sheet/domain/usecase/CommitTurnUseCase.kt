@@ -69,7 +69,8 @@ class CommitTurnUseCase(
 
         // Check if final round should be triggered (or game ends immediately if final round disabled)
         if (ScoreValidator.shouldTriggerFinalRound(game)) {
-            game = game.checkAndTriggerFinalRound()
+            val finalRoundResult = game.checkAndTriggerFinalRound()
+            game = finalRoundResult.game
         }
 
         // If game ended immediately (final round disabled), save and return
@@ -86,7 +87,8 @@ class CommitTurnUseCase(
 
         // Check if game should end
         if (ScoreValidator.shouldEndGame(game)) {
-            game = game.checkAndEndGame()
+            val endResult = game.checkAndEndGame()
+            game = endResult.game
             repository.saveGame(game).getOrThrow()
             return@runCatching
         }

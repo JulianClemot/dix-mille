@@ -60,7 +60,8 @@ class SkipTurnUseCase(
 
         // Check if game should end
         if (ScoreValidator.shouldEndGame(game)) {
-            game = game.checkAndEndGame()
+            val endResult = game.checkAndEndGame()
+            game = endResult.game
             repository.saveGame(game).getOrThrow()
             return@runCatching
         }
