@@ -31,7 +31,7 @@ class GameRulesIntegrationTest {
     }
 
     @Test
-    fun should_notApplyBustPenalty_when_bustPenaltyDisabled() = runTest {
+    fun `Should not apply bust penalty when bust penalty disabled`() = runTest {
         // Arrange: Game with bust penalty disabled
         val rules = GameRules(enableBustPenalty = false)
         var game = createGame(rules)
@@ -71,7 +71,7 @@ class GameRulesIntegrationTest {
     }
 
     @Test
-    fun should_useCustomEntryMinimum_when_configured() = runTest {
+    fun `Should use custom entry minimum when configured`() = runTest {
         // Arrange: Game with 300-point entry minimum
         val rules = GameRules(entryMinimumScore = 300)
         var game = createGame(rules)
@@ -90,7 +90,7 @@ class GameRulesIntegrationTest {
     }
 
     @Test
-    fun should_endImmediately_when_finalRoundDisabledAndTargetReached() = runTest {
+    fun `Should end immediately when final round disabled and target reached`() = runTest {
         // Arrange: Game with 1000 target and final round disabled
         val rules = GameRules(targetScore = 1000, enableFinalRound = false)
         var game = createGame(rules)
@@ -109,7 +109,7 @@ class GameRulesIntegrationTest {
     }
 
     @Test
-    fun should_applyBustPenalty_when_customThresholdReached() = runTest {
+    fun `Should apply bust penalty when custom threshold reached`() = runTest {
         // Arrange: Game with 2-bust penalty
         val rules = GameRules(consecutiveBustsForPenalty = 2)
         var game = createGame(rules)

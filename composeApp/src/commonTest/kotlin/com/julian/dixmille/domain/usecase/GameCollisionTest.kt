@@ -36,7 +36,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_revertOtherPlayer_when_scoresCollide() = runTest {
+    fun `Should revert other player when scores collide`() = runTest {
         // Arrange: Player A scores 500, Player B scores to match 500
         var game = createGameWithThreePlayers()
 
@@ -78,7 +78,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_cascadeCollision_when_revertedScoreMatchesThirdPlayer() = runTest {
+    fun `Should cascade collision when reverted score matches third player`() = runTest {
         // Arrange: Simple cascade test - the feature works, just test it works
         var game = createGameWithThreePlayers()
 
@@ -139,7 +139,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_notCollide_when_scoresMatchAtZero() = runTest {
+    fun `Should not collide when scores match at zero`() = runTest {
         // Arrange: Two players at 0, one scores to any value
         var game = createGameWithThreePlayers()
 
@@ -164,7 +164,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_notCollideScoringPlayer() = runTest {
+    fun `Should not collide scoring player`() = runTest {
         // Arrange: Simple test - scoring player is immune
         var game = createGameWithThreePlayers()
 
@@ -195,7 +195,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_recordCollisionTurnRecords_when_collisionOccurs() = runTest {
+    fun `Should record collision turn records when collision occurs`() = runTest {
         // Arrange: Player A at 500, Player B scores 500
         var game = createGameWithThreePlayers()
 
@@ -234,7 +234,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_revertAllPlayers_when_multiplePlayersAtSameScore() = runTest {
+    fun `Should revert all players when multiple players are at same score`() = runTest {
         // Arrange: Players A, B at 500, Player C scores 500
         var game = createGameWithThreePlayers()
 
@@ -275,7 +275,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_undoCollisionsAndScoredTurn_when_undoLastTurn() = runTest {
+    fun `Should undo collisions and scored turn when undo last turn`() = runTest {
         // Arrange: Player A at 500, Player B scores 500 (causes collision)
         var game = createGameWithThreePlayers()
 
@@ -320,7 +320,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_notAffectBustCounter_when_collisionOccurs() = runTest {
+    fun `Should not affect bust counter when collision occurs`() = runTest {
         // Arrange: Player A has busted once, then gets hit by collision
         var game = createGameWithThreePlayers()
 
@@ -364,7 +364,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_notAffectHasEnteredGame_when_collisionRevertsToZero() = runTest {
+    fun `Should not affect hasEnteredGame when collision reverts to zero`() = runTest {
         // Arrange: Player A enters game with 500, then gets reverted to 0 by collision
         var game = createGameWithThreePlayers()
 
@@ -397,7 +397,7 @@ class GameCollisionTest {
     }
 
     @Test
-    fun should_notTriggerCollision_when_bustPenaltyRevertsToMatchingScore() = runTest {
+    fun `Should not trigger collision when bust penalty reverts to matching score`() = runTest {
         // Arrange: Bob has 500 points; Alice has 1000 points with 2 consecutive busts
         // Alice's last SCORED turn had previousScore=500, so the three-bust penalty reverts her to 500
         val alice = Player(

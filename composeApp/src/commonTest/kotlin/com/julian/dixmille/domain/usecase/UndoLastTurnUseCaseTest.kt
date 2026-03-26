@@ -24,7 +24,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_restoreBustCounter_when_undoingBust() = runTest {
+    fun `Should restore bust counter when undoing bust`() = runTest {
         // Arrange - Player has 1 bust, undo it -> counter back to 0
         val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 500, consecutiveBusts = 1)
         val player2 = Player(id = "p2", name = "Bob")
@@ -68,7 +68,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_restoreScore_when_undoingPenaltyBust() = runTest {
+    fun `Should restore score when undoing penalty bust`() = runTest {
         // Arrange - Player had score 700, 3rd bust triggered penalty reducing to 500
         // Undo the 3rd bust -> score back to 700, counter back to 2
         val player1 = Player(
@@ -140,7 +140,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_rederiveBustCounter_when_undoingScoredTurn() = runTest {
+    fun `Should re-derive bust counter when undoing scored turn`() = runTest {
         // Arrange - Player had 2 busts then scored (resetting counter to 0)
         // Undo the scored turn -> counter back to 2
         val player1 = Player(
@@ -205,7 +205,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_handleSkipInBustSequence_when_undoing() = runTest {
+    fun `Should handle skip in bust sequence when undoing`() = runTest {
         // Arrange - Player: scored, bust, bust, skip -> counter stays at 2
         // Then scored -> counter resets to 0
         // Undo the scored turn -> counter should be 2 (skip doesn't break the sequence)
@@ -278,7 +278,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_handleZeroBustCounter_when_undoingFirstBust() = runTest {
+    fun `Should handle zero bust counter when undoing first bust`() = runTest {
         // Arrange - Player scored, then busted once
         // Undo the bust -> counter should be 0
         val player1 = Player(
@@ -329,7 +329,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_revertScoreAndRestoreTurn_when_undoingScoredTurn() = runTest {
+    fun `Should revert score and restore turn when undoing scored turn`() = runTest {
         // Arrange - Alice committed 300 points (500->800), now Bob's turn
         val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 800)
         val player2 = Player(id = "p2", name = "Bob")
@@ -374,7 +374,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_revertHasEnteredGame_when_undoingEntryTurn() = runTest {
+    fun `Should revert hasEnteredGame when undoing entry turn`() = runTest {
         // Arrange - Alice entered game with 600 pts (0->600, hasEnteredGame=true), now Bob's turn
         val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 600)
         val player2 = Player(id = "p2", name = "Bob")
@@ -411,7 +411,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_revertHasPlayedFinalRound_when_undoingFinalRoundTurn() = runTest {
+    fun `Should revert hasPlayedFinalRound when undoing final round turn`() = runTest {
         // Arrange - FINAL_ROUND, Alice is triggering player
         // Bob committed his final turn (hasPlayedFinalRound=true, 300->500), now Alice's turn (index=0)
         val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 10_000)
@@ -457,7 +457,7 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
-    fun should_revertGamePhaseToFinalRound_when_undoingLastTurnOfGame() = runTest {
+    fun `Should revert game phase to final round when undoing last turn of game`() = runTest {
         // Arrange - Game just ENDED after Bob's final round turn
         val player1 = Player(id = "p1", name = "Alice", hasEnteredGame = true, totalScore = 10_000)
         val player2 = Player(id = "p2", name = "Bob", hasEnteredGame = true, totalScore = 500, hasPlayedFinalRound = true)

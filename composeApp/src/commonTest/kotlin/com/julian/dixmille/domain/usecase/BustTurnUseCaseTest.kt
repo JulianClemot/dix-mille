@@ -30,7 +30,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_incrementBustCounter_when_playerBusts() = runTest {
+    fun `Should increment bust counter when player busts`() = runTest {
         // Arrange
         val game = createGameWithTwoPlayers()
         repository.saveGame(game)
@@ -46,7 +46,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_applyPenalty_when_thirdConsecutiveBust() = runTest {
+    fun `Should apply penalty when third consecutive bust`() = runTest {
         // Arrange
         // Player scores 500, then 200 (total 700), then busts 3 times
         var game = createGameWithTwoPlayers()
@@ -133,7 +133,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_triggerPenalty_when_skipBetweenBusts() = runTest {
+    fun `Should trigger penalty when skip occurs between busts`() = runTest {
         // Arrange - bust, bust, skip, bust should still trigger penalty
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].startTurn(UuidGenerator.generate())
@@ -216,7 +216,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_handleCascadingPenalties() = runTest {
+    fun `Should handle cascading penalties`() = runTest {
         // Arrange - complex scenario with multiple penalties
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0]
@@ -358,7 +358,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_revertToZero_when_onlyOneScoringTurn() = runTest {
+    fun `Should revert to zero when only one scoring turn`() = runTest {
         // Arrange - Score 500, then bust 3 times
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].startTurn(UuidGenerator.generate())
@@ -397,7 +397,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_resetCounter_when_penaltyApplied() = runTest {
+    fun `Should reset counter when penalty applied`() = runTest {
         // Arrange - verify counter is reset after penalty
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].startTurn(UuidGenerator.generate())
@@ -436,7 +436,7 @@ class BustTurnUseCaseTest {
     // ── New BDD-aligned tests ─────────────────────────────────────────────────
 
     @Test
-    fun should_discardTurnPoints_when_playerBusts() = runTest {
+    fun `Should discard turn points when player busts`() = runTest {
         // Arrange
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].copy(
@@ -458,7 +458,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_recordBustTurnInHistory_when_playerBusts() = runTest {
+    fun `Should record bust turn in history when player busts`() = runTest {
         // Arrange
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].copy(
@@ -482,7 +482,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_advanceToNextPlayer_when_playerBusts() = runTest {
+    fun `Should advance to next player when player busts`() = runTest {
         // Arrange
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].copy(hasEnteredGame = true, totalScore = 500)
@@ -500,7 +500,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_incrementBustCounter_when_unenteredPlayerBusts() = runTest {
+    fun `Should increment bust counter when unentered player busts`() = runTest {
         // Arrange
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0] // hasEnteredGame=false, totalScore=0
@@ -518,7 +518,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_notApplyPenalty_when_bustPenaltyIsDisabled() = runTest {
+    fun `Should not apply penalty when bust penalty is disabled`() = runTest {
         // Arrange - bust penalty disabled, Alice has 2 consecutive busts, busts a 3rd time
         val rules = GameRules.DEFAULT.copy(enableBustPenalty = false)
         var game = createGameWithTwoPlayers().copy(rules = rules)
@@ -542,7 +542,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_applyPenalty_when_customThresholdReached() = runTest {
+    fun `Should apply penalty when custom threshold reached`() = runTest {
         // Arrange - threshold is 2 busts; Alice has 1 consecutive bust and a SCORED history entry
         val rules = GameRules.DEFAULT.copy(consecutiveBustsForPenalty = 2)
         var game = createGameWithTwoPlayers().copy(rules = rules)
@@ -570,7 +570,7 @@ class BustTurnUseCaseTest {
     }
 
     @Test
-    fun should_resetBustCounter_when_playerScoresBetweenBusts() = runTest {
+    fun `Should reset bust counter when player scores between busts`() = runTest {
         // Arrange - Alice has 2 busts, then scores 200 via CommitTurnUseCase (counter resets),
         // then busts once; consecutiveBusts should be 1 and no penalty
         var game = createGameWithTwoPlayers()

@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 class TurnTest {
 
     @Test
-    fun turnTotal_whenNoEntries_shouldReturnZero() {
+    fun `Turn total should return zero when no entries`() {
         // Arrange
         val turn = Turn(id = "turn1")
 
@@ -18,7 +18,7 @@ class TurnTest {
     }
 
     @Test
-    fun turnTotal_whenEntriesExist_shouldSumPoints() {
+    fun `Turn total should sum points when entries exist`() {
         // Arrange
         val turn = Turn(
             id = "turn1",
@@ -34,7 +34,7 @@ class TurnTest {
     }
 
     @Test
-    fun turnTotal_whenBusted_shouldReturnZero() {
+    fun `Turn total should return zero when busted`() {
         // Arrange
         val turn = Turn(
             id = "turn1",
@@ -50,7 +50,7 @@ class TurnTest {
     }
 
     @Test
-    fun addEntry_shouldAddEntryToList() {
+    fun `Add entry should add entry to list`() {
         // Arrange
         val turn = Turn(id = "turn1")
         val entry = ScoreEntry(id = "e1", points = 100)
@@ -64,7 +64,7 @@ class TurnTest {
     }
 
     @Test
-    fun removeLastEntry_whenEntriesExist_shouldRemoveLast() {
+    fun `Remove last entry should remove last when entries exist`() {
         // Arrange
         val turn = Turn(
             id = "turn1",
@@ -83,7 +83,7 @@ class TurnTest {
     }
 
     @Test
-    fun removeLastEntry_whenNoEntries_shouldReturnSameTurn() {
+    fun `Remove last entry should return same turn when no entries`() {
         // Arrange
         val turn = Turn(id = "turn1")
 
@@ -95,7 +95,7 @@ class TurnTest {
     }
 
     @Test
-    fun bust_shouldMarkTurnAsBusted() {
+    fun `Bust should mark turn as busted`() {
         // Arrange
         val turn = Turn(id = "turn1")
 

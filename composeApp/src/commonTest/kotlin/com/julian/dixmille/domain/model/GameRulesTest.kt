@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 class GameRulesTest {
 
     @Test
-    fun should_createWithDefaults_when_noArgumentsProvided() {
+    fun `Should create with defaults when no arguments provided`() {
         val rules = GameRules()
 
         assertEquals(10_000, rules.targetScore)
@@ -22,12 +22,12 @@ class GameRulesTest {
     }
 
     @Test
-    fun should_matchDefault_when_comparedToCompanionDefault() {
+    fun `Should match default when compared to companion default`() {
         assertEquals(GameRules.DEFAULT, GameRules())
     }
 
     @Test
-    fun should_throwException_when_targetScoreNotPositive() {
+    fun `Should throw exception when target score is not positive`() {
         assertFailsWith<IllegalArgumentException> {
             GameRules(targetScore = 0)
         }
@@ -37,48 +37,48 @@ class GameRulesTest {
     }
 
     @Test
-    fun should_throwException_when_entryMinimumScoreNegative() {
+    fun `Should throw exception when entry minimum score is negative`() {
         assertFailsWith<IllegalArgumentException> {
             GameRules(entryMinimumScore = -1)
         }
     }
 
     @Test
-    fun should_allowZero_when_entryMinimumScoreIsZero() {
+    fun `Should allow zero when entry minimum score is zero`() {
         val rules = GameRules(entryMinimumScore = 0)
         assertEquals(0, rules.entryMinimumScore)
     }
 
     @Test
-    fun should_throwException_when_minPlayersLessThanTwo() {
+    fun `Should throw exception when min players is less than two`() {
         assertFailsWith<IllegalArgumentException> {
             GameRules(minPlayers = 1)
         }
     }
 
     @Test
-    fun should_throwException_when_maxPlayersLessThanMinPlayers() {
+    fun `Should throw exception when max players is less than min players`() {
         assertFailsWith<IllegalArgumentException> {
             GameRules(minPlayers = 4, maxPlayers = 3)
         }
     }
 
     @Test
-    fun should_throwException_when_maxPlayersExceedsTen() {
+    fun `Should throw exception when max players exceeds ten`() {
         assertFailsWith<IllegalArgumentException> {
             GameRules(maxPlayers = 11)
         }
     }
 
     @Test
-    fun should_throwException_when_consecutiveBustsForPenaltyLessThanTwo() {
+    fun `Should throw exception when consecutive busts for penalty is less than two`() {
         assertFailsWith<IllegalArgumentException> {
             GameRules(consecutiveBustsForPenalty = 1)
         }
     }
 
     @Test
-    fun should_createValidRules_when_customValuesProvided() {
+    fun `Should create valid rules when custom values provided`() {
         val rules = GameRules(
             targetScore = 5_000,
             entryMinimumScore = 300,

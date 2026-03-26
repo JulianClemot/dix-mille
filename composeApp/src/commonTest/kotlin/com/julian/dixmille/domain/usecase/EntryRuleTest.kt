@@ -29,7 +29,7 @@ class EntryRuleTest {
     // ── Boundary values ───────────────────────────────────────────────────────
 
     @Test
-    fun should_enterGame_when_turnTotalIsExactly500() = runTest {
+    fun `Should enter game when turn total is exactly 500`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 500))
 
         val result = useCase()
@@ -41,7 +41,7 @@ class EntryRuleTest {
     }
 
     @Test
-    fun should_rejectCommit_when_notEnteredAndTurnTotalIs499() = runTest {
+    fun `Should reject commit when not entered and turn total is 499`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 499))
 
         val result = useCase()
@@ -55,7 +55,7 @@ class EntryRuleTest {
     // ── Happy path ────────────────────────────────────────────────────────────
 
     @Test
-    fun should_enterGame_when_turnTotalExceeds500() = runTest {
+    fun `Should enter game when turn total exceeds 500`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 750))
 
         val result = useCase()
@@ -67,7 +67,7 @@ class EntryRuleTest {
     }
 
     @Test
-    fun should_setHasEnteredGame_when_minimumScoreMet() = runTest {
+    fun `Should set hasEnteredGame when minimum score met`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 500))
 
         useCase()
@@ -79,7 +79,7 @@ class EntryRuleTest {
     // ── Error cases ───────────────────────────────────────────────────────────
 
     @Test
-    fun should_rejectCommit_when_notEnteredAndTurnBelowMinimum() = runTest {
+    fun `Should reject commit when not entered and turn is below minimum`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 400))
 
         val result = useCase()
@@ -93,7 +93,7 @@ class EntryRuleTest {
     // ── State preconditions ───────────────────────────────────────────────────
 
     @Test
-    fun should_allowAnyScore_when_alreadyEnteredGame() = runTest {
+    fun `Should allow any score when already entered game`() = runTest {
         repository.saveGame(gameForEntered(totalScore = 600, turnPoints = 50))
 
         val result = useCase()
@@ -106,7 +106,7 @@ class EntryRuleTest {
     // ── Configurable entry minimum ────────────────────────────────────────────
 
     @Test
-    fun should_enterGame_when_customMinimumMetExactly() = runTest {
+    fun `Should enter game when custom minimum met exactly`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 300, entryMinimum = 300))
 
         val result = useCase()
@@ -118,7 +118,7 @@ class EntryRuleTest {
     }
 
     @Test
-    fun should_rejectCommit_when_customMinimumNotMet() = runTest {
+    fun `Should reject commit when custom minimum not met`() = runTest {
         repository.saveGame(gameForUnentered(turnPoints = 250, entryMinimum = 300))
 
         val result = useCase()

@@ -30,7 +30,7 @@ class CommitTurnUseCaseTest {
     // ── Happy path ────────────────────────────────────────────────────────────
 
     @Test
-    fun should_addTurnPointsToTotalScore_when_turnCommitted() = runTest {
+    fun `Should add turn points to total score when turn committed`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 300))
 
         val result = useCase()
@@ -41,7 +41,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_clearCurrentTurn_when_turnCommitted() = runTest {
+    fun `Should clear current turn when turn committed`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 200))
 
         useCase()
@@ -51,7 +51,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_resetBustCounter_when_turnCommitted() = runTest {
+    fun `Should reset bust counter when turn committed`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 200, consecutiveBusts = 2))
 
         useCase()
@@ -61,7 +61,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_recordScoredTurnInHistory_when_turnCommitted() = runTest {
+    fun `Should record scored turn in history when turn committed`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 200))
 
         useCase()
@@ -76,7 +76,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_advanceToNextPlayer_when_turnCommitted() = runTest {
+    fun `Should advance to next player when turn committed`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 200))
 
         useCase()
@@ -87,7 +87,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_saveGame_when_turnCommitted() = runTest {
+    fun `Should save game when turn committed`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 200))
 
         useCase()
@@ -99,7 +99,7 @@ class CommitTurnUseCaseTest {
     // ── Boundary values ───────────────────────────────────────────────────────
 
     @Test
-    fun should_wrapToFirstPlayerAndIncrementRound_when_lastPlayerCommits() = runTest {
+    fun `Should wrap to first player and increment round when last player commits`() = runTest {
         val game = gameWithBobTurn(totalScore = 500, turnPoints = 200)
         repository.saveGame(game)
 
@@ -113,7 +113,7 @@ class CommitTurnUseCaseTest {
     // ── Error cases ───────────────────────────────────────────────────────────
 
     @Test
-    fun should_rejectCommit_when_turnTotalIsZero() = runTest {
+    fun `Should reject commit when turn total is zero`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 0))
 
         val result = useCase()
@@ -124,7 +124,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_rejectCommit_when_turnIsBusted() = runTest {
+    fun `Should reject commit when turn is busted`() = runTest {
         val bustedTurn = Turn(id = UuidGenerator.generate(), isBusted = true)
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 0, currentTurn = bustedTurn))
 
@@ -135,7 +135,7 @@ class CommitTurnUseCaseTest {
     }
 
     @Test
-    fun should_rejectCommit_when_gameHasEnded() = runTest {
+    fun `Should reject commit when game has ended`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 500, turnPoints = 200, phase = GamePhase.ENDED))
 
         val result = useCase()

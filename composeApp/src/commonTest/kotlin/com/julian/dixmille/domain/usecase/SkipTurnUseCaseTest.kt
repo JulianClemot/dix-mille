@@ -26,7 +26,7 @@ class SkipTurnUseCaseTest {
     // ── Happy path ────────────────────────────────────────────────────────────
 
     @Test
-    fun should_leaveScoreUnchangedAndAdvance_when_playerSkips() = runTest {
+    fun `Should leave score unchanged and advance when player skips`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 0))
 
         useCase()
@@ -40,7 +40,7 @@ class SkipTurnUseCaseTest {
     // ── Side effects ──────────────────────────────────────────────────────────
 
     @Test
-    fun should_recordSkipOutcomeInHistory_when_playerSkips() = runTest {
+    fun `Should record skip outcome in history when player skips`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 0))
 
         useCase()
@@ -57,7 +57,7 @@ class SkipTurnUseCaseTest {
     // ── State preconditions ───────────────────────────────────────────────────
 
     @Test
-    fun should_notIncrementBustCounter_when_playerSkips() = runTest {
+    fun `Should not increment bust counter when player skips`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 1))
 
         useCase()
@@ -67,7 +67,7 @@ class SkipTurnUseCaseTest {
     }
 
     @Test
-    fun should_notResetBustCounter_when_playerSkips() = runTest {
+    fun `Should not reset bust counter when player skips`() = runTest {
         repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 2))
 
         useCase()

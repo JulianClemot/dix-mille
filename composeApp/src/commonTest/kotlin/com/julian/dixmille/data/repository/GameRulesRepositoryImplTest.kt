@@ -20,7 +20,7 @@ class GameRulesRepositoryImplTest {
     }
 
     @Test
-    fun should_saveAndRetrieveRules() = runTest {
+    fun `Should save and retrieve rules`() = runTest {
         val rules = GameRules(
             targetScore = 5_000,
             entryMinimumScore = 300,
@@ -38,13 +38,13 @@ class GameRulesRepositoryImplTest {
     }
 
     @Test
-    fun should_returnFailure_when_noRulesSaved() = runTest {
+    fun `Should return failure when no rules saved`() = runTest {
         val result = repository.getRules()
         assertTrue(result.isFailure)
     }
 
     @Test
-    fun should_deleteRules() = runTest {
+    fun `Should delete rules`() = runTest {
         repository.saveRules(GameRules.DEFAULT)
         repository.deleteRules()
 
@@ -53,7 +53,7 @@ class GameRulesRepositoryImplTest {
     }
 
     @Test
-    fun should_preserveAllFields_when_roundTripping() = runTest {
+    fun `Should preserve all fields when round tripping`() = runTest {
         val rules = GameRules(
             targetScore = 7_500,
             entryMinimumScore = 0,

@@ -28,7 +28,7 @@ class GameEndTest {
     }
 
     @Test
-    fun should_returnHighestScoringPlayer_when_gameEnded() = runTest {
+    fun `Should return highest scoring player when game ended`() = runTest {
         // Arrange
         val alice = Player(id = "p1", name = "Alice", totalScore = 12500, hasEnteredGame = true)
         val bob = Player(id = "p2", name = "Bob", totalScore = 10800, hasEnteredGame = true)
@@ -50,7 +50,7 @@ class GameEndTest {
     }
 
     @Test
-    fun should_returnNull_when_gameNotEnded() = runTest {
+    fun `Should return null when game has not ended`() = runTest {
         // Arrange
         val alice = Player(id = "p1", name = "Alice", totalScore = 12500, hasEnteredGame = true)
         val bob = Player(id = "p2", name = "Bob", totalScore = 10800, hasEnteredGame = true)
@@ -71,7 +71,7 @@ class GameEndTest {
     }
 
     @Test
-    fun should_rejectBust_when_gameHasEnded() = runTest {
+    fun `Should reject bust when game has ended`() = runTest {
         // Arrange
         val alice = Player(
             id = "p1",
@@ -99,7 +99,7 @@ class GameEndTest {
     }
 
     @Test
-    fun should_rejectSkip_when_gameHasEnded() = runTest {
+    fun `Should reject skip when game has ended`() = runTest {
         // Arrange
         val alice = Player(
             id = "p1",

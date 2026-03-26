@@ -22,7 +22,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun saveGame_shouldPersistGameAsJson() = runTest {
+    fun `Save game should persist game as JSON`() = runTest {
         // Arrange
         setup()
         val game = createTestGame()
@@ -39,7 +39,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun getCurrentGame_whenGameExists_shouldReturnGame() = runTest {
+    fun `Get current game should return game when game exists`() = runTest {
         // Arrange
         setup()
         val game = createTestGame()
@@ -59,7 +59,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun getCurrentGame_whenNoGame_shouldReturnFailure() = runTest {
+    fun `Get current game should return failure when no game exists`() = runTest {
         // Arrange
         setup()
 
@@ -71,7 +71,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun deleteGame_shouldRemoveGame() = runTest {
+    fun `Delete game should remove game`() = runTest {
         // Arrange
         setup()
         val game = createTestGame()
@@ -87,7 +87,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun hasGame_whenGameExists_shouldReturnTrue() = runTest {
+    fun `Has game should return true when game exists`() = runTest {
         // Arrange
         setup()
         val game = createTestGame()
@@ -101,7 +101,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun hasGame_whenNoGame_shouldReturnFalse() = runTest {
+    fun `Has game should return false when no game exists`() = runTest {
         // Arrange
         setup()
 
@@ -113,7 +113,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun saveAndRetrieve_shouldPreserveAllGameState() = runTest {
+    fun `Save and retrieve should preserve all game state`() = runTest {
         // Arrange
         setup()
         val player1 = Player(

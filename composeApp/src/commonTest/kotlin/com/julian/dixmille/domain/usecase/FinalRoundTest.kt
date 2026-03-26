@@ -32,7 +32,7 @@ class FinalRoundTest {
     // ── Test 1 ────────────────────────────────────────────────────────────────
 
     @Test
-    fun should_triggerFinalRound_when_playerReachesTargetScore() = runTest {
+    fun `Should trigger final round when player reaches target score`() = runTest {
         // Arrange – Alice at 9500, 500-point turn, 3 players
         val turn = Turn(
             id = UuidGenerator.generate(),
@@ -72,7 +72,7 @@ class FinalRoundTest {
     // ── Test 2 ────────────────────────────────────────────────────────────────
 
     @Test
-    fun should_setHasPlayedFinalRound_when_playerCommitsDuringFinalRound() = runTest {
+    fun `Should set hasPlayedFinalRound when player commits during final round`() = runTest {
         // Arrange – FINAL_ROUND game, Alice is triggering, Bob is current with a turn
         val turn = Turn(
             id = UuidGenerator.generate(),
@@ -117,7 +117,7 @@ class FinalRoundTest {
     // ── Test 3 ────────────────────────────────────────────────────────────────
 
     @Test
-    fun should_endGame_when_allNonTriggeringPlayersHavePlayed() = runTest {
+    fun `Should end game when all non-triggering players have played`() = runTest {
         // Arrange – FINAL_ROUND, Alice triggering, Bob already played, Carol is current
         val turn = Turn(
             id = UuidGenerator.generate(),
@@ -167,7 +167,7 @@ class FinalRoundTest {
     // ── Test 4 ────────────────────────────────────────────────────────────────
 
     @Test
-    fun should_skipTriggeringPlayer_when_advancingDuringFinalRound() = runTest {
+    fun `Should skip triggering player when advancing during final round`() = runTest {
         // Arrange – Alice (triggering, index 0), Bob (index 1, already played), Carol (index 2, current)
         val turn = Turn(
             id = UuidGenerator.generate(),
@@ -217,7 +217,7 @@ class FinalRoundTest {
     // ── Test 5 ────────────────────────────────────────────────────────────────
 
     @Test
-    fun should_endGameImmediately_when_finalRoundIsDisabled() = runTest {
+    fun `Should end game immediately when final round is disabled`() = runTest {
         // Arrange – final round disabled, Alice at 9500 with 500-point turn
         val rules = GameRules.DEFAULT.copy(enableFinalRound = false)
         val turn = Turn(
@@ -256,7 +256,7 @@ class FinalRoundTest {
     // ── Test 6 ────────────────────────────────────────────────────────────────
 
     @Test
-    fun should_setHasPlayedFinalRound_when_playerBustsDuringFinalRound() = runTest {
+    fun `Should set hasPlayedFinalRound when player busts during final round`() = runTest {
         // Arrange – FINAL_ROUND, Alice triggering, Bob is current with an empty turn
         val turn = Turn(id = UuidGenerator.generate())
         val alice = Player(

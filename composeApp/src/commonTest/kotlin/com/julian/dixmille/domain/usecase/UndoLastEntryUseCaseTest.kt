@@ -24,7 +24,7 @@ class UndoLastEntryUseCaseTest {
     }
 
     @Test
-    fun should_removeLastEntry_when_turnHasMultipleEntries() = runTest {
+    fun `Should remove last entry when turn has multiple entries`() = runTest {
         val turn = Turn(
             id = UuidGenerator.generate(),
             entries = listOf(
@@ -46,7 +46,7 @@ class UndoLastEntryUseCaseTest {
     }
 
     @Test
-    fun should_emptyTurn_when_undoingOnlyEntry() = runTest {
+    fun `Should empty turn when undoing only entry`() = runTest {
         val turn = Turn(
             id = UuidGenerator.generate(),
             entries = listOf(
@@ -64,7 +64,7 @@ class UndoLastEntryUseCaseTest {
     }
 
     @Test
-    fun should_notChangeTotalScore_when_entryUndone() = runTest {
+    fun `Should not change total score when entry undone`() = runTest {
         val turn = Turn(
             id = UuidGenerator.generate(),
             entries = listOf(

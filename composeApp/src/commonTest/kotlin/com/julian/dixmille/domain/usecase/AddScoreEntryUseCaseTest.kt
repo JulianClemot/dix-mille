@@ -28,7 +28,7 @@ class AddScoreEntryUseCaseTest {
     // ── Happy path ────────────────────────────────────────────────────────────
 
     @Test
-    fun should_addPresetEntry_when_validScoreProvided() = runTest {
+    fun `Should add preset entry when valid score provided`() = runTest {
         repository.saveGame(gameWithCurrentPlayer())
 
         val result = useCase(points = 100, isPreset = true)
@@ -42,7 +42,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_addCustomEntry_when_isPresetIsFalse() = runTest {
+    fun `Should add custom entry when isPreset is false`() = runTest {
         repository.saveGame(gameWithCurrentPlayer())
 
         val result = useCase(points = 750, isPreset = false, label = "Custom")
@@ -56,7 +56,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_accumulateTurnTotal_when_multipleEntriesAdded() = runTest {
+    fun `Should accumulate turn total when multiple entries added`() = runTest {
         repository.saveGame(gameWithCurrentPlayer())
 
         useCase(points = 100, isPreset = true)
@@ -69,7 +69,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_saveGame_when_entryAdded() = runTest {
+    fun `Should save game when entry added`() = runTest {
         repository.saveGame(gameWithCurrentPlayer())
 
         useCase(points = 200, isPreset = true)
@@ -82,7 +82,7 @@ class AddScoreEntryUseCaseTest {
     // ── Boundary values ───────────────────────────────────────────────────────
 
     @Test
-    fun should_allowEntry_when_scoreExactlyReachesTarget() = runTest {
+    fun `Should allow entry when score exactly reaches target`() = runTest {
         repository.saveGame(gameWithCurrentPlayer(totalScore = 9900, targetScore = 10_000))
 
         val result = useCase(points = 100, isPreset = true)
@@ -93,7 +93,7 @@ class AddScoreEntryUseCaseTest {
     // ── Error cases ───────────────────────────────────────────────────────────
 
     @Test
-    fun should_rejectEntry_when_scoreIsZero() = runTest {
+    fun `Should reject entry when score is zero`() = runTest {
         repository.saveGame(gameWithCurrentPlayer())
 
         val result = useCase(points = 0)
@@ -104,7 +104,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_rejectEntry_when_scoreIsNegative() = runTest {
+    fun `Should reject entry when score is negative`() = runTest {
         repository.saveGame(gameWithCurrentPlayer())
 
         val result = useCase(points = -50)
@@ -115,7 +115,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_rejectEntry_when_gameHasEnded() = runTest {
+    fun `Should reject entry when game has ended`() = runTest {
         repository.saveGame(gameWithCurrentPlayer(phase = GamePhase.ENDED))
 
         val result = useCase(points = 100)
@@ -124,7 +124,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_rejectEntry_when_scoreWouldExceedTarget() = runTest {
+    fun `Should reject entry when score would exceed target`() = runTest {
         repository.saveGame(gameWithCurrentPlayer(totalScore = 9800, targetScore = 10_000))
 
         val result = useCase(points = 300)
@@ -135,7 +135,7 @@ class AddScoreEntryUseCaseTest {
     }
 
     @Test
-    fun should_rejectEntry_when_playerAlreadyPlayedFinalRound() = runTest {
+    fun `Should reject entry when player already played final round`() = runTest {
         repository.saveGame(gameWithCurrentPlayer(
             phase = GamePhase.FINAL_ROUND,
             hasPlayedFinalRound = true

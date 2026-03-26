@@ -19,7 +19,7 @@ class ScoreValidatorTest {
     // Score Entry Validation Tests
     
     @Test
-    fun validateScoreEntry_whenNegativePoints_shouldReturnInvalid() {
+    fun `Validate score entry should return invalid when points are negative`() {
         // Act
         val result = ScoreValidator.validateScoreEntry(-100, isPreset = false)
         
@@ -29,7 +29,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateScoreEntry_whenZeroPoints_shouldReturnInvalid() {
+    fun `Validate score entry should return invalid when points are zero`() {
         // Act
         val result = ScoreValidator.validateScoreEntry(0, isPreset = false)
         
@@ -38,7 +38,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateScoreEntry_whenValidPreset_shouldReturnValid() {
+    fun `Validate score entry should return valid when preset is valid`() {
         // Act
         val result = ScoreValidator.validateScoreEntry(100, isPreset = true)
         
@@ -47,7 +47,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateScoreEntry_whenInvalidPreset_shouldReturnInvalid() {
+    fun `Validate score entry should return invalid when preset is invalid`() {
         // Act
         val result = ScoreValidator.validateScoreEntry(75, isPreset = true)
         
@@ -56,7 +56,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateScoreEntry_whenCustomPositive_shouldReturnValid() {
+    fun `Validate score entry should return valid when custom score is positive`() {
         // Act
         val result = ScoreValidator.validateScoreEntry(750, isPreset = false)
         
@@ -67,7 +67,7 @@ class ScoreValidatorTest {
     // Commit Turn Validation Tests
     
     @Test
-    fun validateCommitTurn_whenNoTurnInProgress_shouldReturnInvalid() {
+    fun `Validate commit turn should return invalid when no turn in progress`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
         
@@ -80,7 +80,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateCommitTurn_whenTurnBusted_shouldReturnInvalid() {
+    fun `Validate commit turn should return invalid when turn is busted`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -97,7 +97,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateCommitTurn_whenZeroPoints_shouldReturnInvalid() {
+    fun `Validate commit turn should return invalid when points are zero`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -111,7 +111,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateCommitTurn_whenNotEntered_andBelow500_shouldReturnInvalid() {
+    fun `Validate commit turn should return invalid when not entered and score is below 500`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice", hasEnteredGame = false)
             .startTurn("turn1")
@@ -126,7 +126,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateCommitTurn_whenNotEntered_and500OrMore_shouldReturnValid() {
+    fun `Validate commit turn should return valid when not entered and score is 500 or more`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice", hasEnteredGame = false)
             .startTurn("turn1")
@@ -140,7 +140,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateCommitTurn_whenAlreadyEntered_andAnyPoints_shouldReturnValid() {
+    fun `Validate commit turn should return valid when already entered and any points`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice", hasEnteredGame = true)
             .startTurn("turn1")
@@ -156,7 +156,7 @@ class ScoreValidatorTest {
     // Game Active Validation Tests
     
     @Test
-    fun validateGameActive_whenInProgress_shouldReturnValid() {
+    fun `Validate game active should return valid when in progress`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.IN_PROGRESS)
         
@@ -168,7 +168,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateGameActive_whenFinalRound_shouldReturnValid() {
+    fun `Validate game active should return valid when in final round`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.FINAL_ROUND)
         
@@ -180,7 +180,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validateGameActive_whenEnded_shouldReturnInvalid() {
+    fun `Validate game active should return invalid when ended`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.ENDED)
         
@@ -195,7 +195,7 @@ class ScoreValidatorTest {
     // Player Can Act Validation Tests
     
     @Test
-    fun validatePlayerCanAct_whenNotCurrentPlayer_shouldReturnInvalid() {
+    fun `Validate player can act should return invalid when not current player`() {
         // Arrange
         val game = createTestGame()
         val wrongPlayerId = "p2"
@@ -209,7 +209,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validatePlayerCanAct_whenGameEnded_shouldReturnInvalid() {
+    fun `Validate player can act should return invalid when game ended`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.ENDED)
         
@@ -221,7 +221,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validatePlayerCanAct_whenCurrentPlayer_andGameActive_shouldReturnValid() {
+    fun `Validate player can act should return valid when current player and game active`() {
         // Arrange
         val game = createTestGame()
         
@@ -233,7 +233,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun validatePlayerCanAct_whenFinalRound_andAlreadyPlayed_shouldReturnInvalid() {
+    fun `Validate player can act should return invalid when final round and already played`() {
         // Arrange
         val player1 = Player(id = "p1", name = "Alice", hasPlayedFinalRound = true)
         val player2 = Player(id = "p2", name = "Bob")
@@ -257,7 +257,7 @@ class ScoreValidatorTest {
     // Final Round Trigger Tests
     
     @Test
-    fun shouldTriggerFinalRound_whenInProgress_andScoreAtTarget_shouldReturnTrue() {
+    fun `Should trigger final round when in progress and score is at target`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice", totalScore = 10_000)
         val game = Game(
@@ -277,7 +277,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun shouldTriggerFinalRound_whenInProgress_andScoreBelowTarget_shouldReturnFalse() {
+    fun `Should not trigger final round when in progress and score is below target`() {
         // Arrange
         val game = createTestGame()
         
@@ -289,7 +289,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun shouldTriggerFinalRound_whenAlreadyInFinalRound_shouldReturnFalse() {
+    fun `Should not trigger final round when already in final round`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.FINAL_ROUND)
         
@@ -303,7 +303,7 @@ class ScoreValidatorTest {
     // Should End Game Tests
     
     @Test
-    fun shouldEndGame_whenNotFinalRound_shouldReturnFalse() {
+    fun `Should not end game when not in final round`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.IN_PROGRESS)
         
@@ -315,7 +315,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun shouldEndGame_whenFinalRound_andAllNonTriggeringPlayersFinished_shouldReturnTrue() {
+    fun `Should end game when in final round and all non-triggering players finished`() {
         // Arrange
         val player1 = Player(id = "p1", name = "Alice", hasPlayedFinalRound = true)
         val player2 = Player(id = "p2", name = "Bob", totalScore = 10_000)
@@ -336,7 +336,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun shouldEndGame_whenFinalRound_andSomePlayersNotFinished_shouldReturnFalse() {
+    fun `Should not end game when in final round and some players not finished`() {
         // Arrange
         val player1 = Player(id = "p1", name = "Alice", hasPlayedFinalRound = false)
         val player2 = Player(id = "p2", name = "Bob", totalScore = 10_000)
@@ -359,7 +359,7 @@ class ScoreValidatorTest {
     // Winner Determination Tests
     
     @Test
-    fun determineWinner_whenGameNotEnded_shouldReturnNull() {
+    fun `Determine winner should return null when game has not ended`() {
         // Arrange
         val game = createTestGame(gamePhase = GamePhase.IN_PROGRESS)
         
@@ -371,7 +371,7 @@ class ScoreValidatorTest {
     }
     
     @Test
-    fun determineWinner_whenGameEnded_shouldReturnHighestScorer() {
+    fun `Determine winner should return highest scorer when game has ended`() {
         // Arrange
         val player1 = Player(id = "p1", name = "Alice", totalScore = 9_500)
         val player2 = Player(id = "p2", name = "Bob", totalScore = 10_500)
@@ -396,7 +396,7 @@ class ScoreValidatorTest {
     // Score Exceeds Target Validation Tests
 
     @Test
-    fun should_returnValid_when_scoreDoesNotExceedTarget() {
+    fun `Should return valid when score does not exceed target`() {
         // Act
         val result = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = 500,
@@ -409,7 +409,7 @@ class ScoreValidatorTest {
     }
 
     @Test
-    fun should_returnValid_when_scoreExactlyReachesTarget() {
+    fun `Should return valid when score exactly reaches target`() {
         // Act
         val result = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = 1000,
@@ -422,7 +422,7 @@ class ScoreValidatorTest {
     }
 
     @Test
-    fun should_returnInvalid_when_scoreExceedsTarget() {
+    fun `Should return invalid when score exceeds target`() {
         // Act
         val result = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = 1500,
@@ -441,7 +441,7 @@ class ScoreValidatorTest {
     }
 
     @Test
-    fun should_returnInvalid_when_scoreExceedsCustomTarget() {
+    fun `Should return invalid when score exceeds custom target`() {
         // Act
         val result = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = 600,
@@ -454,7 +454,7 @@ class ScoreValidatorTest {
     }
 
     @Test
-    fun should_formatErrorMessage_when_scoreExceedsTarget() {
+    fun `Should format error message when score exceeds target`() {
         // Act
         val result = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = 2000,

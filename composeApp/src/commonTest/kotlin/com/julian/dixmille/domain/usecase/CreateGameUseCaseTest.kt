@@ -26,7 +26,7 @@ class CreateGameUseCaseTest {
     // ── Happy path ────────────────────────────────────────────────────────────
 
     @Test
-    fun should_createGame_when_validPlayerCountProvided() = runTest {
+    fun `Should create game when valid player count provided`() = runTest {
         val result = useCase(listOf("Alice", "Bob", "Carol"))
 
         assertTrue(result.isSuccess)
@@ -38,7 +38,7 @@ class CreateGameUseCaseTest {
     }
 
     @Test
-    fun should_initializePlayersWithDefaultState_when_gameCreated() = runTest {
+    fun `Should initialize players with default state when game created`() = runTest {
         val result = useCase(listOf("Alice", "Bob"))
 
         val game = result.getOrThrow()
@@ -51,7 +51,7 @@ class CreateGameUseCaseTest {
     }
 
     @Test
-    fun should_startFirstPlayerTurn_when_gameCreated() = runTest {
+    fun `Should start first player turn when game created`() = runTest {
         val result = useCase(listOf("Alice", "Bob", "Carol"))
 
         val game = result.getOrThrow()
@@ -61,7 +61,7 @@ class CreateGameUseCaseTest {
     }
 
     @Test
-    fun should_applyCustomTargetScore_when_targetScoreOverridden() = runTest {
+    fun `Should apply custom target score when target score overridden`() = runTest {
         val result = useCase(listOf("Alice", "Bob"), targetScore = 5000)
 
         val game = result.getOrThrow()
@@ -70,14 +70,14 @@ class CreateGameUseCaseTest {
     }
 
     @Test
-    fun should_saveGame_when_gameCreated() = runTest {
+    fun `Should save game when game created`() = runTest {
         useCase(listOf("Alice", "Bob"))
 
         assertTrue(gameRepository.hasGame())
     }
 
     @Test
-    fun should_trimPlayerNames_when_namesHaveWhitespace() = runTest {
+    fun `Should trim player names when names have whitespace`() = runTest {
         val result = useCase(listOf(" Alice ", " Bob"))
 
         val game = result.getOrThrow()
@@ -88,7 +88,7 @@ class CreateGameUseCaseTest {
     // ── Boundary values ───────────────────────────────────────────────────────
 
     @Test
-    fun should_createGame_when_exactlyTwoPlayersProvided() = runTest {
+    fun `Should create game when exactly two players provided`() = runTest {
         val result = useCase(listOf("Alice", "Bob"))
 
         assertTrue(result.isSuccess)
@@ -96,7 +96,7 @@ class CreateGameUseCaseTest {
     }
 
     @Test
-    fun should_createGame_when_exactlySixPlayersProvided() = runTest {
+    fun `Should create game when exactly six players provided`() = runTest {
         val result = useCase(listOf("Alice", "Bob", "Carol", "Dave", "Eve", "Frank"))
 
         assertTrue(result.isSuccess)
@@ -106,28 +106,28 @@ class CreateGameUseCaseTest {
     // ── Error cases ───────────────────────────────────────────────────────────
 
     @Test
-    fun should_fail_when_fewerThanTwoPlayersProvided() = runTest {
+    fun `Should fail when fewer than two players provided`() = runTest {
         val result = useCase(listOf("Alice"))
 
         assertTrue(result.isFailure)
     }
 
     @Test
-    fun should_fail_when_moreThanSixPlayersProvided() = runTest {
+    fun `Should fail when more than six players provided`() = runTest {
         val result = useCase(listOf("Alice", "Bob", "Carol", "Dave", "Eve", "Frank", "Grace"))
 
         assertTrue(result.isFailure)
     }
 
     @Test
-    fun should_fail_when_playerNameIsBlank() = runTest {
+    fun `Should fail when player name is blank`() = runTest {
         val result = useCase(listOf("Alice", ""))
 
         assertTrue(result.isFailure)
     }
 
     @Test
-    fun should_fail_when_targetScoreIsZero() = runTest {
+    fun `Should fail when target score is zero`() = runTest {
         val result = useCase(listOf("Alice", "Bob"), targetScore = 0)
 
         assertTrue(result.isFailure)

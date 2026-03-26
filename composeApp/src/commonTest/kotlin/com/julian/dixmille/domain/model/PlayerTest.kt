@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class PlayerTest {
 
     @Test
-    fun startTurn_shouldCreateNewTurn() {
+    fun `Start turn should create new turn`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
 
@@ -25,7 +25,7 @@ class PlayerTest {
     }
 
     @Test
-    fun addScoreEntry_shouldAddEntryToCurrentTurn() {
+    fun `Add score entry should add entry to current turn`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -40,7 +40,7 @@ class PlayerTest {
     }
 
     @Test
-    fun undoLastEntry_shouldRemoveLastEntry() {
+    fun `Undo last entry should remove last entry`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -56,7 +56,7 @@ class PlayerTest {
     }
 
     @Test
-    fun bustTurn_shouldClearCurrentTurn() {
+    fun `Bust turn should clear current turn`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -71,7 +71,7 @@ class PlayerTest {
     }
 
     @Test
-    fun commitTurn_whenNotEntered_andScoreBelow500_shouldNotAddPoints() {
+    fun `Commit turn should not add points when not entered and score is below 500`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -87,7 +87,7 @@ class PlayerTest {
     }
 
     @Test
-    fun commitTurn_whenNotEntered_andScore500OrMore_shouldEnterAndAddPoints() {
+    fun `Commit turn should enter game and add points when not entered and score is 500 or more`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
             .startTurn("turn1")
@@ -103,7 +103,7 @@ class PlayerTest {
     }
 
     @Test
-    fun commitTurn_whenAlreadyEntered_shouldAddPointsRegardlessOfAmount() {
+    fun `Commit turn should add points regardless of amount when already entered`() {
         // Arrange
         val player = Player(
             id = "p1",
@@ -124,7 +124,7 @@ class PlayerTest {
     }
 
     @Test
-    fun markFinalRoundPlayed_shouldSetFlag() {
+    fun `Mark final round played should set flag`() {
         // Arrange
         val player = Player(id = "p1", name = "Alice")
 

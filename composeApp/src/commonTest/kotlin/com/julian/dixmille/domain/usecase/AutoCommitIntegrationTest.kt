@@ -27,7 +27,7 @@ class AutoCommitIntegrationTest {
     }
 
     @Test
-    fun should_commitTurnAfterAddingEntry_when_entryIsValid() = runTest {
+    fun `Should commit turn after adding entry when entry is valid`() = runTest {
         repository.saveGame(gameWithAlice(totalScore = 500, hasEnteredGame = true))
 
         val addResult = addScoreEntryUseCase(points = 200, isPreset = true)
@@ -42,7 +42,7 @@ class AutoCommitIntegrationTest {
     }
 
     @Test
-    fun should_failCommit_when_entryMinimumNotMet() = runTest {
+    fun `Should fail commit when entry minimum not met`() = runTest {
         repository.saveGame(gameWithAlice(totalScore = 0, hasEnteredGame = false))
 
         val addResult = addScoreEntryUseCase(points = 300, isPreset = true)
@@ -56,7 +56,7 @@ class AutoCommitIntegrationTest {
     }
 
     @Test
-    fun should_commitTurnAfterCustomEntry_when_entryIsValid() = runTest {
+    fun `Should commit turn after custom entry when entry is valid`() = runTest {
         repository.saveGame(gameWithAlice(totalScore = 500, hasEnteredGame = true))
 
         val addResult = addScoreEntryUseCase(points = 750, isPreset = false, label = "Custom")
