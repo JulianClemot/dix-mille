@@ -50,14 +50,14 @@ This is correct: the property doesn't exist yet. Proceed to implementation.
 ```
 > Task :composeApp:commonTest
 
-BustTurnUseCaseTest > should_incrementConsecutiveBusts_when_playerBusts PASSED
+BustTurnUseCaseTest > Should increment consecutive busts when player busts PASSED
 
 BUILD SUCCESSFUL — 1 test passed
 ```
 
 **Wrong RED** (test passes immediately → test is wrong):
 ```
-BustTurnUseCaseTest > should_revertScore_when_thirdConsecutiveBust PASSED
+BustTurnUseCaseTest > Should revert score when third consecutive bust PASSED
 ```
 Stop. The test asserts nothing meaningful. Fix the assertion before proceeding.
 

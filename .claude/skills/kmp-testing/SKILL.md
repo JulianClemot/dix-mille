@@ -35,21 +35,21 @@ composeApp/src/
 
 ## Test Naming Convention
 
-Use descriptive names: **what_when_then**
+Use backtick-quoted sentences that read as plain English:
 
 ```kotlin
 class GameViewModelTest {
     @Test
-    fun loadGame_whenGameExists_shouldUpdateStateWithGame()
+    fun `Should update state with game when game exists`()
 
     @Test
-    fun loadGame_whenGameNotFound_shouldUpdateStateWithError()
+    fun `Should update state with error when game is not found`()
 
     @Test
-    fun rollDice_whenGameActive_shouldUpdateDiceValues()
+    fun `Should update dice values when game is active`()
 
     @Test
-    fun rollDice_whenGameFinished_shouldNotUpdateDice()
+    fun `Should not update dice when game is finished`()
 }
 ```
 
@@ -70,7 +70,7 @@ class GetPlayerScoreUseCaseTest {
     }
 
     @Test
-    fun invoke_whenPlayerExists_shouldReturnScore() = runTest {
+    fun `Should return score when player exists`() = runTest {
         // Arrange
         val playerId = "player1"
         val expectedScore = 1500
@@ -85,7 +85,7 @@ class GetPlayerScoreUseCaseTest {
     }
 
     @Test
-    fun invoke_whenPlayerNotFound_shouldReturnFailure() = runTest {
+    fun `Should return failure when player is not found`() = runTest {
         // Act
         val result = useCase("nonexistent")
 
@@ -110,7 +110,7 @@ class GameViewModelTest {
     }
 
     @Test
-    fun loadGame_whenSuccess_shouldUpdateStateWithGame() = runTest {
+    fun `Should update state with game when load succeeds`() = runTest {
         // Arrange
         val game = Game(id = "game1", players = emptyList())
         getGameUseCase.setResult(Result.success(game))
@@ -143,7 +143,7 @@ class GameRepositoryImplTest {
     }
 
     @Test
-    fun saveGame_shouldStoreGameInDataSource() = runTest {
+    fun `Should store game in data source when saving`() = runTest {
         val game = Game(id = "game1", players = listOf(Player(id = "p1", name = "Alice")))
 
         val result = repository.saveGame(game)
@@ -193,7 +193,7 @@ class FakeGameRepository : GameRepository {
 
 ```kotlin
 @Test
-fun stateFlow_shouldEmitCorrectStates() = runTest {
+fun `Should emit correct states from state flow`() = runTest {
     val states = mutableListOf<GameUiState>()
     val job = launch { viewModel.state.collect { states.add(it) } }
 
@@ -283,7 +283,7 @@ class AddScoreAndCommitIntegrationTest {
     }
 
     @Test
-    fun should_advanceToNextPlayer_when_scoreAddedAndTurnCommitted() = runTest {
+    fun `Should advance to next player when score is added and turn is committed`() = runTest {
         // Tests the full flow across two use cases
     }
 }

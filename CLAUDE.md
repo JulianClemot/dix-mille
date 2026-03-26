@@ -132,7 +132,7 @@ com.julian.dixmille/
 - Public functions and properties must have explicit return types.
 - Prefer `val` over `var`, non-null types, safe calls (`?.`) and elvis (`?:`).
 - Composables: PascalCase, accept `Modifier` parameter, hoist state.
-- Tests in `commonTest`. Naming: `should_doX_when_conditionY`. Arrange-Act-Assert pattern.
+- Tests in `commonTest`. Naming: backtick-quoted sentences `` `Should do X when condition Y` ``. Arrange-Act-Assert pattern.
 
 ## Dependencies
 
