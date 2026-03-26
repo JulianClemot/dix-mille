@@ -1,196 +1,391 @@
 ---
 name: kmp-clean-architecture
-description: Implement Clean Architecture patterns in Kotlin Multiplatform projects with proper layer separation. Use when creating features, refactoring architecture, designing domain models, or setting up ViewModels.
+description: Implement Clean Architecture + DDD patterns in Kotlin Multiplatform projects. Use when creating features, refactoring architecture, designing domain models, defining Value Objects, or setting up ViewModels.
 effort: high
 allowed-tools: Read, Grep, Glob, Write, Edit
-tags: [architecture, clean-architecture, kotlin, multiplatform, domain]
+tags: [architecture, clean-architecture, ddd, value-objects, kotlin, multiplatform, domain]
 ---
 
 ## What I do
 
-I help you implement Clean Architecture in Kotlin Multiplatform projects by:
+I help you implement Clean Architecture combined with DDD tactical patterns in Kotlin Multiplatform projects:
 
-- Creating proper layer separation (Domain, Data, Presentation)
-- Implementing Use Cases with single responsibility
+- Designing Value Objects (`@JvmInline value class`) to wrap primitives with enforced invariants
+- Identifying Aggregate Roots and protecting their boundaries
+- Modelling Domain Events for significant state transitions
+- Placing Domain Services for cross-entity logic
+- Implementing Use Cases as orchestrators (not business logic owners)
 - Designing Repository patterns with platform-agnostic interfaces
-- Setting up dependency injection patterns
-- Ensuring proper data flow: UI -> ViewModel -> UseCase -> Repository -> DataSource
-- Applying SOLID principles throughout the architecture
+- Ensuring the dependency rule: **Presentation → Domain ← Data**
+- Applying ubiquitous language consistently across all layers
 
-## Architecture Guidelines
-
-### Layer Structure
+## Layer Structure
 
 ```
 commonMain/kotlin/com/julian/dixmille/
-├── domain/
-│   ├── model/           # Domain entities (game state, player, etc.)
+├── core/domain/
+│   ├── model/           # Aggregate roots + entities (immutable data classes)
+│   │   ├── vo/          # Value Objects (@JvmInline value class)
+│   │   └── event/       # Domain Events (sealed class DomainEvent)
+│   ├── service/         # Domain Services (stateless, pure Kotlin)
 │   ├── repository/      # Repository interfaces (platform-agnostic)
-│   └── usecase/         # Business logic use cases
+│   └── usecase/         # Use cases — orchestration only, no business logic
 ├── data/
 │   ├── repository/      # Repository implementations
 │   ├── source/          # Data sources (local, remote)
-│   └── mapper/          # Data <-> Domain mappers
+│   └── mapper/          # Data entity <-> Domain model mappers
 └── presentation/
     ├── screen/          # Composable screens
-    ├── viewmodel/       # ViewModels with state management
-    └── model/           # UI models (different from domain models)
+    ├── viewmodel/       # ViewModels — map domain results to UI state
+    └── model/           # UI models (never expose domain VOs to UI layer)
 ```
 
-### Domain Layer Rules
+## DDD Tactical Patterns
 
-1. **No framework dependencies** - Pure Kotlin only
-2. **Entities are immutable** - Use `data class` with `val`
-3. **Use Cases have single responsibility** - One use case, one action
-4. **Repository interfaces define contracts** - Implementations in data layer
+### 1. Value Objects
 
-### Use Case Pattern
+**Every domain-meaningful primitive must be wrapped in a Value Object.** VOs enforce invariants at construction time — nothing invalid can exist in the domain.
+
+Use `@JvmInline value class` for zero-overhead wrapping on the JVM and Native targets.
 
 ```kotlin
-class GetPlayerScoreUseCase(
-    private val gameRepository: GameRepository
+@JvmInline
+value class Score private constructor(val value: Int) {
+    companion object {
+        fun of(value: Int): Score {
+            require(value >= 0) { "Score cannot be negative" }
+            require(value % 50 == 0) { "Score must be a multiple of 50" }
+            return Score(value)
+        }
+        val ZERO: Score = Score(0)
+    }
+    operator fun plus(other: Score): Score = of(value + other.value)
+    fun meetsEntryThreshold(): Boolean = value >= 500
+}
+
+@JvmInline
+value class PlayerName private constructor(val value: String) {
+    companion object {
+        fun of(raw: String): PlayerName {
+            val trimmed = raw.trim()
+            require(trimmed.isNotEmpty()) { "Player name cannot be blank" }
+            require(trimmed.length <= 30) { "Player name too long" }
+            return PlayerName(trimmed)
+        }
+    }
+}
+
+@JvmInline
+value class TargetScore private constructor(val value: Int) {
+    companion object {
+        fun of(value: Int): TargetScore {
+            require(value >= 1000) { "Target score must be at least 1000" }
+            return TargetScore(value)
+        }
+        val DEFAULT: TargetScore = TargetScore(10_000)
+    }
+}
+
+@JvmInline
+value class BustCount private constructor(val value: Int) {
+    companion object {
+        fun of(value: Int): BustCount {
+            require(value in 0..3) { "Bust count must be between 0 and 3" }
+            return BustCount(value)
+        }
+        val NONE: BustCount = BustCount(0)
+    }
+    fun increment(): BustCount = of(value + 1)
+    fun isMaxed(): Boolean = value == 3
+}
+```
+
+**Rules:**
+- Always `private constructor` + `companion object { fun of(...) }` factory.
+- The factory validates — throw `IllegalArgumentException` (via `require`) for contract violations.
+- Never accept raw primitives (`Int`, `String`) in domain model constructors. Always the VO type.
+- VOs are equal by value, never by identity.
+- Serialisation lives in the data layer only. Mappers convert VO → primitive for persistence.
+
+### 2. Aggregate Root
+
+The Aggregate Root is the only entry point for mutations. External code never changes child entities directly.
+
+```kotlin
+data class Game(
+    val id: GameId,
+    val players: List<Player>,         // entities, but mutated only via Game
+    val currentPlayerIndex: Int,
+    val targetScore: TargetScore,      // Value Object
+    val phase: GamePhase,
+    val currentTurn: Turn,
 ) {
-    suspend operator fun invoke(playerId: String): Result<Int> {
-        return gameRepository.getPlayerScore(playerId)
-    }
-}
-```
+    val currentPlayer: Player get() = players[currentPlayerIndex]
+    val isInFinalRound: Boolean get() = phase == GamePhase.FINAL_ROUND
 
-### Repository Pattern
-
-```kotlin
-// Domain layer - interface
-interface GameRepository {
-    suspend fun saveGame(game: Game): Result<Unit>
-    suspend fun getGame(gameId: String): Result<Game>
+    // All state-changing operations return GameResult (new state + events)
+    fun addScoreEntry(entry: ScoreEntry, validator: ScoreValidator): GameResult
+    fun commitTurn(): GameResult
+    fun bust(): GameResult
+    fun skip(): GameResult
+    fun undoLastEntry(): GameResult
 }
 
-// Data layer - implementation
-class GameRepositoryImpl(
-    private val localDataSource: LocalGameDataSource,
-    private val gameMapper: GameMapper
-) : GameRepository {
-    override suspend fun saveGame(game: Game): Result<Unit> {
-        return runCatching {
-            val entity = gameMapper.toEntity(game)
-            localDataSource.saveGame(entity)
-        }
-    }
-}
-```
-
-### ViewModel Pattern
-
-```kotlin
-class GameViewModel(
-    private val getGameUseCase: GetGameUseCase,
-    private val saveGameUseCase: SaveGameUseCase
-) : ViewModel() {
-
-    private val _state = MutableStateFlow(GameUiState())
-    val state: StateFlow<GameUiState> = _state.asStateFlow()
-
-    fun loadGame(gameId: String) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            getGameUseCase(gameId)
-                .onSuccess { game ->
-                    _state.update {
-                        it.copy(
-                            game = game.toUiModel(),
-                            isLoading = false
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _state.update {
-                        it.copy(
-                            error = error.message,
-                            isLoading = false
-                        )
-                    }
-                }
-        }
-    }
-}
-
-data class GameUiState(
-    val game: GameUiModel? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null
+// Carries the new aggregate state AND any emitted domain events
+data class GameResult(
+    val game: Game,
+    val events: List<DomainEvent> = emptyList(),
 )
 ```
 
-### Error Handling
+**Rules:**
+- Use cases call methods on the aggregate root, receive a `GameResult`, persist `game`, then dispatch `events`.
+- Invariants are enforced inside aggregate methods. If an operation violates a rule, the method must not return a partial state — throw or return a `DomainError`.
+- Child entities (`Player`, `Turn`, `ScoreEntry`) are owned by the aggregate and have no public setters.
 
-Use sealed classes for domain errors:
+### 3. Domain Events
+
+Domain Events represent things that *happened* — immutable, past-tense facts. They decouple what happened from what reacts to it.
 
 ```kotlin
-sealed class DomainError {
-    data class ValidationError(val field: String, val message: String) : DomainError()
-    data class NetworkError(val cause: Throwable?) : DomainError()
-    data object NotFoundError : DomainError()
-    data class UnknownError(val cause: Throwable?) : DomainError()
-}
+sealed class DomainEvent {
+    data class TurnCommitted(
+        val gameId: GameId,
+        val playerId: PlayerId,
+        val score: Score,
+    ) : DomainEvent()
 
-// In repositories, convert to Result
-suspend fun saveGame(game: Game): Result<Unit>
+    data class PlayerBusted(
+        val gameId: GameId,
+        val playerId: PlayerId,
+        val bustCount: BustCount,
+    ) : DomainEvent()
+
+    data class TurnSkipped(
+        val gameId: GameId,
+        val playerId: PlayerId,
+    ) : DomainEvent()
+
+    data class PlayerEnteredGame(
+        val gameId: GameId,
+        val playerId: PlayerId,
+    ) : DomainEvent()
+
+    data class FinalRoundStarted(
+        val gameId: GameId,
+        val leaderId: PlayerId,
+    ) : DomainEvent()
+
+    data class GameEnded(
+        val gameId: GameId,
+        val winnerId: PlayerId,
+    ) : DomainEvent()
+}
 ```
 
-### Dependency Direction
+Events are emitted by aggregate methods (inside `GameResult`). Use cases persist state first, then dispatch events. ViewModels can react to events for navigation or animations.
 
-- **Presentation -> Domain <- Data**
-- Domain layer has NO dependencies on other layers
-- Data and Presentation depend on Domain
-- Use dependency injection to provide implementations
+### 4. Domain Services
 
-## Best Practices
+A Domain Service holds logic that:
+- Involves multiple aggregates, or
+- Doesn't naturally belong to any single entity or VO.
 
-1. **Keep domain pure** - No Android/iOS imports in domain layer
-2. **Use mappers** - Convert between Entity <-> Domain <-> UI models
-3. **Inject dependencies** - Constructor injection for testability
-4. **State immutability** - Use `copy()` to update states
-5. **Coroutines for async** - Use suspend functions for async operations
-6. **Result for errors** - Prefer `Result<T>` over exceptions in public APIs
+Domain Services are **stateless**, depend only on domain types, and live in `domain/service/`.
 
-## Common Mistakes to Avoid
+```kotlin
+// Domain Service — cross-entity rule enforcement
+class ScoreValidator {
+    // Does this score meet the entry threshold for a player not yet in the game?
+    fun validateEntry(score: Score, player: Player): ValidationResult
 
-- Mixing business logic in ViewModels
-- ViewModels calling other ViewModels
-- Domain entities with platform-specific code
-- Direct database/network calls from ViewModels
-- Mutable state exposure from ViewModels
-- Use Cases with multiple responsibilities
+    // Does the current turn constitute a bust?
+    fun isBust(turn: Turn): Boolean
+
+    // Is the game now in final round given the current player's total?
+    fun shouldStartFinalRound(player: Player, targetScore: TargetScore): Boolean
+}
+```
+
+**What is NOT a Domain Service:**
+- A use case (orchestrates calls, not business rules)
+- A repository (persistence concern)
+- A mapper (data transformation)
+
+### 5. Entities vs Value Objects — Decision Guide
+
+| Question | Entity | Value Object |
+|----------|--------|-------------|
+| Does it have a lifecycle and identity? | Yes → Entity | No → VO |
+| Two instances with same data — same thing? | No (different ids) | Yes (equal) |
+| Example | `Player`, `Turn`, `ScoreEntry` | `Score`, `PlayerName`, `GameId` |
+
+### 6. Ubiquitous Language
+
+Use domain terminology precisely throughout **all layers** — domain, data, presentation, tests, and variable names:
+
+| Term | Meaning |
+|------|---------|
+| **Turn** | One player's roll session — multiple score entries before commit |
+| **Entry** | A single scored combination within a turn |
+| **Commit** | Voluntarily ending a turn and banking the score |
+| **Bust** | Failing to score on a roll — counts toward the 3-bust penalty |
+| **Skip** | Voluntarily passing without rolling — NOT a bust |
+| **Enter** | A player's first successful turn meeting the 500-point threshold |
+| **Final Round** | Last round triggered when any player reaches the target score |
+
+Never use generic terms like `end`, `finish`, `save` where a game-specific term applies.
+
+## Use Case Pattern
+
+Use cases orchestrate — they do not own business rules. Business rules live in the aggregate or domain service.
+
+```kotlin
+class CommitTurnUseCase(
+    private val gameRepository: GameRepository,
+    private val scoreValidator: ScoreValidator,
+) {
+    suspend operator fun invoke(gameId: GameId): Result<GameResult> = runCatching {
+        val game = gameRepository.getGame(gameId).getOrThrow()
+        val result = game.commitTurn()          // business rule is IN the aggregate
+        gameRepository.saveGame(result.game).getOrThrow()
+        result                                  // caller dispatches events
+    }
+}
+```
+
+## Repository Pattern
+
+```kotlin
+// Domain layer — interface uses domain types only, never primitives or data entities
+interface GameRepository {
+    suspend fun saveGame(game: Game): Result<Unit>
+    suspend fun getGame(gameId: GameId): Result<Game>
+}
+
+// Data layer — maps between persistence entities and domain types
+class GameRepositoryImpl(
+    private val localDataSource: LocalGameDataSource,
+    private val mapper: GameMapper,
+) : GameRepository {
+    override suspend fun saveGame(game: Game): Result<Unit> = runCatching {
+        localDataSource.save(mapper.toEntity(game))
+    }
+
+    override suspend fun getGame(gameId: GameId): Result<Game> = runCatching {
+        mapper.toDomain(localDataSource.load(gameId.value))
+    }
+}
+```
+
+**Mappers** convert `@JvmInline value class` → primitive for serialisation and back. They are the only place that knows about both the domain model and the persistence model.
+
+## ViewModel Pattern
+
+ViewModels map domain results to UI state. They never contain business logic.
+
+```kotlin
+class ScoreSheetViewModel(
+    private val commitTurnUseCase: CommitTurnUseCase,
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(ScoreSheetUiState())
+    val state: StateFlow<ScoreSheetUiState> = _state.asStateFlow()
+
+    private val _events = Channel<ScoreSheetNavigationEvent>(Channel.BUFFERED)
+    val events: Flow<ScoreSheetNavigationEvent> = _events.receiveAsFlow()
+
+    fun onCommitTurn(gameId: GameId) {
+        viewModelScope.launch {
+            commitTurnUseCase(gameId)
+                .onSuccess { result ->
+                    _state.update { it.copy(game = result.game.toUiModel()) }
+                    result.events.forEach { handleDomainEvent(it) }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(error = error.message) }
+                }
+        }
+    }
+
+    private suspend fun handleDomainEvent(event: DomainEvent) {
+        when (event) {
+            is DomainEvent.GameEnded -> _events.send(ScoreSheetNavigationEvent.NavigateToGameEnd)
+            else -> Unit
+        }
+    }
+}
+```
+
+## Error Handling
+
+```kotlin
+// Domain layer — sealed errors with game terminology
+sealed class DomainError : Exception() {
+    data class ScoreBelowEntryThreshold(val score: Score) : DomainError()
+    data class InvalidScoreIncrement(val score: Score) : DomainError()
+    data object NoScoringDiceOnRoll : DomainError()
+    data object GameAlreadyEnded : DomainError()
+}
+
+// Repositories return Result<T> — never throw raw exceptions across layer boundaries
+suspend fun getGame(gameId: GameId): Result<Game>
+```
+
+## Dependency Direction
+
+```
+Presentation ──► Domain ◄── Data
+```
+
+- Domain has **zero** dependencies on other layers, Android, or iOS.
+- Data and Presentation depend on Domain.
+- DI (Koin) provides implementations at the composition root.
 
 ## Implementation Workflow
 
-Follow this order — never skip layers or build top-down:
+Follow this order — always domain-first, never top-down:
 
 ```
-1. Domain model (data class, immutable)
+1. Define Value Objects (vo/) — invariants first
         ↓
-2. Repository interface (in domain/repository/)
+2. Design Aggregate Root + Entities (model/) — no persistence concerns
         ↓
-3. Use case (in domain/usecase/, depends only on interface)
+3. Define Domain Events (event/) for significant transitions
         ↓
-4. Repository implementation (in data/repository/)
+4. Implement Domain Service (service/) if cross-entity logic exists
         ↓
-5. DI wiring (add to dataModule / domainModule)
+5. Repository interface (domain/repository/) — domain types only
         ↓
-6. UiState + Event sealed classes
+6. Use case (domain/usecase/) — orchestrates aggregate + repository
         ↓
-7. ViewModel (depends on use case via DI)
+7. Repository implementation (data/repository/) — mappers included
         ↓
-8. Composable screen (depends only on UiState + events)
+8. DI wiring (feature di module)
+        ↓
+9. UiState + NavigationEvent sealed classes
+        ↓
+10. ViewModel — maps domain results to UI state, dispatches domain events
+        ↓
+11. Composable screen — depends only on UiState + user intent callbacks
 ```
 
-Each step should have tests before you move to the next.
+Write tests before each step. Tests use domain types — never raw primitives.
 
-## Questions to Ask
+## Common Mistakes to Avoid
 
-Before implementing, clarify:
-1. What is the core business logic?
-2. What data needs to persist?
-3. What are the domain entities?
-4. What validation rules exist?
-5. How should errors be handled at each layer?
+- Accepting raw `Int` / `String` in domain model constructors instead of VOs
+- Putting validation logic in use cases instead of VO factories or aggregate methods
+- Mutating child entities outside the aggregate root
+- Leaking domain VOs into UI models (map to plain display types)
+- Naming domain objects with technical terms (`Manager`, `Handler`) instead of ubiquitous language
+- Domain Events with mutable state or future-tense names (`CommitTurn` vs `TurnCommitted`)
+- Mixing business logic in ViewModels
+
+## Questions to Ask Before Implementing
+
+1. What are the domain invariants? (→ defines VO validation rules)
+2. Who owns this state? (→ identifies the aggregate root)
+3. What happened? (→ identifies domain events)
+4. Does this logic cross entity boundaries? (→ decides if a domain service is needed)
+5. What is the ubiquitous language term for this concept?

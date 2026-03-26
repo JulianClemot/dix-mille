@@ -34,19 +34,20 @@ No linter is configured. Follow Kotlin official code style (set in `gradle.prope
 
 ## Architecture
 
-Three-layer Clean Architecture with MVVM:
+Clean Architecture + DDD with MVVM presentation. The domain layer is structured around DDD tactical patterns: Aggregate Roots, Value Objects, Domain Events, and Domain Services.
 
 ```
 presentation/          domain/              data/
   screen/                model/               repository/
-  viewmodel/             usecase/             source/
-  component/             validation/
-  model/                 repository/ (interface)
-  navigation/
-  theme/
+  viewmodel/               aggregate/         source/
+  component/               vo/
+  model/                   event/
+  navigation/            usecase/
+  theme/                 service/
+                         repository/ (interface)
 ```
 
-- **Domain**: Pure business logic. `Game`, `Player`, `Turn`, `ScoreEntry` are immutable data classes. Use cases (`CreateGameUseCase`, `AddScoreEntryUseCase`, `CommitTurnUseCase`, `BustTurnUseCase`, `SkipTurnUseCase`, `UndoLastEntryUseCase`, `UndoLastTurnUseCase`) orchestrate state transitions. `ScoreValidator` enforces game rules (500-point entry, final round, bust penalties).
+- **Domain**: Pure business logic. `Game` is the Aggregate Root. `Player`, `Turn`, `ScoreEntry` are Entities. Primitive fields are wrapped in Value Objects (`Score`, `PlayerId`, `PlayerName`, etc.). Domain Events (`TurnCommitted`, `PlayerBusted`, …) capture significant state transitions. `ScoreValidator` is a Domain Service. Use cases orchestrate aggregate operations.
 - **Presentation**: One ViewModel per screen, exposing `StateFlow<UiState>` and `Channel<NavigationEvent>`. Four screens: Home, GameSetup, ScoreSheet, GameEnd.
 - **Data**: `GameRepositoryImpl` persists game state as JSON via `LocalStorage` (expect/actual: SharedPreferences on Android, NSUserDefaults on iOS).
 
@@ -57,6 +58,161 @@ presentation/          domain/              data/
 - **Navigation**: Jetbrains Navigation3 with `@Serializable` route classes and centralized routing in `Navigator.kt`.
 - **State updates**: Immutable data classes with `.copy()`. Coroutine-based. Auto-save to local storage on every state change.
 - **Auto-commit UX**: Adding a valid score immediately commits the turn and advances to the next player (no manual "End Turn" step).
+
+## Domain-Driven Design
+
+The domain layer follows DDD tactical patterns. All business rules live in the domain — never in use cases, ViewModels, or data sources.
+
+### Value Objects
+
+Wrap every domain-meaningful primitive in a `@JvmInline value class`. Validate invariants in the factory, not in use cases.
+
+```kotlin
+@JvmInline
+value class Score private constructor(val value: Int) {
+    companion object {
+        fun of(value: Int): Score {
+            require(value >= 0) { "Score cannot be negative" }
+            require(value % 50 == 0) { "Score must be a multiple of 50" }
+            return Score(value)
+        }
+        val ZERO: Score = Score(0)
+    }
+    operator fun plus(other: Score): Score = of(value + other.value)
+    fun meetsEntryThreshold(): Boolean = value >= 500
+}
+
+@JvmInline
+value class PlayerName private constructor(val value: String) {
+    companion object {
+        fun of(raw: String): PlayerName {
+            val trimmed = raw.trim()
+            require(trimmed.isNotEmpty()) { "Player name cannot be blank" }
+            require(trimmed.length <= 30) { "Player name too long" }
+            return PlayerName(trimmed)
+        }
+    }
+}
+
+@JvmInline
+value class TargetScore private constructor(val value: Int) {
+    companion object {
+        fun of(value: Int): TargetScore {
+            require(value >= 1000) { "Target score must be at least 1000" }
+            return TargetScore(value)
+        }
+        val DEFAULT: TargetScore = TargetScore(10_000)
+    }
+}
+```
+
+**Value Objects in this project:** `Score`, `PlayerId`, `PlayerName`, `GameId`, `TargetScore`, `BustCount`.
+
+Rules:
+- Always use `private constructor` + a `companion object { fun of(...) }` factory that enforces invariants.
+- Never accept raw `Int` / `String` in domain model constructors — always the VO type.
+- VOs are equal by value, not identity.
+- Serialisation/deserialisation happens in the data layer only; the domain never sees raw primitives.
+
+### Aggregate Root
+
+`Game` is the single Aggregate Root. All mutations must go through it. Outside code never mutates `Player`, `Turn`, or `ScoreEntry` directly.
+
+```kotlin
+data class Game(
+    val id: GameId,
+    val players: List<Player>,
+    val currentPlayerIndex: Int,
+    val targetScore: TargetScore,
+    val phase: GamePhase,
+    val currentTurn: Turn,
+) {
+    // Domain logic and invariant enforcement live here
+    fun addScoreEntry(entry: ScoreEntry, validator: ScoreValidator): GameResult
+    fun commitTurn(): GameResult
+    fun bust(): GameResult
+    fun skip(): GameResult
+
+    val currentPlayer: Player get() = players[currentPlayerIndex]
+    val isInFinalRound: Boolean get() = phase == GamePhase.FINAL_ROUND
+}
+
+// GameResult carries the new state AND emitted domain events
+data class GameResult(
+    val game: Game,
+    val events: List<DomainEvent> = emptyList(),
+)
+```
+
+Rules:
+- Use cases call methods on the aggregate, get a `GameResult`, persist the new `Game`, and dispatch events.
+- Never bypass the aggregate root to mutate a child entity.
+- Invariants are enforced inside aggregate methods — throw `IllegalStateException` (or a `DomainError`) if violated.
+
+### Domain Events
+
+Domain Events capture things that *happened* in the domain. They are facts — past tense, immutable.
+
+```kotlin
+sealed class DomainEvent {
+    data class TurnCommitted(
+        val gameId: GameId,
+        val playerId: PlayerId,
+        val score: Score,
+    ) : DomainEvent()
+
+    data class PlayerBusted(
+        val gameId: GameId,
+        val playerId: PlayerId,
+        val bustCount: BustCount,
+    ) : DomainEvent()
+
+    data class TurnSkipped(
+        val gameId: GameId,
+        val playerId: PlayerId,
+    ) : DomainEvent()
+
+    data class PlayerEnteredGame(
+        val gameId: GameId,
+        val playerId: PlayerId,
+    ) : DomainEvent()
+
+    data class FinalRoundStarted(val gameId: GameId, val leaderId: PlayerId) : DomainEvent()
+    data class GameEnded(val gameId: GameId, val winnerId: PlayerId) : DomainEvent()
+}
+```
+
+Events are returned from aggregate methods inside `GameResult`. Use cases dispatch them after persisting state. Presentation layer can react to events (e.g., animations, navigation) via the ViewModel.
+
+### Domain Services
+
+A Domain Service holds logic that involves multiple aggregates or that doesn't naturally belong to any single entity.
+
+`ScoreValidator` is the primary Domain Service: it enforces entry threshold, bust detection, and final-round rules across the whole game state. It is stateless, lives in `domain/service/`, and takes only domain types as arguments.
+
+```kotlin
+class ScoreValidator {
+    fun validate(score: Score, game: Game): ValidationResult
+    fun isBust(turn: Turn): Boolean
+    fun hasMetEntryThreshold(player: Player): Boolean
+}
+```
+
+### Ubiquitous Language
+
+Use game terminology precisely and consistently throughout all layers:
+
+| Term | Meaning |
+|------|---------|
+| **Turn** | One player's roll session (multiple entries before commit) |
+| **Entry** | A single scored combination within a turn |
+| **Commit** | Voluntarily ending a turn and banking the score |
+| **Bust** | Failing to score on a roll — counts toward the 3-bust penalty |
+| **Skip** | Voluntarily passing without rolling — NOT a bust |
+| **Enter** | A player's first successful turn meeting the 500-point threshold |
+| **Final Round** | The last round triggered when a player hits the target score |
+
+Never use generic terms like `end`, `finish`, `save` where a specific game term applies.
 
 ## Feature-Based Architecture
 
