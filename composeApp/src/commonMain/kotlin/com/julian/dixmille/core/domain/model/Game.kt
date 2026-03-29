@@ -76,7 +76,7 @@ data class Game(
                 val endedGame = copy(gamePhase = GamePhase.ENDED)
                 return GameResult(
                     game = endedGame,
-                    events = listOf(DomainEvent.GameEnded(winnerId = currentPlayer.id.value))
+                    events = listOf(DomainEvent.GameEnded(winnerId = currentPlayer.id))
                 )
             }
             val finalRoundGame = copy(
@@ -85,7 +85,7 @@ data class Game(
             )
             return GameResult(
                 game = finalRoundGame,
-                events = listOf(DomainEvent.FinalRoundStarted(triggeringPlayerId = currentPlayer.id.value))
+                events = listOf(DomainEvent.FinalRoundStarted(triggeringPlayerId = currentPlayer.id))
             )
         }
 
@@ -110,7 +110,7 @@ data class Game(
             val endedGame = copy(gamePhase = GamePhase.ENDED)
             GameResult(
                 game = endedGame,
-                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id?.value ?: ""))
+                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id ?: PlayerId.of("unknown")))
             )
         } else {
             GameResult(game = this, events = emptyList())

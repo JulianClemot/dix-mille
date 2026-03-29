@@ -59,7 +59,7 @@ class GameAggregateEventsTest {
         assertEquals(1, result.events.size)
         val event = result.events.first()
         assertTrue(event is DomainEvent.FinalRoundStarted)
-        assertEquals("p1", event.triggeringPlayerId)
+        assertEquals("p1", event.triggeringPlayerId.value)
     }
 
     @Test
@@ -111,7 +111,7 @@ class GameAggregateEventsTest {
         assertEquals(1, result.events.size)
         val event = result.events.first()
         assertTrue(event is DomainEvent.GameEnded)
-        assertEquals("p1", event.winnerId)
+        assertEquals("p1", event.winnerId.value)
     }
 
     // ---------------------------------------------------------------------------
@@ -138,7 +138,7 @@ class GameAggregateEventsTest {
         val event = result.events.first()
         assertTrue(event is DomainEvent.GameEnded)
         // Alice has higher score so she is winner
-        assertEquals("p1", event.winnerId)
+        assertEquals("p1", event.winnerId.value)
     }
 
     @Test
