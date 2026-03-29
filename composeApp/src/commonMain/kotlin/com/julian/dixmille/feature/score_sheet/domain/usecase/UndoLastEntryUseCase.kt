@@ -1,8 +1,8 @@
 package com.julian.dixmille.feature.score_sheet.domain.usecase
 
 import com.julian.dixmille.core.domain.repository.GameRepository
-import com.julian.dixmille.core.domain.validation.ScoreValidator
-import com.julian.dixmille.core.domain.validation.ValidationResult
+import com.julian.dixmille.core.domain.service.ScoreValidator
+import com.julian.dixmille.core.domain.service.ValidationResult
 
 /**
  * Removes the last score entry from the current player's turn.
@@ -14,6 +14,8 @@ import com.julian.dixmille.core.domain.validation.ValidationResult
 class UndoLastEntryUseCase(
     private val repository: GameRepository
 ) {
+    private val validator = ScoreValidator()
+
     /**
      * Removes the last score entry from the current turn.
      *
@@ -23,13 +25,13 @@ class UndoLastEntryUseCase(
         val game = repository.getCurrentGame().getOrThrow()
 
         // Validate game is active
-        val gameValidation = ScoreValidator.validateGameActive(game)
+        val gameValidation = validator.validateGameActive(game)
         if (gameValidation is ValidationResult.Invalid) {
             throw IllegalStateException(gameValidation.error.toString())
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
+        val playerValidation = validator.validatePlayerCanAct(game, game.currentPlayer.id)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }

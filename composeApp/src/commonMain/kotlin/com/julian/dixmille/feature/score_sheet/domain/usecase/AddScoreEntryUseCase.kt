@@ -5,9 +5,9 @@ import com.julian.dixmille.core.domain.model.ScoreType
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.repository.GameRepository
+import com.julian.dixmille.core.domain.service.ScoreValidator
+import com.julian.dixmille.core.domain.service.ValidationResult
 import com.julian.dixmille.core.domain.util.UuidGenerator
-import com.julian.dixmille.core.domain.validation.ScoreValidator
-import com.julian.dixmille.core.domain.validation.ValidationResult
 
 /**
  * Adds a score entry to the current player's turn.
@@ -17,6 +17,8 @@ import com.julian.dixmille.core.domain.validation.ValidationResult
 class AddScoreEntryUseCase(
     private val repository: GameRepository
 ) {
+    private val validator = ScoreValidator()
+
     /**
      * Adds points to the current player's turn.
      *
@@ -33,28 +35,28 @@ class AddScoreEntryUseCase(
         val game = repository.getCurrentGame().getOrThrow()
 
         // Validate game is active
-        val gameValidation = ScoreValidator.validateGameActive(game)
+        val gameValidation = validator.validateGameActive(game)
         if (gameValidation is ValidationResult.Invalid) {
             throw IllegalStateException(gameValidation.error.toString())
         }
 
         // Validate score entry
-        val scoreValidation = ScoreValidator.validateScoreEntry(points, isPreset)
+        val scoreValidation = validator.validateScoreEntry(Score.of(points), isPreset)
         if (scoreValidation is ValidationResult.Invalid) {
             throw IllegalArgumentException(scoreValidation.error.toString())
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
+        val playerValidation = validator.validatePlayerCanAct(game, game.currentPlayer.id)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
 
         // Validate score does not exceed target
-        val targetValidation = ScoreValidator.validateScoreDoesNotExceedTarget(
-            points = points,
-            playerCurrentScore = game.currentPlayer.totalScore.value,
-            targetScore = game.targetScore.value
+        val targetValidation = validator.validateScoreDoesNotExceedTarget(
+            points = Score.of(points),
+            playerCurrentScore = game.currentPlayer.totalScore,
+            targetScore = game.targetScore
         )
         if (targetValidation is ValidationResult.Invalid) {
             throw IllegalArgumentException(targetValidation.error.toString())

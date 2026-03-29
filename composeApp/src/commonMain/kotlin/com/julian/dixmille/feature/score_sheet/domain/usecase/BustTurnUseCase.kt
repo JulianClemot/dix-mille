@@ -3,13 +3,12 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.TurnOutcome
 import com.julian.dixmille.core.domain.model.vo.BustCount
-import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
+import com.julian.dixmille.core.domain.service.ScoreValidator
+import com.julian.dixmille.core.domain.service.ValidationResult
 import com.julian.dixmille.core.domain.util.UuidGenerator
-import com.julian.dixmille.core.domain.validation.ScoreValidator
-import com.julian.dixmille.core.domain.validation.ValidationResult
 
 /**
  * Handles a bust (no scoring dice rolled).
@@ -24,6 +23,8 @@ import com.julian.dixmille.core.domain.validation.ValidationResult
 class BustTurnUseCase(
     private val repository: GameRepository
 ) {
+    private val validator = ScoreValidator()
+
     /**
      * Busts the current turn and advances to the next player.
      *
@@ -33,13 +34,13 @@ class BustTurnUseCase(
         var game = repository.getCurrentGame().getOrThrow()
 
         // Validate game is active
-        val gameValidation = ScoreValidator.validateGameActive(game)
+        val gameValidation = validator.validateGameActive(game)
         if (gameValidation is ValidationResult.Invalid) {
             throw IllegalStateException(gameValidation.error.toString())
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
+        val playerValidation = validator.validatePlayerCanAct(game, game.currentPlayer.id)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
@@ -81,7 +82,7 @@ class BustTurnUseCase(
         game = game.recordTurn(playerId, Score.ZERO, TurnOutcome.BUST, previousScore)
 
         // Check if game should end
-        if (ScoreValidator.shouldEndGame(game)) {
+        if (validator.shouldEndGame(game)) {
             val endResult = game.checkAndEndGame()
             game = endResult.game
             repository.saveGame(game).getOrThrow()

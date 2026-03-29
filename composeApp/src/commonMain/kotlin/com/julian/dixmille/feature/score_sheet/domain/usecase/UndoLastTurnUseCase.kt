@@ -7,7 +7,7 @@ import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
-import com.julian.dixmille.core.domain.validation.ValidationResult
+import com.julian.dixmille.core.domain.service.ValidationResult
 
 /**
  * Undoes the last committed turn.

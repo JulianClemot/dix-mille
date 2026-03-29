@@ -5,9 +5,9 @@ import com.julian.dixmille.core.domain.model.TurnOutcome
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
+import com.julian.dixmille.core.domain.service.ScoreValidator
+import com.julian.dixmille.core.domain.service.ValidationResult
 import com.julian.dixmille.core.domain.util.UuidGenerator
-import com.julian.dixmille.core.domain.validation.ScoreValidator
-import com.julian.dixmille.core.domain.validation.ValidationResult
 
 /**
  * Handles a voluntarily skipped turn.
@@ -23,6 +23,8 @@ import com.julian.dixmille.core.domain.validation.ValidationResult
 class SkipTurnUseCase(
     private val repository: GameRepository
 ) {
+    private val validator = ScoreValidator()
+
     /**
      * Skips the current turn and advances to the next player.
      *
@@ -32,13 +34,13 @@ class SkipTurnUseCase(
         var game = repository.getCurrentGame().getOrThrow()
 
         // Validate game is active
-        val gameValidation = ScoreValidator.validateGameActive(game)
+        val gameValidation = validator.validateGameActive(game)
         if (gameValidation is ValidationResult.Invalid) {
             throw IllegalStateException(gameValidation.error.toString())
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
+        val playerValidation = validator.validatePlayerCanAct(game, game.currentPlayer.id)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
@@ -61,7 +63,7 @@ class SkipTurnUseCase(
         game = game.recordTurn(playerId, Score.ZERO, TurnOutcome.SKIP, previousScore)
 
         // Check if game should end
-        if (ScoreValidator.shouldEndGame(game)) {
+        if (validator.shouldEndGame(game)) {
             val endResult = game.checkAndEndGame()
             game = endResult.game
             repository.saveGame(game).getOrThrow()

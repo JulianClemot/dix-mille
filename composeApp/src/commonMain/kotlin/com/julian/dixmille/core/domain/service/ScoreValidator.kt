@@ -1,15 +1,18 @@
-package com.julian.dixmille.core.domain.validation
+package com.julian.dixmille.core.domain.service
 
 import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.PresetScores
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 
 /**
  * Validates game actions according to Dix Mille rules.
  */
-object ScoreValidator {
+class ScoreValidator {
 
     /**
      * Validates that a score entry is valid.
@@ -21,15 +24,15 @@ object ScoreValidator {
      * @param isPreset Whether this is a preset score
      * @return Validation result
      */
-    fun validateScoreEntry(points: Int, isPreset: Boolean): ValidationResult {
-        if (points <= 0) {
+    fun validateScoreEntry(points: Score, isPreset: Boolean): ValidationResult {
+        if (points == Score.ZERO) {
             return ValidationResult.Invalid(
                 ValidationError.InvalidScoreValue(points)
             )
         }
 
         // For preset scores, must match one of the defined presets
-        if (isPreset && points !in PresetScores.validPresetValues) {
+        if (isPreset && points.value !in PresetScores.validPresetValues) {
             return ValidationResult.Invalid(
                 ValidationError.InvalidScoreValue(points)
             )
@@ -47,11 +50,11 @@ object ScoreValidator {
      * @return Validation result
      */
     fun validateScoreDoesNotExceedTarget(
-        points: Int,
-        playerCurrentScore: Int,
-        targetScore: Int
+        points: Score,
+        playerCurrentScore: Score,
+        targetScore: TargetScore
     ): ValidationResult {
-        if (playerCurrentScore + points > targetScore) {
+        if (playerCurrentScore.value + points.value > targetScore.value) {
             return ValidationResult.Invalid(
                 ValidationError.ScoreExceedsTarget(points, playerCurrentScore, targetScore)
             )
@@ -87,7 +90,7 @@ object ScoreValidator {
         // Entry rule: if player hasn't entered, must score at least the entry minimum
         if (!player.hasEnteredGame && turnTotal < rules.entryMinimumScore.value) {
             return ValidationResult.Invalid(
-                ValidationError.InsufficientPointsToEnter(rules.entryMinimumScore.value)
+                ValidationError.InsufficientPointsToEnter(rules.entryMinimumScore)
             )
         }
 
@@ -117,7 +120,7 @@ object ScoreValidator {
      * @param playerId The player attempting to act
      * @return Validation result
      */
-    fun validatePlayerCanAct(game: Game, playerId: String): ValidationResult {
+    fun validatePlayerCanAct(game: Game, playerId: PlayerId): ValidationResult {
         // Game must be active
         val activeValidation = validateGameActive(game)
         if (activeValidation.isInvalid) {
@@ -125,13 +128,13 @@ object ScoreValidator {
         }
 
         // Must be the current player's turn
-        if (game.currentPlayer.id.value != playerId) {
+        if (game.currentPlayer.id != playerId) {
             return ValidationResult.Invalid(ValidationError.NotPlayersTurn(playerId))
         }
 
         // In final round, check if player has already played
         if (game.gamePhase == GamePhase.FINAL_ROUND) {
-            val player = game.players.find { it.id.value == playerId }
+            val player = game.players.find { it.id == playerId }
             if (player?.hasPlayedFinalRound == true) {
                 return ValidationResult.Invalid(ValidationError.AlreadyPlayedFinalRound)
             }

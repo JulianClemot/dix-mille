@@ -1,4 +1,9 @@
-package com.julian.dixmille.core.domain.validation
+package com.julian.dixmille.core.domain.service
+
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 
 /**
  * Represents the result of a validation check.
@@ -34,15 +39,15 @@ sealed class ValidationError {
     /**
      * Player has not yet entered the game (needs minimum points in a turn).
      */
-    data class InsufficientPointsToEnter(val minimum: Int = 500) : ValidationError() {
-        override fun toString(): String = "Need at least $minimum points in a turn to enter the game"
+    data class InsufficientPointsToEnter(val minimum: EntryMinimumScore) : ValidationError() {
+        override fun toString(): String = "Need at least ${minimum.value} points in a turn to enter the game"
     }
 
     /**
      * The score value is not valid according to game rules.
      */
-    data class InvalidScoreValue(val points: Int) : ValidationError() {
-        override fun toString(): String = "Score of $points is not valid"
+    data class InvalidScoreValue(val points: Score) : ValidationError() {
+        override fun toString(): String = "Score of ${points.value} is not valid"
     }
 
     /**
@@ -55,8 +60,8 @@ sealed class ValidationError {
     /**
      * It's not the specified player's turn.
      */
-    data class NotPlayersTurn(val playerId: String) : ValidationError() {
-        override fun toString(): String = "Not player $playerId's turn"
+    data class NotPlayersTurn(val playerId: PlayerId) : ValidationError() {
+        override fun toString(): String = "Not player ${playerId.value}'s turn"
     }
 
     /**
@@ -91,13 +96,13 @@ sealed class ValidationError {
      * Score would cause the player's total to exceed the target score.
      */
     data class ScoreExceedsTarget(
-        val points: Int,
-        val currentScore: Int,
-        val targetScore: Int
+        val points: Score,
+        val currentScore: Score,
+        val targetScore: TargetScore
     ) : ValidationError() {
         override fun toString(): String {
-            val remaining = targetScore - currentScore
-            return "Score of $points would exceed the target ($remaining points remaining)"
+            val remaining = targetScore.value - currentScore.value
+            return "Score of ${points.value} would exceed the target ($remaining points remaining)"
         }
     }
 }
