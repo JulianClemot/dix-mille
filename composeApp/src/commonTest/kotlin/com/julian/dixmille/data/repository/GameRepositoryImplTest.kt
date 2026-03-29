@@ -4,9 +4,11 @@ import com.julian.dixmille.core.data.repository.GameRepositoryImpl
 import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -132,9 +134,9 @@ class GameRepositoryImplTest {
             hasEnteredGame = true
         )
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,
@@ -163,9 +165,9 @@ class GameRepositoryImplTest {
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
 
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,

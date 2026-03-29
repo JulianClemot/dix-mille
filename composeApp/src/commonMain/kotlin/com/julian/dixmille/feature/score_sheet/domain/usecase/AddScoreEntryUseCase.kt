@@ -54,7 +54,7 @@ class AddScoreEntryUseCase(
         val targetValidation = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = points,
             playerCurrentScore = game.currentPlayer.totalScore.value,
-            targetScore = game.targetScore
+            targetScore = game.targetScore.value
         )
         if (targetValidation is ValidationResult.Invalid) {
             throw IllegalArgumentException(targetValidation.error.toString())

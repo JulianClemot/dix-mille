@@ -4,8 +4,10 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.repository.GameRulesRepository
@@ -34,10 +36,9 @@ class CreateGameUseCase(
         targetScore: Int = 10_000
     ): Result<Game> = runCatching {
         val savedRules = gameRulesRepository.getRules().getOrElse { GameRules.DEFAULT }
-        val rules = savedRules.copy(targetScore = targetScore)
 
-        require(playerNames.size in rules.minPlayers..rules.maxPlayers) {
-            "Game must have ${rules.minPlayers}-${rules.maxPlayers} players, got ${playerNames.size}"
+        require(playerNames.size in savedRules.minPlayers..savedRules.maxPlayers) {
+            "Game must have ${savedRules.minPlayers}-${savedRules.maxPlayers} players, got ${playerNames.size}"
         }
         require(playerNames.all { it.isNotBlank() }) {
             "All player names must be non-blank"
@@ -45,6 +46,8 @@ class CreateGameUseCase(
         require(targetScore > 0) {
             "Target score must be positive, got $targetScore"
         }
+
+        val rules = savedRules.copy(targetScore = TargetScore.of(targetScore))
 
         val players = playerNames.map { name ->
             Player(
@@ -54,9 +57,9 @@ class CreateGameUseCase(
         }
 
         val game = Game(
-            id = UuidGenerator.generate(),
+            id = GameId.of(UuidGenerator.generate()),
             players = players,
-            targetScore = targetScore,
+            targetScore = rules.targetScore,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,

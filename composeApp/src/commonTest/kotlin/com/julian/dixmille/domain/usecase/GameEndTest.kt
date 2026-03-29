@@ -8,7 +8,9 @@ import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
@@ -38,9 +40,9 @@ class GameEndTest {
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10800), hasEnteredGame = true)
         val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"), totalScore = Score.of(9200), hasEnteredGame = true)
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
             createdAt = 0L
@@ -59,9 +61,9 @@ class GameEndTest {
         val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(12500), hasEnteredGame = true)
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10800), hasEnteredGame = true)
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L
@@ -86,9 +88,9 @@ class GameEndTest {
         )
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(9000), hasEnteredGame = true)
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
             createdAt = 0L
@@ -114,9 +116,9 @@ class GameEndTest {
         )
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(9000), hasEnteredGame = true)
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
             createdAt = 0L

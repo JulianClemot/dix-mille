@@ -44,7 +44,7 @@ data class ScoreSheetUiState(
     val canCommitTurn: Boolean
         get() {
             if (currentTurnTotal == 0) return false
-            val entryMinimum = game?.rules?.entryMinimumScore ?: 500
+            val entryMinimum = game?.rules?.entryMinimumScore?.value ?: 500
             if (!currentPlayerHasEntered && currentTurnTotal < entryMinimum) return false
             return true
         }

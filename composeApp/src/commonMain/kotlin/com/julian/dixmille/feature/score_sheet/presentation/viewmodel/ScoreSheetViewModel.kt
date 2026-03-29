@@ -112,7 +112,7 @@ class ScoreSheetViewModel(
             val game = _state.value.game
 
             // Entry validation: Must have enough points to enter game
-            val entryMinimum = game?.rules?.entryMinimumScore ?: 500
+            val entryMinimum = game?.rules?.entryMinimumScore?.value ?: 500
             if (currentPlayer != null && !currentPlayer.hasEnteredGame && points < entryMinimum) {
                 _state.update {
                     it.copy(error = "Need at least $entryMinimum points to enter the game")
@@ -122,7 +122,7 @@ class ScoreSheetViewModel(
 
             // Target validation: Score must not exceed target
             if (currentPlayer != null && game != null) {
-                val remaining = game.targetScore - currentPlayer.totalScore.value
+                val remaining = game.targetScore.value - currentPlayer.totalScore.value
                 if (points > remaining) {
                     _state.update {
                         it.copy(error = "Score of $points would exceed the target ($remaining points remaining)")

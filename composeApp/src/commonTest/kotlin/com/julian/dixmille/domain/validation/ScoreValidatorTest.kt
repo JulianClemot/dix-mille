@@ -9,9 +9,11 @@ import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.validation.ScoreValidator
 import com.julian.dixmille.core.domain.validation.ValidationError
 import com.julian.dixmille.core.domain.validation.ValidationResult
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -243,14 +245,14 @@ class ScoreValidatorTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = true)
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p2",
+            triggeringPlayerId = PlayerId.of("p2"),
             createdAt = 0L
         )
-        
+
         // Act
         val result = ScoreValidator.validatePlayerCanAct(game, "p1")
         
@@ -266,9 +268,9 @@ class ScoreValidatorTest {
         // Arrange
         val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L
@@ -325,17 +327,17 @@ class ScoreValidatorTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = true)
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_000))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p2",
+            triggeringPlayerId = PlayerId.of("p2"),
             createdAt = 0L
         )
-        
+
         // Act
         val result = ScoreValidator.shouldEndGame(game)
-        
+
         // Assert
         assertTrue(result)
     }
@@ -346,11 +348,11 @@ class ScoreValidatorTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = false)
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_000))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p2",
+            triggeringPlayerId = PlayerId.of("p2"),
             createdAt = 0L
         )
         
@@ -382,7 +384,7 @@ class ScoreValidatorTest {
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_500))
         val player3 = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"), totalScore = Score.of(8_000))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2, player3),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
@@ -484,12 +486,12 @@ class ScoreValidatorTest {
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(800))
         
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = gamePhase,
-            createdAt = 0L // Test timestamp
+            createdAt = 0L
         )
     }
 }

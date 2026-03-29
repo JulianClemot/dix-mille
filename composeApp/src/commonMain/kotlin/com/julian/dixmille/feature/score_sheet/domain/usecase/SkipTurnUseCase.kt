@@ -73,7 +73,7 @@ class SkipTurnUseCase(
 
         // Skip triggering player in final round
         if (game.gamePhase == GamePhase.FINAL_ROUND &&
-            game.currentPlayer.id.value == game.triggeringPlayerId) {
+            game.currentPlayer.id == game.triggeringPlayerId) {
             game = game.advanceToNextPlayer()
         }
 

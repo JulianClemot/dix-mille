@@ -12,10 +12,13 @@ import com.julian.dixmille.domain.usecase.FakeGameRepository
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.BustCount
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -79,7 +82,7 @@ class GameRulesIntegrationTest {
     @Test
     fun `Should use custom entry minimum when configured`() = runTest {
         // Arrange: Game with 300-point entry minimum
-        val rules = GameRules(entryMinimumScore = 300)
+        val rules = GameRules(entryMinimumScore = EntryMinimumScore.of(300))
         var game = createGame(rules)
 
         // Player A scores 300 (should enter the game with custom minimum)
@@ -98,7 +101,7 @@ class GameRulesIntegrationTest {
     @Test
     fun `Should end immediately when final round disabled and target reached`() = runTest {
         // Arrange: Game with 1000 target and final round disabled
-        val rules = GameRules(targetScore = 1000, enableFinalRound = false)
+        val rules = GameRules(targetScore = TargetScore.of(1000), enableFinalRound = false)
         var game = createGame(rules)
 
         // Player A scores 1000
@@ -157,7 +160,7 @@ class GameRulesIntegrationTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
             targetScore = rules.targetScore,
             currentPlayerIndex = 0,

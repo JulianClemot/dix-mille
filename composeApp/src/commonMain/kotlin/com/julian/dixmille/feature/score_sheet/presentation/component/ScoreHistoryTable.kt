@@ -83,7 +83,7 @@ fun ScoreHistoryTable(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = stringResource(Res.string.score_history_target_badge, game.targetScore),
+                    text = stringResource(Res.string.score_history_target_badge, game.targetScore.value),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary,

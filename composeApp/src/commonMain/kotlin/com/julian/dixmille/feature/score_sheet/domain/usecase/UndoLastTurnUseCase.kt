@@ -111,7 +111,7 @@ class UndoLastTurnUseCase(
         // If undoing triggered the end of the game, revert to FINAL_ROUND or IN_PROGRESS
         if (game.gamePhase == GamePhase.ENDED) {
             // Check if any player has reached target score
-            val hasPlayerReachedTarget = game.players.any { it.totalScore.value >= game.targetScore }
+            val hasPlayerReachedTarget = game.players.any { it.totalScore.value >= game.targetScore.value }
             game = game.copy(
                 gamePhase = if (hasPlayerReachedTarget) GamePhase.FINAL_ROUND else GamePhase.IN_PROGRESS
             )

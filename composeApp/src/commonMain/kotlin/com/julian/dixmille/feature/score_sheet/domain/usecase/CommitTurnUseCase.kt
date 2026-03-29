@@ -3,7 +3,6 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.TurnOutcome
 import com.julian.dixmille.core.domain.model.vo.BustCount
-import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TurnId
@@ -59,7 +58,7 @@ class CommitTurnUseCase(
         val previousScore = game.currentPlayer.totalScore
 
         // Commit the turn (adds points to total, enters game if applicable)
-        var updatedPlayer = game.currentPlayer.commitTurn(EntryMinimumScore.of(game.rules.entryMinimumScore))
+        var updatedPlayer = game.currentPlayer.commitTurn(game.rules.entryMinimumScore)
 
         // Reset consecutive busts on successful turn
         updatedPlayer = updatedPlayer.copy(consecutiveBusts = BustCount.NONE)
@@ -103,7 +102,7 @@ class CommitTurnUseCase(
 
         // Skip triggering player in final round
         if (game.gamePhase == GamePhase.FINAL_ROUND &&
-            game.currentPlayer.id.value == game.triggeringPlayerId) {
+            game.currentPlayer.id == game.triggeringPlayerId) {
             game = game.advanceToNextPlayer()
         }
 

@@ -13,7 +13,9 @@ import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
@@ -624,9 +626,9 @@ class BustTurnUseCaseTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,

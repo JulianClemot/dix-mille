@@ -8,9 +8,11 @@ import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.AddScoreEntryUseCase
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -168,9 +170,9 @@ class AddScoreEntryUseCaseTest {
             hasPlayedFinalRound = hasPlayedFinalRound
         )
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = targetScore,
+            targetScore = TargetScore.of(targetScore),
             currentPlayerIndex = 0,
             gamePhase = phase,
             createdAt = 0L

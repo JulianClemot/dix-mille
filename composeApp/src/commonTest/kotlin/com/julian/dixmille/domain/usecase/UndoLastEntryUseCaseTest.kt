@@ -8,7 +8,9 @@ import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastEntryUseCase
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
@@ -99,9 +101,9 @@ class UndoLastEntryUseCaseTest {
             currentTurn = currentTurn
         )
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             createdAt = 0L
         )

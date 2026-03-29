@@ -5,9 +5,11 @@ import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.event.DomainEvent
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -25,13 +27,13 @@ class GameAggregateEventsTest {
         ),
         targetScore: Int = 10_000,
         gamePhase: GamePhase = GamePhase.IN_PROGRESS,
-        triggeringPlayerId: String? = null,
+        triggeringPlayerId: PlayerId? = null,
         rules: GameRules = GameRules(),
         currentPlayerIndex: Int = 0,
     ): Game = Game(
-        id = "game-1",
+        id = GameId.of("game-1"),
         players = players,
-        targetScore = targetScore,
+        targetScore = TargetScore.of(targetScore),
         gamePhase = gamePhase,
         triggeringPlayerId = triggeringPlayerId,
         createdAt = 0L,
@@ -81,7 +83,7 @@ class GameAggregateEventsTest {
         val game = makeGame(
             players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
         )
 
         // Act
@@ -124,7 +126,7 @@ class GameAggregateEventsTest {
         val game = makeGame(
             players = listOf(alice, bob),
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
         )
 
         // Act
@@ -147,7 +149,7 @@ class GameAggregateEventsTest {
         val game = makeGame(
             players = listOf(alice, bob),
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
         )
 
         // Act

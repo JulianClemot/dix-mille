@@ -10,7 +10,10 @@ import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
@@ -145,13 +148,13 @@ class EntryRuleTest {
             currentTurn = turnOf(turnPoints)
         )
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
-            rules = GameRules.DEFAULT.copy(entryMinimumScore = entryMinimum)
+            rules = GameRules.DEFAULT.copy(entryMinimumScore = EntryMinimumScore.of(entryMinimum))
         )
     }
 
@@ -164,9 +167,9 @@ class EntryRuleTest {
             currentTurn = turnOf(turnPoints)
         )
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L

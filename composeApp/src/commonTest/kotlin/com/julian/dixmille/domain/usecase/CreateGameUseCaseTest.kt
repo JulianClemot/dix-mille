@@ -65,8 +65,8 @@ class CreateGameUseCaseTest {
         val result = useCase(listOf("Alice", "Bob"), targetScore = 5000)
 
         val game = result.getOrThrow()
-        assertEquals(5000, game.targetScore)
-        assertEquals(5000, game.rules.targetScore)
+        assertEquals(5000, game.targetScore.value)
+        assertEquals(5000, game.rules.targetScore.value)
     }
 
     @Test

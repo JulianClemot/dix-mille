@@ -7,6 +7,7 @@ import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
@@ -14,6 +15,7 @@ import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -53,9 +55,9 @@ class FinalRoundTest {
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -70,7 +72,7 @@ class FinalRoundTest {
         assertTrue(result.isSuccess)
         val saved = repository.getCurrentGame().getOrThrow()
         assertEquals(GamePhase.FINAL_ROUND, saved.gamePhase)
-        assertEquals("p1", saved.triggeringPlayerId)
+        assertEquals("p1", saved.triggeringPlayerId?.value)
         assertEquals(1, saved.currentPlayerIndex) // advanced to Bob
     }
 
@@ -98,12 +100,12 @@ class FinalRoundTest {
         )
         val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
             createdAt = 0L,
             roundNumber = 1
         )
@@ -149,12 +151,12 @@ class FinalRoundTest {
             currentTurn = turn
         )
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 2,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
             createdAt = 0L,
             roundNumber = 1
         )
@@ -199,12 +201,12 @@ class FinalRoundTest {
             currentTurn = turn
         )
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 2,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
             createdAt = 0L,
             roundNumber = 1
         )
@@ -238,9 +240,9 @@ class FinalRoundTest {
         )
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -279,12 +281,12 @@ class FinalRoundTest {
         )
         val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"))
         val game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
             createdAt = 0L,
             roundNumber = 1
         )

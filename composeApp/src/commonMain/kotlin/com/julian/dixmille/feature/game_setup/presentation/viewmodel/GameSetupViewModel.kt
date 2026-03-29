@@ -45,7 +45,7 @@ class GameSetupViewModel(
             val rules = gameRulesRepository.getRules().getOrElse { GameRules.DEFAULT }
             _state.update {
                 it.copy(
-                    targetScore = rules.targetScore.toString(),
+                    targetScore = rules.targetScore.value.toString(),
                     minPlayers = rules.minPlayers,
                     maxPlayers = rules.maxPlayers
                 )

@@ -8,7 +8,9 @@ import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.AddScoreEntryUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
@@ -89,9 +91,9 @@ class AutoCommitIntegrationTest {
         )
         val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,

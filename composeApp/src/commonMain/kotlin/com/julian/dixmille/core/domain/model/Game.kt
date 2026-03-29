@@ -1,8 +1,10 @@
 package com.julian.dixmille.core.domain.model
 
 import com.julian.dixmille.core.domain.model.event.DomainEvent
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.serialization.Serializable
 
 /**
@@ -10,12 +12,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Game(
-    val id: String,
+    val id: GameId,
     val players: List<Player>,
-    val targetScore: Int = 10_000,
+    val targetScore: TargetScore = TargetScore.DEFAULT,
     val currentPlayerIndex: Int = 0,
     val gamePhase: GamePhase = GamePhase.IN_PROGRESS,
-    val triggeringPlayerId: String? = null,
+    val triggeringPlayerId: PlayerId? = null,
     val createdAt: Long,
     val turnHistory: List<TurnRecord> = emptyList(),
     val roundNumber: Int = 1,
@@ -25,7 +27,6 @@ data class Game(
         require(players.size in rules.minPlayers..rules.maxPlayers) {
             "Game must have ${rules.minPlayers}-${rules.maxPlayers} players"
         }
-        require(targetScore > 0) { "Target score must be positive" }
         require(currentPlayerIndex in players.indices) { "Invalid player index" }
     }
 
@@ -70,7 +71,7 @@ data class Game(
             return GameResult(game = this, events = emptyList())
         }
 
-        if (currentPlayer.totalScore.value >= targetScore) {
+        if (currentPlayer.totalScore.value >= targetScore.value) {
             if (!rules.enableFinalRound) {
                 val endedGame = copy(gamePhase = GamePhase.ENDED)
                 return GameResult(
@@ -80,7 +81,7 @@ data class Game(
             }
             val finalRoundGame = copy(
                 gamePhase = GamePhase.FINAL_ROUND,
-                triggeringPlayerId = currentPlayer.id.value
+                triggeringPlayerId = currentPlayer.id
             )
             return GameResult(
                 game = finalRoundGame,
@@ -102,7 +103,7 @@ data class Game(
         }
 
         val allNonTriggeringPlayersFinished = players
-            .filter { it.id.value != triggeringPlayerId }
+            .filter { it.id != triggeringPlayerId }
             .all { it.hasPlayedFinalRound }
 
         return if (allNonTriggeringPlayersFinished) {

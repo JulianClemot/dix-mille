@@ -1,6 +1,8 @@
 package com.julian.dixmille.data.repository
 
 import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.feature.game_rules.data.repository.GameRulesRepositoryImpl
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
@@ -22,8 +24,8 @@ class GameRulesRepositoryImplTest {
     @Test
     fun `Should save and retrieve rules`() = runTest {
         val rules = GameRules(
-            targetScore = 5_000,
-            entryMinimumScore = 300,
+            targetScore = TargetScore.of(5_000),
+            entryMinimumScore = EntryMinimumScore.of(300),
             consecutiveBustsForPenalty = 4,
             minPlayers = 3,
             maxPlayers = 8,
@@ -55,8 +57,8 @@ class GameRulesRepositoryImplTest {
     @Test
     fun `Should preserve all fields when round tripping`() = runTest {
         val rules = GameRules(
-            targetScore = 7_500,
-            entryMinimumScore = 0,
+            targetScore = TargetScore.of(7_500),
+            entryMinimumScore = EntryMinimumScore.ZERO,
             consecutiveBustsForPenalty = 2,
             minPlayers = 2,
             maxPlayers = 10,
@@ -67,8 +69,8 @@ class GameRulesRepositoryImplTest {
         repository.saveRules(rules)
         val loaded = repository.getRules().getOrThrow()
 
-        assertEquals(7_500, loaded.targetScore)
-        assertEquals(0, loaded.entryMinimumScore)
+        assertEquals(7_500, loaded.targetScore.value)
+        assertEquals(0, loaded.entryMinimumScore.value)
         assertEquals(2, loaded.consecutiveBustsForPenalty)
         assertEquals(2, loaded.minPlayers)
         assertEquals(10, loaded.maxPlayers)

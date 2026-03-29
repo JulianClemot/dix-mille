@@ -85,9 +85,9 @@ object ScoreValidator {
         }
 
         // Entry rule: if player hasn't entered, must score at least the entry minimum
-        if (!player.hasEnteredGame && turnTotal < rules.entryMinimumScore) {
+        if (!player.hasEnteredGame && turnTotal < rules.entryMinimumScore.value) {
             return ValidationResult.Invalid(
-                ValidationError.InsufficientPointsToEnter(rules.entryMinimumScore)
+                ValidationError.InsufficientPointsToEnter(rules.entryMinimumScore.value)
             )
         }
 
@@ -153,7 +153,7 @@ object ScoreValidator {
             return false
         }
 
-        return game.currentPlayer.totalScore.value >= game.targetScore
+        return game.currentPlayer.totalScore.value >= game.targetScore.value
     }
 
     /**
@@ -172,7 +172,7 @@ object ScoreValidator {
         val triggeringPlayerId = game.triggeringPlayerId ?: return false
 
         return game.players
-            .filter { it.id.value != triggeringPlayerId }
+            .filter { it.id != triggeringPlayerId }
             .all { it.hasPlayedFinalRound }
     }
 

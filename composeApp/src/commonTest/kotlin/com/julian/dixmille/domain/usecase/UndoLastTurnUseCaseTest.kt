@@ -9,9 +9,11 @@ import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -34,9 +36,9 @@ class UndoLastTurnUseCaseTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(500), consecutiveBusts = BustCount.of(1))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -85,9 +87,9 @@ class UndoLastTurnUseCaseTest {
         )
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -157,9 +159,9 @@ class UndoLastTurnUseCaseTest {
         )
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -223,9 +225,9 @@ class UndoLastTurnUseCaseTest {
         )
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -295,9 +297,9 @@ class UndoLastTurnUseCaseTest {
         )
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -339,9 +341,9 @@ class UndoLastTurnUseCaseTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(800))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -384,9 +386,9 @@ class UndoLastTurnUseCaseTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(600))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -422,12 +424,12 @@ class UndoLastTurnUseCaseTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(10_000))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), hasEnteredGame = true, totalScore = Score.of(500), hasPlayedFinalRound = true)
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
@@ -467,12 +469,12 @@ class UndoLastTurnUseCaseTest {
         val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(10_000))
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), hasEnteredGame = true, totalScore = Score.of(500), hasPlayedFinalRound = true)
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
-            triggeringPlayerId = "p1",
+            triggeringPlayerId = PlayerId.of("p1"),
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(

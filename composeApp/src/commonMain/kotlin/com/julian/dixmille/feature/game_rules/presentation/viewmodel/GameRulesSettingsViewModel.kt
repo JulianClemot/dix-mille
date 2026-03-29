@@ -3,6 +3,8 @@ package com.julian.dixmille.feature.game_rules.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.repository.GameRulesRepository
 import com.julian.dixmille.core.presentation.navigation.GameRulesSettingsNavigationEvent
 import com.julian.dixmille.feature.game_rules.presentation.model.GameRulesSettingsEvent
@@ -59,8 +61,8 @@ class GameRulesSettingsViewModel(
             savedRules = rules
             _state.update {
                 it.copy(
-                    targetScore = rules.targetScore.toString(),
-                    entryMinimumScore = rules.entryMinimumScore.toString(),
+                    targetScore = rules.targetScore.value.toString(),
+                    entryMinimumScore = rules.entryMinimumScore.value.toString(),
                     consecutiveBustsForPenalty = rules.consecutiveBustsForPenalty.toString(),
                     minPlayers = rules.minPlayers.toString(),
                     maxPlayers = rules.maxPlayers.toString(),
@@ -84,8 +86,8 @@ class GameRulesSettingsViewModel(
     }
 
     private fun hasChanges(state: GameRulesSettingsUiState): Boolean {
-        return state.targetScore != savedRules.targetScore.toString() ||
-            state.entryMinimumScore != savedRules.entryMinimumScore.toString() ||
+        return state.targetScore != savedRules.targetScore.value.toString() ||
+            state.entryMinimumScore != savedRules.entryMinimumScore.value.toString() ||
             state.consecutiveBustsForPenalty != savedRules.consecutiveBustsForPenalty.toString() ||
             state.minPlayers != savedRules.minPlayers.toString() ||
             state.maxPlayers != savedRules.maxPlayers.toString() ||
@@ -112,8 +114,8 @@ class GameRulesSettingsViewModel(
         // Validate constraints
         val rules = try {
             GameRules(
-                targetScore = targetScore,
-                entryMinimumScore = entryMinimum,
+                targetScore = TargetScore.of(targetScore),
+                entryMinimumScore = if (entryMinimum == 0) EntryMinimumScore.ZERO else EntryMinimumScore.of(entryMinimum),
                 consecutiveBustsForPenalty = bustsForPenalty,
                 minPlayers = minPlayers,
                 maxPlayers = maxPlayers,

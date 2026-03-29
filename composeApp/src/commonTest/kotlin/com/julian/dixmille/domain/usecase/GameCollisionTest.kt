@@ -14,7 +14,9 @@ import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
@@ -428,9 +430,9 @@ class GameCollisionTest {
             previousScore = Score.of(500)
         )
         var game = Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(alice, bob),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -465,9 +467,9 @@ class GameCollisionTest {
         val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         val player3 = Player(id = PlayerId.of("p3"), name = PlayerName.of("Charlie"))
         return Game(
-            id = "game1",
+            id = GameId.of("game1"),
             players = listOf(player1, player2, player3),
-            targetScore = 10_000,
+            targetScore = TargetScore.of(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,

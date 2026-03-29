@@ -1,11 +1,13 @@
 package com.julian.dixmille.core.domain.model
 
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.TargetScore
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class GameRules(
-    val targetScore: Int = DEFAULT_TARGET_SCORE,
-    val entryMinimumScore: Int = DEFAULT_ENTRY_MINIMUM_SCORE,
+    val targetScore: TargetScore = TargetScore.DEFAULT,
+    val entryMinimumScore: EntryMinimumScore = EntryMinimumScore.DEFAULT,
     val consecutiveBustsForPenalty: Int = DEFAULT_CONSECUTIVE_BUSTS_FOR_PENALTY,
     val minPlayers: Int = DEFAULT_MIN_PLAYERS,
     val maxPlayers: Int = DEFAULT_MAX_PLAYERS,
@@ -13,8 +15,6 @@ data class GameRules(
     val enableFinalRound: Boolean = DEFAULT_ENABLE_FINAL_ROUND
 ) {
     init {
-        require(targetScore > 0) { "Target score must be positive" }
-        require(entryMinimumScore >= 0) { "Entry minimum score must be non-negative" }
         require(minPlayers >= 2) { "Minimum players must be at least 2" }
         require(maxPlayers >= minPlayers) { "Maximum players must be >= minimum players" }
         require(maxPlayers <= 10) { "Maximum players must be at most 10" }
