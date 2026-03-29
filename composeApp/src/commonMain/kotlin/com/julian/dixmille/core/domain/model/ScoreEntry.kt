@@ -9,7 +9,6 @@ import kotlinx.serialization.Serializable
  *
  * A turn can have multiple score entries as the player continues rolling.
  */
-@Serializable
 data class ScoreEntry(
     val id: EntryId,
     val points: Score,

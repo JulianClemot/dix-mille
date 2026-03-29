@@ -2,15 +2,12 @@ package com.julian.dixmille.core.domain.model
 
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TurnId
-import kotlinx.serialization.Serializable
-
 /**
  * Represents a single turn in the game.
  *
  * A turn contains multiple score entries as the player continues rolling.
  * If the player busts, all accumulated points are lost.
  */
-@Serializable
 data class Turn(
     val id: TurnId,
     val entries: List<ScoreEntry> = emptyList(),

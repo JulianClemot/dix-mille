@@ -2,9 +2,7 @@ package com.julian.dixmille.core.domain.model
 
 import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
 import com.julian.dixmille.core.domain.model.vo.TargetScore
-import kotlinx.serialization.Serializable
 
-@Serializable
 data class GameRules(
     val targetScore: TargetScore = TargetScore.DEFAULT,
     val entryMinimumScore: EntryMinimumScore = EntryMinimumScore.DEFAULT,

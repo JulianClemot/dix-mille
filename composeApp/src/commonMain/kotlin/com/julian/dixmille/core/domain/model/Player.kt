@@ -6,12 +6,9 @@ import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TurnId
-import kotlinx.serialization.Serializable
-
 /**
  * Represents a player in the Dix Mille game.
  */
-@Serializable
 data class Player(
     val id: PlayerId,
     val name: PlayerName,

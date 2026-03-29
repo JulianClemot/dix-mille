@@ -5,12 +5,9 @@ import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TargetScore
-import kotlinx.serialization.Serializable
-
 /**
  * Represents a complete Dix Mille game.
  */
-@Serializable
 data class Game(
     val id: GameId,
     val players: List<Player>,

@@ -2,7 +2,6 @@ package com.julian.dixmille.core.domain.model
 
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.Score
-import kotlinx.serialization.Serializable
 
 /**
  * Represents a historical record of a completed turn.
@@ -12,7 +11,6 @@ import kotlinx.serialization.Serializable
  * Tracks the outcome (scored, bust, or skip) and the player's score before this turn
  * to enable the 3-consecutive-bust penalty reversion.
  */
-@Serializable
 data class TurnRecord(
     val roundNumber: Int,
     val playerId: PlayerId,

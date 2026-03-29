@@ -1,8 +1,5 @@
 package com.julian.dixmille.core.domain.model.vo
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 value class TurnId private constructor(val value: String) {
 
     companion object {
