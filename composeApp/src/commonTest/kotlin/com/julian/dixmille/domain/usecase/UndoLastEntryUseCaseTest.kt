@@ -4,8 +4,13 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.Turn
+import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastEntryUseCase
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -26,11 +31,11 @@ class UndoLastEntryUseCaseTest {
     @Test
     fun `Should remove last entry when turn has multiple entries`() = runTest {
         val turn = Turn(
-            id = UuidGenerator.generate(),
+            id = TurnId.of(UuidGenerator.generate()),
             entries = listOf(
-                ScoreEntry(id = UuidGenerator.generate(), points = 100),
-                ScoreEntry(id = UuidGenerator.generate(), points = 200),
-                ScoreEntry(id = UuidGenerator.generate(), points = 300)
+                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(100)),
+                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(200)),
+                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(300))
             )
         )
         repository.saveGame(gameWithCurrentPlayer(currentTurn = turn))
@@ -40,17 +45,17 @@ class UndoLastEntryUseCaseTest {
         val game = repository.getCurrentGame().getOrThrow()
         val resultTurn = game.currentPlayer.currentTurn!!
         assertEquals(2, resultTurn.entries.size)
-        assertEquals(100, resultTurn.entries[0].points)
-        assertEquals(200, resultTurn.entries[1].points)
-        assertEquals(300, resultTurn.turnTotal)
+        assertEquals(100, resultTurn.entries[0].points.value)
+        assertEquals(200, resultTurn.entries[1].points.value)
+        assertEquals(300, resultTurn.turnTotal.value)
     }
 
     @Test
     fun `Should empty turn when undoing only entry`() = runTest {
         val turn = Turn(
-            id = UuidGenerator.generate(),
+            id = TurnId.of(UuidGenerator.generate()),
             entries = listOf(
-                ScoreEntry(id = UuidGenerator.generate(), points = 500)
+                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500))
             )
         )
         repository.saveGame(gameWithCurrentPlayer(currentTurn = turn))
@@ -60,42 +65,42 @@ class UndoLastEntryUseCaseTest {
         val game = repository.getCurrentGame().getOrThrow()
         val resultTurn = game.currentPlayer.currentTurn!!
         assertTrue(resultTurn.entries.isEmpty())
-        assertEquals(0, resultTurn.turnTotal)
+        assertEquals(Score.ZERO, resultTurn.turnTotal)
     }
 
     @Test
     fun `Should not change total score when entry undone`() = runTest {
         val turn = Turn(
-            id = UuidGenerator.generate(),
+            id = TurnId.of(UuidGenerator.generate()),
             entries = listOf(
-                ScoreEntry(id = UuidGenerator.generate(), points = 100),
-                ScoreEntry(id = UuidGenerator.generate(), points = 200)
+                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(100)),
+                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(200))
             )
         )
-        repository.saveGame(gameWithCurrentPlayer(totalScore = 800, currentTurn = turn))
+        repository.saveGame(gameWithCurrentPlayer(totalScore = Score.of(800), currentTurn = turn))
 
         useCase()
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(800, game.currentPlayer.totalScore)
+        assertEquals(Score.of(800), game.currentPlayer.totalScore)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun gameWithCurrentPlayer(
-        totalScore: Int = 0,
-        currentTurn: Turn = Turn(id = UuidGenerator.generate())
+        totalScore: Score = Score.of(0),
+        currentTurn: Turn = Turn(id = TurnId.of(UuidGenerator.generate()))
     ): Game {
         val player = Player(
-            id = "p1",
-            name = "Alice",
+            id = PlayerId.of("p1"),
+            name = PlayerName.of("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             currentTurn = currentTurn
         )
         return Game(
             id = "game1",
-            players = listOf(player, Player(id = "p2", name = "Bob")),
+            players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
             targetScore = 10_000,
             currentPlayerIndex = 0,
             createdAt = 0L

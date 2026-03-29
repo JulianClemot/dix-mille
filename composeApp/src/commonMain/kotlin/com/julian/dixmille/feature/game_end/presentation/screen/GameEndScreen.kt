@@ -406,7 +406,7 @@ private fun AnimatedRankingRow(
                     modifier = Modifier.width(40.dp)
                 )
                 Text(
-                    text = player.name,
+                    text = player.name.value,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = if (rank == 1) FontWeight.Bold else FontWeight.Normal,
                     color = if (rank == 1)

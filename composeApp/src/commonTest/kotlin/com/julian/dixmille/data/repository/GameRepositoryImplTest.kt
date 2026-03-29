@@ -4,6 +4,9 @@ import com.julian.dixmille.core.data.repository.GameRepositoryImpl
 import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -117,15 +120,15 @@ class GameRepositoryImplTest {
         // Arrange
         setup()
         val player1 = Player(
-            id = "p1",
-            name = "Alice",
-            totalScore = 1500,
+            id = PlayerId.of("p1"),
+            name = PlayerName.of("Alice"),
+            totalScore = Score.of(1500),
             hasEnteredGame = true
         )
         val player2 = Player(
-            id = "p2",
-            name = "Bob",
-            totalScore = 800,
+            id = PlayerId.of("p2"),
+            name = PlayerName.of("Bob"),
+            totalScore = Score.of(800),
             hasEnteredGame = true
         )
         val game = Game(
@@ -156,8 +159,8 @@ class GameRepositoryImplTest {
     }
 
     private fun createTestGame(): Game {
-        val player1 = Player(id = "p1", name = "Alice")
-        val player2 = Player(id = "p2", name = "Bob")
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
 
         return Game(
             id = "game1",

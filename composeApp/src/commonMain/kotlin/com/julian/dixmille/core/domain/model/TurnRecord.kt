@@ -1,5 +1,7 @@
 package com.julian.dixmille.core.domain.model
 
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.serialization.Serializable
 
 /**
@@ -13,8 +15,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TurnRecord(
     val roundNumber: Int,
-    val playerId: String,
-    val points: Int,
+    val playerId: PlayerId,
+    val points: Score,
     val outcome: TurnOutcome,
-    val previousScore: Int  // Player's total score BEFORE this turn (for reversion)
+    val previousScore: Score  // Player's total score BEFORE this turn (for reversion)
 )

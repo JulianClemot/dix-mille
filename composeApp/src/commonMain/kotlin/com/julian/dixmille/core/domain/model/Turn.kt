@@ -1,5 +1,7 @@
 package com.julian.dixmille.core.domain.model
 
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import kotlinx.serialization.Serializable
 
 /**
@@ -10,16 +12,16 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Turn(
-    val id: String,
+    val id: TurnId,
     val entries: List<ScoreEntry> = emptyList(),
     val isBusted: Boolean = false
 ) {
     /**
      * The total points accumulated in this turn.
-     * Returns 0 if the turn is busted.
+     * Returns Score.ZERO if the turn is busted.
      */
-    val turnTotal: Int
-        get() = if (isBusted) 0 else entries.sumOf { it.points }
+    val turnTotal: Score
+        get() = if (isBusted) Score.ZERO else entries.fold(Score.ZERO) { acc, entry -> acc + entry.points }
 
     /**
      * Adds a new score entry to this turn.

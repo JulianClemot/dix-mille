@@ -109,7 +109,7 @@ fun ScoreHistoryTable(
 
             players.forEach { player ->
                 Text(
-                    text = player.name.uppercase(),
+                    text = player.name.value.uppercase(),
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
@@ -154,7 +154,7 @@ fun ScoreHistoryTable(
 
                     // Player scores
                     players.forEach { player ->
-                        val playerTurn = turnsForThisRound.lastOrNull { it.playerId == player.id }
+                        val playerTurn = turnsForThisRound.lastOrNull { it.playerId.value == player.id.value }
 
                         Box(
                             modifier = Modifier.weight(1f),

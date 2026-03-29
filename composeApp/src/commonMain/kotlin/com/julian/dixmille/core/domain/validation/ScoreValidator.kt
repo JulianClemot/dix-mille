@@ -77,7 +77,7 @@ object ScoreValidator {
             return ValidationResult.Invalid(ValidationError.TurnAlreadyBusted)
         }
 
-        val turnTotal = currentTurn.turnTotal
+        val turnTotal = currentTurn.turnTotal.value
 
         // Cannot commit zero points
         if (turnTotal == 0) {
@@ -125,13 +125,13 @@ object ScoreValidator {
         }
 
         // Must be the current player's turn
-        if (game.currentPlayer.id != playerId) {
+        if (game.currentPlayer.id.value != playerId) {
             return ValidationResult.Invalid(ValidationError.NotPlayersTurn(playerId))
         }
 
         // In final round, check if player has already played
         if (game.gamePhase == GamePhase.FINAL_ROUND) {
-            val player = game.players.find { it.id == playerId }
+            val player = game.players.find { it.id.value == playerId }
             if (player?.hasPlayedFinalRound == true) {
                 return ValidationResult.Invalid(ValidationError.AlreadyPlayedFinalRound)
             }
@@ -153,7 +153,7 @@ object ScoreValidator {
             return false
         }
 
-        return game.currentPlayer.totalScore >= game.targetScore
+        return game.currentPlayer.totalScore.value >= game.targetScore
     }
 
     /**
@@ -172,7 +172,7 @@ object ScoreValidator {
         val triggeringPlayerId = game.triggeringPlayerId ?: return false
 
         return game.players
-            .filter { it.id != triggeringPlayerId }
+            .filter { it.id.value != triggeringPlayerId }
             .all { it.hasPlayedFinalRound }
     }
 

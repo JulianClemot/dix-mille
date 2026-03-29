@@ -4,6 +4,9 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.repository.GameRulesRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
@@ -45,8 +48,8 @@ class CreateGameUseCase(
 
         val players = playerNames.map { name ->
             Player(
-                id = UuidGenerator.generate(),
-                name = name.trim()
+                id = PlayerId.of(UuidGenerator.generate()),
+                name = PlayerName.of(name.trim())
             )
         }
 
@@ -63,7 +66,7 @@ class CreateGameUseCase(
 
         // Start first player's turn
         val gameWithFirstTurn = game.updateCurrentPlayer(
-            game.currentPlayer.startTurn(UuidGenerator.generate())
+            game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         )
 
         repository.saveGame(gameWithFirstTurn).getOrThrow()

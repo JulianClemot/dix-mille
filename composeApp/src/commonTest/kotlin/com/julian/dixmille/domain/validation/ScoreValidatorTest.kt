@@ -4,9 +4,14 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
+import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.validation.ScoreValidator
 import com.julian.dixmille.core.domain.validation.ValidationError
 import com.julian.dixmille.core.domain.validation.ValidationResult
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -69,7 +74,7 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when no turn in progress`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice")
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
         
         // Act
         val result = ScoreValidator.validateCommitTurn(player)
@@ -82,8 +87,8 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when turn is busted`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice")
-            .startTurn("turn1")
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+            .startTurn(TurnId.of("turn1"))
         val bustedPlayer = player.copy(
             currentTurn = player.currentTurn?.bust()
         )
@@ -99,8 +104,8 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when points are zero`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice")
-            .startTurn("turn1")
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+            .startTurn(TurnId.of("turn1"))
         
         // Act
         val result = ScoreValidator.validateCommitTurn(player)
@@ -113,9 +118,9 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when not entered and score is below 500`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice", hasEnteredGame = false)
-            .startTurn("turn1")
-            .addScoreEntry(ScoreEntry(id = "e1", points = 400))
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = false)
+            .startTurn(TurnId.of("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(400)))
         
         // Act
         val result = ScoreValidator.validateCommitTurn(player)
@@ -128,9 +133,9 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return valid when not entered and score is 500 or more`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice", hasEnteredGame = false)
-            .startTurn("turn1")
-            .addScoreEntry(ScoreEntry(id = "e1", points = 500))
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = false)
+            .startTurn(TurnId.of("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(500)))
         
         // Act
         val result = ScoreValidator.validateCommitTurn(player)
@@ -142,9 +147,9 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return valid when already entered and any points`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice", hasEnteredGame = true)
-            .startTurn("turn1")
-            .addScoreEntry(ScoreEntry(id = "e1", points = 50))
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true)
+            .startTurn(TurnId.of("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(50)))
         
         // Act
         val result = ScoreValidator.validateCommitTurn(player)
@@ -214,7 +219,7 @@ class ScoreValidatorTest {
         val game = createTestGame(gamePhase = GamePhase.ENDED)
         
         // Act
-        val result = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val result = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         
         // Assert
         assertTrue(result.isInvalid)
@@ -226,7 +231,7 @@ class ScoreValidatorTest {
         val game = createTestGame()
         
         // Act
-        val result = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val result = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         
         // Assert
         assertTrue(result.isValid)
@@ -235,8 +240,8 @@ class ScoreValidatorTest {
     @Test
     fun `Validate player can act should return invalid when final round and already played`() {
         // Arrange
-        val player1 = Player(id = "p1", name = "Alice", hasPlayedFinalRound = true)
-        val player2 = Player(id = "p2", name = "Bob")
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = true)
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         val game = Game(
             id = "game1",
             players = listOf(player1, player2),
@@ -259,10 +264,10 @@ class ScoreValidatorTest {
     @Test
     fun `Should trigger final round when in progress and score is at target`() {
         // Arrange
-        val player = Player(id = "p1", name = "Alice", totalScore = 10_000)
+        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000))
         val game = Game(
             id = "game1",
-            players = listOf(player, Player(id = "p2", name = "Bob")),
+            players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
             targetScore = 10_000,
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
@@ -317,8 +322,8 @@ class ScoreValidatorTest {
     @Test
     fun `Should end game when in final round and all non-triggering players finished`() {
         // Arrange
-        val player1 = Player(id = "p1", name = "Alice", hasPlayedFinalRound = true)
-        val player2 = Player(id = "p2", name = "Bob", totalScore = 10_000)
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = true)
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_000))
         val game = Game(
             id = "game1",
             players = listOf(player1, player2),
@@ -338,8 +343,8 @@ class ScoreValidatorTest {
     @Test
     fun `Should not end game when in final round and some players not finished`() {
         // Arrange
-        val player1 = Player(id = "p1", name = "Alice", hasPlayedFinalRound = false)
-        val player2 = Player(id = "p2", name = "Bob", totalScore = 10_000)
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = false)
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_000))
         val game = Game(
             id = "game1",
             players = listOf(player1, player2),
@@ -373,9 +378,9 @@ class ScoreValidatorTest {
     @Test
     fun `Determine winner should return highest scorer when game has ended`() {
         // Arrange
-        val player1 = Player(id = "p1", name = "Alice", totalScore = 9_500)
-        val player2 = Player(id = "p2", name = "Bob", totalScore = 10_500)
-        val player3 = Player(id = "p3", name = "Carol", totalScore = 8_000)
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(9_500))
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_500))
+        val player3 = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"), totalScore = Score.of(8_000))
         val game = Game(
             id = "game1",
             players = listOf(player1, player2, player3),
@@ -389,8 +394,8 @@ class ScoreValidatorTest {
         
         // Assert
         assertNotNull(winner)
-        assertEquals("Bob", winner.name)
-        assertEquals(10_500, winner.totalScore)
+        assertEquals("Bob", winner.name.value)
+        assertEquals(10_500, winner.totalScore.value)
     }
     
     // Score Exceeds Target Validation Tests
@@ -475,8 +480,8 @@ class ScoreValidatorTest {
     private fun createTestGame(
         gamePhase: GamePhase = GamePhase.IN_PROGRESS
     ): Game {
-        val player1 = Player(id = "p1", name = "Alice", totalScore = 1000)
-        val player2 = Player(id = "p2", name = "Bob", totalScore = 800)
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(1000))
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(800))
         
         return Game(
             id = "game1",

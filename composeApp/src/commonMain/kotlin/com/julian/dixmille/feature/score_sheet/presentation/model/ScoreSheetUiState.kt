@@ -29,7 +29,7 @@ data class ScoreSheetUiState(
      * Current turn total points.
      */
     val currentTurnTotal: Int
-        get() = currentPlayer?.currentTurn?.turnTotal ?: 0
+        get() = currentPlayer?.currentTurn?.turnTotal?.value ?: 0
 
     /**
      * Whether the current player has entered the game.

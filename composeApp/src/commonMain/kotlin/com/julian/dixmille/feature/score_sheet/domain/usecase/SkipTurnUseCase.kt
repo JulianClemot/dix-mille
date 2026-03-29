@@ -2,6 +2,8 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.core.domain.validation.ScoreValidator
@@ -36,7 +38,7 @@ class SkipTurnUseCase(
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
@@ -56,7 +58,7 @@ class SkipTurnUseCase(
         game = game.updateCurrentPlayer(updatedPlayer)
 
         // Record skip in turn history (does NOT count as bust)
-        game = game.recordTurn(playerId, points = 0, TurnOutcome.SKIP, previousScore)
+        game = game.recordTurn(playerId, Score.ZERO, TurnOutcome.SKIP, previousScore)
 
         // Check if game should end
         if (ScoreValidator.shouldEndGame(game)) {
@@ -71,13 +73,13 @@ class SkipTurnUseCase(
 
         // Skip triggering player in final round
         if (game.gamePhase == GamePhase.FINAL_ROUND &&
-            game.currentPlayer.id == game.triggeringPlayerId) {
+            game.currentPlayer.id.value == game.triggeringPlayerId) {
             game = game.advanceToNextPlayer()
         }
 
         // Start next player's turn if game not ended
         if (game.gamePhase != GamePhase.ENDED) {
-            val nextPlayer = game.currentPlayer.startTurn(UuidGenerator.generate())
+            val nextPlayer = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(nextPlayer)
         }
 

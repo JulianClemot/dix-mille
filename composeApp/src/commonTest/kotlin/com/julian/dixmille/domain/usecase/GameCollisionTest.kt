@@ -6,11 +6,17 @@ import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.TurnOutcome
 import com.julian.dixmille.core.domain.model.TurnRecord
+import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -41,7 +47,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -49,14 +55,14 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B skips
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player C scores 500 (collides with Player A)
-        var playerC = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerC = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerC = playerC.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerC)
         repository.saveGame(game)
@@ -66,15 +72,15 @@ class GameCollisionTest {
 
         // Assert
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(0, finalGame.players[0].totalScore) // Player A reverted to 0
-        assertEquals(0, finalGame.players[1].totalScore) // Player B unchanged
-        assertEquals(500, finalGame.players[2].totalScore) // Player C keeps 500 (immune)
+        assertEquals(0, finalGame.players[0].totalScore.value) // Player A reverted to 0
+        assertEquals(0, finalGame.players[1].totalScore.value) // Player B unchanged
+        assertEquals(500, finalGame.players[2].totalScore.value) // Player C keeps 500 (immune)
 
         // Check COLLISION record exists for Player A
         val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
         assertEquals(1, collisionRecords.size)
-        assertEquals("p1", collisionRecords[0].playerId)
-        assertEquals(500, collisionRecords[0].previousScore) // Score before reversion
+        assertEquals("p1", collisionRecords[0].playerId.value)
+        assertEquals(500, collisionRecords[0].previousScore.value) // Score before reversion
     }
 
     @Test
@@ -83,7 +89,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 700
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(700))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -91,7 +97,7 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B scores 700, then 300 more
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerB = playerB.addScoreEntry(createScoreEntry(700))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
@@ -102,14 +108,14 @@ class GameCollisionTest {
         // (This is an early collision during setup, not the cascade we're testing)
 
         // Player C skips
-        var playerC = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerC = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(playerC)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player A scores 700 again
-        playerA = game.currentPlayer.startTurn(UuidGenerator.generate())
+        playerA = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(700))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -117,11 +123,11 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // After A scores 700, B should be reverted to 0
-        assertEquals(700, game.players[0].totalScore)
-        assertEquals(0, game.players[1].totalScore)
+        assertEquals(700, game.players[0].totalScore.value)
+        assertEquals(0, game.players[1].totalScore.value)
 
         // Player B scores 1000
-        playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerB = playerB.addScoreEntry(createScoreEntry(1000))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
@@ -129,8 +135,8 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Now A at 700, B at 1000
-        assertEquals(700, game.players[0].totalScore)
-        assertEquals(1000, game.players[1].totalScore)
+        assertEquals(700, game.players[0].totalScore.value)
+        assertEquals(1000, game.players[1].totalScore.value)
 
         // The feature works - collisions trigger and can cascade
         // This test just verifies basic collision functionality works
@@ -144,7 +150,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -154,9 +160,9 @@ class GameCollisionTest {
 
         // Assert
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(500, finalGame.players[0].totalScore)
-        assertEquals(0, finalGame.players[1].totalScore) // Still 0, not collided
-        assertEquals(0, finalGame.players[2].totalScore) // Still 0, not collided
+        assertEquals(500, finalGame.players[0].totalScore.value)
+        assertEquals(0, finalGame.players[1].totalScore.value) // Still 0, not collided
+        assertEquals(0, finalGame.players[2].totalScore.value) // Still 0, not collided
 
         // No COLLISION records should exist
         val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
@@ -169,7 +175,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 600
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(600))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -177,7 +183,7 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B scores 600 (collides with A, A gets reverted, B is immune)
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerB = playerB.addScoreEntry(createScoreEntry(600))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
@@ -185,13 +191,13 @@ class GameCollisionTest {
 
         // Assert
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(0, finalGame.players[0].totalScore) // Player A reverted
-        assertEquals(600, finalGame.players[1].totalScore) // Player B immune (scoring player)
+        assertEquals(0, finalGame.players[0].totalScore.value) // Player A reverted
+        assertEquals(600, finalGame.players[1].totalScore.value) // Player B immune (scoring player)
 
         // Verify COLLISION record exists for A but not B
         val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
         assertEquals(1, collisionRecords.size)
-        assertEquals("p1", collisionRecords[0].playerId) // A was hit, not B
+        assertEquals("p1", collisionRecords[0].playerId.value) // A was hit, not B
     }
 
     @Test
@@ -200,7 +206,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -208,14 +214,14 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B skips
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player C scores 500
-        var playerC = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerC = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerC = playerC.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerC)
         repository.saveGame(game)
@@ -228,9 +234,9 @@ class GameCollisionTest {
         val collisionRecord = finalGame.turnHistory.find { it.outcome == TurnOutcome.COLLISION }
 
         assertTrue(collisionRecord != null)
-        assertEquals("p1", collisionRecord.playerId)
-        assertEquals(0, collisionRecord.points)
-        assertEquals(500, collisionRecord.previousScore) // Score before collision
+        assertEquals("p1", collisionRecord.playerId.value)
+        assertEquals(0, collisionRecord.points.value)
+        assertEquals(500, collisionRecord.previousScore.value) // Score before collision
     }
 
     @Test
@@ -239,7 +245,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -247,7 +253,7 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B scores 500
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerB = playerB.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
@@ -255,7 +261,7 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player C scores 500 (should revert both A and B)
-        var playerC = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerC = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerC = playerC.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerC)
         repository.saveGame(game)
@@ -265,9 +271,9 @@ class GameCollisionTest {
 
         // Assert
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(0, finalGame.players[0].totalScore) // Player A reverted
-        assertEquals(0, finalGame.players[1].totalScore) // Player B reverted
-        assertEquals(500, finalGame.players[2].totalScore) // Player C immune
+        assertEquals(0, finalGame.players[0].totalScore.value) // Player A reverted
+        assertEquals(0, finalGame.players[1].totalScore.value) // Player B reverted
+        assertEquals(500, finalGame.players[2].totalScore.value) // Player C immune
 
         // Should have 2 COLLISION records (one for each reverted player)
         val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
@@ -280,7 +286,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -288,14 +294,14 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B skips
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player C scores 500
-        var playerC = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerC = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerC = playerC.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerC)
         repository.saveGame(game)
@@ -303,16 +309,16 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Verify collision happened
-        assertEquals(0, game.players[0].totalScore)
-        assertEquals(500, game.players[2].totalScore)
+        assertEquals(0, game.players[0].totalScore.value)
+        assertEquals(500, game.players[2].totalScore.value)
 
         // Act: Undo last turn
         undoLastTurnUseCase()
 
         // Assert: Both the collision and the scored turn should be undone
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(500, finalGame.players[0].totalScore) // Player A restored
-        assertEquals(0, finalGame.players[2].totalScore) // Player C undone
+        assertEquals(500, finalGame.players[0].totalScore.value) // Player A restored
+        assertEquals(0, finalGame.players[2].totalScore.value) // Player C undone
 
         // No COLLISION records should remain
         val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
@@ -325,7 +331,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500, then busts
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -334,7 +340,7 @@ class GameCollisionTest {
 
         // Skip other players to get back to A
         for (i in 0 until 2) {
-            var player = game.currentPlayer.startTurn(UuidGenerator.generate())
+            var player = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(player)
             repository.saveGame(game)
             skipTurnUseCase()
@@ -342,17 +348,17 @@ class GameCollisionTest {
         }
 
         // Player A busts (bust counter = 1)
-        playerA = game.players[0].copy(consecutiveBusts = 0)
-        playerA = playerA.startTurn(UuidGenerator.generate())
+        playerA = game.players[0].copy(consecutiveBusts = BustCount.NONE)
+        playerA = playerA.startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.bustTurn()
-        playerA = playerA.copy(consecutiveBusts = 1)
+        playerA = playerA.copy(consecutiveBusts = BustCount.of(1))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(playerA)
-        game = game.recordTurn("p1", 0, TurnOutcome.BUST, 500)
+        game = game.recordTurn(PlayerId.of("p1"), Score.ZERO, TurnOutcome.BUST, Score.of(500))
         game = game.advanceToNextPlayer()
 
         // Player B scores 500 (hits Player A with collision)
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerB = playerB.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
@@ -360,7 +366,7 @@ class GameCollisionTest {
 
         // Assert: Player A's bust counter should still be 1
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(1, finalGame.players[0].consecutiveBusts)
+        assertEquals(1, finalGame.players[0].consecutiveBusts.value)
     }
 
     @Test
@@ -369,7 +375,7 @@ class GameCollisionTest {
         var game = createGameWithThreePlayers()
 
         // Player A scores 500 (enters game)
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -377,14 +383,14 @@ class GameCollisionTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player B skips
-        var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(playerB)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player C scores 500 (collides with A)
-        var playerC = game.currentPlayer.startTurn(UuidGenerator.generate())
+        var playerC = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         playerC = playerC.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerC)
         repository.saveGame(game)
@@ -392,7 +398,7 @@ class GameCollisionTest {
 
         // Assert: Player A reverted to 0 but hasEnteredGame should still be true
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(0, finalGame.players[0].totalScore)
+        assertEquals(0, finalGame.players[0].totalScore.value)
         assertTrue(finalGame.players[0].hasEnteredGame) // Still entered
     }
 
@@ -401,25 +407,25 @@ class GameCollisionTest {
         // Arrange: Bob has 500 points; Alice has 1000 points with 2 consecutive busts
         // Alice's last SCORED turn had previousScore=500, so the three-bust penalty reverts her to 500
         val alice = Player(
-            id = "p1",
-            name = "Alice",
-            totalScore = 1000,
+            id = PlayerId.of("p1"),
+            name = PlayerName.of("Alice"),
+            totalScore = Score.of(1000),
             hasEnteredGame = true,
-            consecutiveBusts = 2
+            consecutiveBusts = BustCount.of(2)
         )
         val bob = Player(
-            id = "p2",
-            name = "Bob",
-            totalScore = 500,
+            id = PlayerId.of("p2"),
+            name = PlayerName.of("Bob"),
+            totalScore = Score.of(500),
             hasEnteredGame = true
         )
         // Record Alice's last SCORED turn with previousScore=500 so the penalty reverts to 500
         val aliceScoredRecord = TurnRecord(
             roundNumber = 1,
-            playerId = "p1",
-            points = 500,
+            playerId = PlayerId.of("p1"),
+            points = Score.of(500),
             outcome = TurnOutcome.SCORED,
-            previousScore = 500
+            previousScore = Score.of(500)
         )
         var game = Game(
             id = "game1",
@@ -433,7 +439,7 @@ class GameCollisionTest {
         )
 
         // Start Alice's turn
-        var aliceWithTurn = alice.startTurn(UuidGenerator.generate())
+        var aliceWithTurn = alice.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(aliceWithTurn)
         repository.saveGame(game)
 
@@ -444,10 +450,10 @@ class GameCollisionTest {
         val finalGame = repository.getCurrentGame().getOrThrow()
 
         // Alice's score should have been reverted to 500 (bust penalty)
-        assertEquals(500, finalGame.players[0].totalScore)
+        assertEquals(500, finalGame.players[0].totalScore.value)
 
         // Bob's score must remain 500 — no collision should have been triggered
-        assertEquals(500, finalGame.players[1].totalScore)
+        assertEquals(500, finalGame.players[1].totalScore.value)
 
         // No COLLISION record should exist — bust penalty is not a SCORED turn
         val collisionRecords = finalGame.turnHistory.filter { it.outcome == TurnOutcome.COLLISION }
@@ -455,9 +461,9 @@ class GameCollisionTest {
     }
 
     private fun createGameWithThreePlayers(): Game {
-        val player1 = Player(id = "p1", name = "Alice")
-        val player2 = Player(id = "p2", name = "Bob")
-        val player3 = Player(id = "p3", name = "Charlie")
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player3 = Player(id = PlayerId.of("p3"), name = PlayerName.of("Charlie"))
         return Game(
             id = "game1",
             players = listOf(player1, player2, player3),
@@ -472,8 +478,8 @@ class GameCollisionTest {
 
     private fun createScoreEntry(points: Int): ScoreEntry {
         return ScoreEntry(
-            id = UuidGenerator.generate(),
-            points = points
+            id = EntryId.of(UuidGenerator.generate()),
+            points = Score.of(points)
         )
     }
 }

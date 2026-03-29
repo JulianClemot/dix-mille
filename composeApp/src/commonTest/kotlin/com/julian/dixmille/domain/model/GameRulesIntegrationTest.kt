@@ -5,11 +5,17 @@ import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
+import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.domain.usecase.FakeGameRepository
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -37,7 +43,7 @@ class GameRulesIntegrationTest {
         var game = createGame(rules)
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -47,15 +53,15 @@ class GameRulesIntegrationTest {
         // Bust 3 times (with player B skipping between)
         for (i in 0 until 3) {
             // Player B skips
-            var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+            var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(playerB)
             repository.saveGame(game)
             skipTurnUseCase()
             game = repository.getCurrentGame().getOrThrow()
 
             // Player A busts
-            playerA = game.players[0].copy(consecutiveBusts = i)
-            playerA = playerA.startTurn(UuidGenerator.generate())
+            playerA = game.players[0].copy(consecutiveBusts = BustCount.of(i))
+            playerA = playerA.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.copy(currentPlayerIndex = 0)
             game = game.updateCurrentPlayer(playerA)
             repository.saveGame(game)
@@ -65,9 +71,9 @@ class GameRulesIntegrationTest {
 
         // Assert: Score should NOT be reverted (penalty disabled)
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(500, finalGame.players[0].totalScore)
+        assertEquals(500, finalGame.players[0].totalScore.value)
         // Bust counter should still increment (but no penalty applied)
-        assertEquals(3, finalGame.players[0].consecutiveBusts)
+        assertEquals(3, finalGame.players[0].consecutiveBusts.value)
     }
 
     @Test
@@ -77,7 +83,7 @@ class GameRulesIntegrationTest {
         var game = createGame(rules)
 
         // Player A scores 300 (should enter the game with custom minimum)
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(300))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -85,7 +91,7 @@ class GameRulesIntegrationTest {
 
         // Assert: Player should have entered and scored
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(300, finalGame.players[0].totalScore)
+        assertEquals(300, finalGame.players[0].totalScore.value)
         assertEquals(true, finalGame.players[0].hasEnteredGame)
     }
 
@@ -96,7 +102,7 @@ class GameRulesIntegrationTest {
         var game = createGame(rules)
 
         // Player A scores 1000
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(1000))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -115,7 +121,7 @@ class GameRulesIntegrationTest {
         var game = createGame(rules)
 
         // Player A scores 500
-        var playerA = game.players[0].startTurn(UuidGenerator.generate())
+        var playerA = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
         playerA = playerA.addScoreEntry(createScoreEntry(500))
         game = game.updateCurrentPlayer(playerA)
         repository.saveGame(game)
@@ -125,15 +131,15 @@ class GameRulesIntegrationTest {
         // Bust 2 times (with player B skipping between)
         for (i in 0 until 2) {
             // Player B skips
-            var playerB = game.currentPlayer.startTurn(UuidGenerator.generate())
+            var playerB = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(playerB)
             repository.saveGame(game)
             skipTurnUseCase()
             game = repository.getCurrentGame().getOrThrow()
 
             // Player A busts
-            playerA = game.players[0].copy(consecutiveBusts = i)
-            playerA = playerA.startTurn(UuidGenerator.generate())
+            playerA = game.players[0].copy(consecutiveBusts = BustCount.of(i))
+            playerA = playerA.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.copy(currentPlayerIndex = 0)
             game = game.updateCurrentPlayer(playerA)
             repository.saveGame(game)
@@ -143,13 +149,13 @@ class GameRulesIntegrationTest {
 
         // Assert: 2-bust penalty should have triggered (reverts to 0)
         val finalGame = repository.getCurrentGame().getOrThrow()
-        assertEquals(0, finalGame.players[0].totalScore)
-        assertEquals(0, finalGame.players[0].consecutiveBusts)
+        assertEquals(0, finalGame.players[0].totalScore.value)
+        assertEquals(0, finalGame.players[0].consecutiveBusts.value)
     }
 
     private fun createGame(rules: GameRules): Game {
-        val player1 = Player(id = "p1", name = "Alice")
-        val player2 = Player(id = "p2", name = "Bob")
+        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         return Game(
             id = "game1",
             players = listOf(player1, player2),
@@ -163,8 +169,8 @@ class GameRulesIntegrationTest {
 
     private fun createScoreEntry(points: Int): ScoreEntry {
         return ScoreEntry(
-            id = UuidGenerator.generate(),
-            points = points
+            id = EntryId.of(UuidGenerator.generate()),
+            points = Score.of(points)
         )
     }
 }

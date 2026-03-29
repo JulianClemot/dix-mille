@@ -2,6 +2,8 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.ScoreType
+import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.core.domain.validation.ScoreValidator
@@ -43,7 +45,7 @@ class AddScoreEntryUseCase(
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
@@ -51,7 +53,7 @@ class AddScoreEntryUseCase(
         // Validate score does not exceed target
         val targetValidation = ScoreValidator.validateScoreDoesNotExceedTarget(
             points = points,
-            playerCurrentScore = game.currentPlayer.totalScore,
+            playerCurrentScore = game.currentPlayer.totalScore.value,
             targetScore = game.targetScore
         )
         if (targetValidation is ValidationResult.Invalid) {
@@ -60,8 +62,8 @@ class AddScoreEntryUseCase(
 
         // Create score entry
         val entry = ScoreEntry(
-            id = UuidGenerator.generate(),
-            points = points,
+            id = EntryId.of(UuidGenerator.generate()),
+            points = Score.of(points),
             type = if (isPreset) ScoreType.PRESET else ScoreType.CUSTOM,
             label = label
         )

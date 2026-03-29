@@ -5,6 +5,8 @@ import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameResult
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.event.DomainEvent
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -14,8 +16,8 @@ class GameResultTest {
     private fun makeGame(): Game = Game(
         id = "game-1",
         players = listOf(
-            Player(id = "p1", name = "Alice"),
-            Player(id = "p2", name = "Bob"),
+            Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice")),
+            Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob")),
         ),
         targetScore = 10_000,
         createdAt = 0L,

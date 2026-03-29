@@ -29,7 +29,7 @@ class UndoLastEntryUseCase(
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }

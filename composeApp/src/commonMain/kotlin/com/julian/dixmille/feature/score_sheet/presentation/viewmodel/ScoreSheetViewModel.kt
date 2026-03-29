@@ -87,8 +87,8 @@ class ScoreSheetViewModel(
                         if (winner != null) {
                             _navigationEvents.send(
                                 ScoreSheetNavigationEvent.NavigateToGameEnd(
-                                    winnerName = winner.name,
-                                    winnerScore = winner.totalScore
+                                    winnerName = winner.name.value,
+                                    winnerScore = winner.totalScore.value
                                 )
                             )
                         }
@@ -122,7 +122,7 @@ class ScoreSheetViewModel(
 
             // Target validation: Score must not exceed target
             if (currentPlayer != null && game != null) {
-                val remaining = game.targetScore - currentPlayer.totalScore
+                val remaining = game.targetScore - currentPlayer.totalScore.value
                 if (points > remaining) {
                     _state.update {
                         it.copy(error = "Score of $points would exceed the target ($remaining points remaining)")

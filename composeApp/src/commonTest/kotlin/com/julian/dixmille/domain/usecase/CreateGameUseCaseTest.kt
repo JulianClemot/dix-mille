@@ -32,9 +32,9 @@ class CreateGameUseCaseTest {
         assertTrue(result.isSuccess)
         val game = result.getOrThrow()
         assertEquals(3, game.players.size)
-        assertEquals("Alice", game.players[0].name)
-        assertEquals("Bob", game.players[1].name)
-        assertEquals("Carol", game.players[2].name)
+        assertEquals("Alice", game.players[0].name.value)
+        assertEquals("Bob", game.players[1].name.value)
+        assertEquals("Carol", game.players[2].name.value)
     }
 
     @Test
@@ -43,9 +43,9 @@ class CreateGameUseCaseTest {
 
         val game = result.getOrThrow()
         game.players.forEach { player ->
-            assertEquals(0, player.totalScore)
+            assertEquals(0, player.totalScore.value)
             assertFalse(player.hasEnteredGame)
-            assertEquals(0, player.consecutiveBusts)
+            assertEquals(0, player.consecutiveBusts.value)
             assertFalse(player.hasPlayedFinalRound)
         }
     }
@@ -81,8 +81,8 @@ class CreateGameUseCaseTest {
         val result = useCase(listOf(" Alice ", " Bob"))
 
         val game = result.getOrThrow()
-        assertEquals("Alice", game.players[0].name)
-        assertEquals("Bob", game.players[1].name)
+        assertEquals("Alice", game.players[0].name.value)
+        assertEquals("Bob", game.players[1].name.value)
     }
 
     // ── Boundary values ───────────────────────────────────────────────────────

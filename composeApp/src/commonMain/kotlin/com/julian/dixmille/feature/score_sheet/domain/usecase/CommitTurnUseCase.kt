@@ -2,6 +2,11 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.core.domain.validation.ScoreValidator
@@ -37,7 +42,7 @@ class CommitTurnUseCase(
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
@@ -49,15 +54,15 @@ class CommitTurnUseCase(
         }
 
         // Get data before committing
-        val turnPoints = game.currentPlayer.currentTurn?.turnTotal ?: 0
+        val turnPoints = game.currentPlayer.currentTurn?.turnTotal ?: Score.ZERO
         val playerId = game.currentPlayer.id
         val previousScore = game.currentPlayer.totalScore
 
         // Commit the turn (adds points to total, enters game if applicable)
-        var updatedPlayer = game.currentPlayer.commitTurn(game.rules.entryMinimumScore)
+        var updatedPlayer = game.currentPlayer.commitTurn(EntryMinimumScore.of(game.rules.entryMinimumScore))
 
         // Reset consecutive busts on successful turn
-        updatedPlayer = updatedPlayer.copy(consecutiveBusts = 0)
+        updatedPlayer = updatedPlayer.copy(consecutiveBusts = BustCount.NONE)
 
         game = game.updateCurrentPlayer(updatedPlayer)
 
@@ -65,7 +70,7 @@ class CommitTurnUseCase(
         game = game.recordTurn(playerId, turnPoints, TurnOutcome.SCORED, previousScore)
 
         // Resolve score collisions
-        game = game.resolveScoreCollisions(playerId)
+        game = game.resolveScoreCollisions(playerId.value)
 
         // Check if final round should be triggered (or game ends immediately if final round disabled)
         if (ScoreValidator.shouldTriggerFinalRound(game)) {
@@ -98,13 +103,13 @@ class CommitTurnUseCase(
 
         // Skip triggering player in final round
         if (game.gamePhase == GamePhase.FINAL_ROUND &&
-            game.currentPlayer.id == game.triggeringPlayerId) {
+            game.currentPlayer.id.value == game.triggeringPlayerId) {
             game = game.advanceToNextPlayer()
         }
 
         // Start next player's turn if game not ended
         if (game.gamePhase != GamePhase.ENDED) {
-            val nextPlayer = game.currentPlayer.startTurn(UuidGenerator.generate())
+            val nextPlayer = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(nextPlayer)
         }
 

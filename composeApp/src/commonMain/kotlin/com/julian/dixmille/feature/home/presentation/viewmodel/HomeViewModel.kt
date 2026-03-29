@@ -63,8 +63,8 @@ class HomeViewModel(
                         val playerCount = game.players.size
                         val roundNumber = game.roundNumber
                         val leader = game.players.maxByOrNull { it.totalScore }
-                        val leaderInfo = if (leader != null && leader.totalScore > 0) {
-                            "${leader.name}: ${leader.totalScore} pts"
+                        val leaderInfo = if (leader != null && leader.totalScore.value > 0) {
+                            "${leader.name.value}: ${leader.totalScore.value} pts"
                         } else {
                             "No scores yet"
                         }

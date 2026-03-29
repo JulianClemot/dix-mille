@@ -2,6 +2,10 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.core.domain.validation.ScoreValidator
@@ -35,7 +39,7 @@ class BustTurnUseCase(
         }
 
         // Validate player can act
-        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id)
+        val playerValidation = ScoreValidator.validatePlayerCanAct(game, game.currentPlayer.id.value)
         if (playerValidation is ValidationResult.Invalid) {
             throw IllegalStateException(playerValidation.error.toString())
         }
@@ -46,20 +50,20 @@ class BustTurnUseCase(
 
         // Increment consecutive busts
         var updatedPlayer = game.currentPlayer.copy(
-            consecutiveBusts = game.currentPlayer.consecutiveBusts + 1
+            consecutiveBusts = game.currentPlayer.consecutiveBusts.increment()
         )
 
         // Check for bust penalty
-        if (game.rules.enableBustPenalty && updatedPlayer.consecutiveBusts >= game.rules.consecutiveBustsForPenalty) {
+        if (game.rules.enableBustPenalty && updatedPlayer.consecutiveBusts.value >= game.rules.consecutiveBustsForPenalty) {
             val lastScoredTurn = game.turnHistory
-                .filter { it.playerId == playerId && it.outcome == TurnOutcome.SCORED }
-                .lastOrNull { it.previousScore < updatedPlayer.totalScore }
+                .filter { it.playerId.value == playerId.value && it.outcome == TurnOutcome.SCORED }
+                .lastOrNull { it.previousScore.value < updatedPlayer.totalScore.value }
 
-            val revertToScore = lastScoredTurn?.previousScore ?: 0
+            val revertToScore = lastScoredTurn?.previousScore?.value ?: 0
 
             updatedPlayer = updatedPlayer.copy(
-                totalScore = revertToScore,
-                consecutiveBusts = 0
+                totalScore = Score.of(revertToScore),
+                consecutiveBusts = BustCount.NONE
             )
         }
 
@@ -74,7 +78,7 @@ class BustTurnUseCase(
         game = game.updateCurrentPlayer(updatedPlayer)
 
         // Record bust in turn history
-        game = game.recordTurn(playerId, points = 0, TurnOutcome.BUST, previousScore)
+        game = game.recordTurn(playerId, Score.ZERO, TurnOutcome.BUST, previousScore)
 
         // Check if game should end
         if (ScoreValidator.shouldEndGame(game)) {
@@ -89,13 +93,13 @@ class BustTurnUseCase(
 
         // Skip triggering player in final round
         if (game.gamePhase == GamePhase.FINAL_ROUND &&
-            game.currentPlayer.id == game.triggeringPlayerId) {
+            game.currentPlayer.id.value == game.triggeringPlayerId) {
             game = game.advanceToNextPlayer()
         }
 
         // Start next player's turn if game not ended
         if (game.gamePhase != GamePhase.ENDED) {
-            val nextPlayer = game.currentPlayer.startTurn(UuidGenerator.generate())
+            val nextPlayer = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(nextPlayer)
         }
 

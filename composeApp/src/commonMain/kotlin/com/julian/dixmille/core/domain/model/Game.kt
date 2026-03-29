@@ -1,6 +1,8 @@
 package com.julian.dixmille.core.domain.model
 
 import com.julian.dixmille.core.domain.model.event.DomainEvent
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.serialization.Serializable
 
 /**
@@ -68,21 +70,21 @@ data class Game(
             return GameResult(game = this, events = emptyList())
         }
 
-        if (currentPlayer.totalScore >= targetScore) {
+        if (currentPlayer.totalScore.value >= targetScore) {
             if (!rules.enableFinalRound) {
                 val endedGame = copy(gamePhase = GamePhase.ENDED)
                 return GameResult(
                     game = endedGame,
-                    events = listOf(DomainEvent.GameEnded(winnerId = currentPlayer.id))
+                    events = listOf(DomainEvent.GameEnded(winnerId = currentPlayer.id.value))
                 )
             }
             val finalRoundGame = copy(
                 gamePhase = GamePhase.FINAL_ROUND,
-                triggeringPlayerId = currentPlayer.id
+                triggeringPlayerId = currentPlayer.id.value
             )
             return GameResult(
                 game = finalRoundGame,
-                events = listOf(DomainEvent.FinalRoundStarted(triggeringPlayerId = currentPlayer.id))
+                events = listOf(DomainEvent.FinalRoundStarted(triggeringPlayerId = currentPlayer.id.value))
             )
         }
 
@@ -100,14 +102,14 @@ data class Game(
         }
 
         val allNonTriggeringPlayersFinished = players
-            .filter { it.id != triggeringPlayerId }
+            .filter { it.id.value != triggeringPlayerId }
             .all { it.hasPlayedFinalRound }
 
         return if (allNonTriggeringPlayersFinished) {
             val endedGame = copy(gamePhase = GamePhase.ENDED)
             GameResult(
                 game = endedGame,
-                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id ?: ""))
+                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id?.value ?: ""))
             )
         } else {
             GameResult(game = this, events = emptyList())
@@ -145,7 +147,7 @@ data class Game(
      * @param previousScore The player's total score BEFORE this turn
      * @return Updated game with turn recorded
      */
-    fun recordTurn(playerId: String, points: Int, outcome: TurnOutcome, previousScore: Int): Game {
+    fun recordTurn(playerId: PlayerId, points: Score, outcome: TurnOutcome, previousScore: Score): Game {
         val record = TurnRecord(
             roundNumber = roundNumber,
             playerId = playerId,
@@ -207,9 +209,9 @@ data class Game(
         val scoresToCheck = mutableSetOf<Int>()
 
         // Start by checking the scoring player's new score
-        val scoringPlayer = game.players.find { it.id == immunePlayerId }
-        if (scoringPlayer != null && scoringPlayer.totalScore > 0) {
-            scoresToCheck.add(scoringPlayer.totalScore)
+        val scoringPlayer = game.players.find { it.id.value == immunePlayerId }
+        if (scoringPlayer != null && scoringPlayer.totalScore.value > 0) {
+            scoresToCheck.add(scoringPlayer.totalScore.value)
         }
 
         // Iteratively check for collisions (BFS approach)
@@ -222,35 +224,35 @@ data class Game(
 
             // Find all non-immune player IDs at this score
             val collidedPlayerIds = game.players
-                .filter { player -> player.id !in immunePlayerIds && player.totalScore == scoreToCheck }
-                .map { it.id }
+                .filter { player -> player.id.value !in immunePlayerIds && player.totalScore.value == scoreToCheck }
+                .map { it.id.value }
 
             // Revert each collided player
             for (playerId in collidedPlayerIds) {
                 // Get current player state from game
-                val collidedPlayer = game.players.find { it.id == playerId } ?: continue
+                val collidedPlayer = game.players.find { it.id.value == playerId } ?: continue
 
                 // Find the last SCORED turn for this player where previousScore < totalScore
                 val revertToScore = game.turnHistory
-                    .filter { it.playerId == playerId && it.outcome == TurnOutcome.SCORED }
-                    .lastOrNull { it.previousScore < collidedPlayer.totalScore }
-                    ?.previousScore
+                    .filter { it.playerId.value == playerId && it.outcome == TurnOutcome.SCORED }
+                    .lastOrNull { it.previousScore.value < collidedPlayer.totalScore.value }
+                    ?.previousScore?.value
                     ?: 0
 
                 // Update the player's score
-                val playerIndex = game.players.indexOfFirst { it.id == playerId }
+                val playerIndex = game.players.indexOfFirst { it.id.value == playerId }
                 if (playerIndex != -1) {
-                    val updatedPlayer = collidedPlayer.copy(totalScore = revertToScore)
+                    val updatedPlayer = collidedPlayer.copy(totalScore = Score.of(revertToScore))
                     val updatedPlayers = game.players.toMutableList()
                     updatedPlayers[playerIndex] = updatedPlayer
                     game = game.copy(players = updatedPlayers)
 
                     // Record the collision
                     game = game.recordTurn(
-                        playerId = playerId,
-                        points = 0,
+                        playerId = PlayerId.of(playerId),
+                        points = Score.ZERO,
                         outcome = TurnOutcome.COLLISION,
-                        previousScore = scoreToCheck
+                        previousScore = Score.of(scoreToCheck)
                     )
 
                     // Mark this player as immune (can't be hit twice in same cascade)

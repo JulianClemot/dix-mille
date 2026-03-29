@@ -1,5 +1,11 @@
 package com.julian.dixmille.core.domain.model
 
+import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import kotlinx.serialization.Serializable
 
 /**
@@ -7,18 +13,18 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Player(
-    val id: String,
-    val name: String,
-    val totalScore: Int = 0,
+    val id: PlayerId,
+    val name: PlayerName,
+    val totalScore: Score = Score.ZERO,
     val hasEnteredGame: Boolean = false,
     val currentTurn: Turn? = null,
     val hasPlayedFinalRound: Boolean = false,
-    val consecutiveBusts: Int = 0  // Tracks consecutive busts for 3-bust penalty
+    val consecutiveBusts: BustCount = BustCount.NONE
 ) {
     /**
      * Starts a new turn for this player.
      */
-    fun startTurn(turnId: String): Player {
+    fun startTurn(turnId: TurnId): Player {
         return copy(currentTurn = Turn(id = turnId))
     }
 
@@ -58,13 +64,13 @@ data class Player(
      * @return Updated player with committed turn
      * @throws IllegalStateException if no turn is in progress or turn is busted
      */
-    fun commitTurn(entryMinimumScore: Int = 500): Player {
+    fun commitTurn(entryMinimumScore: EntryMinimumScore = EntryMinimumScore.DEFAULT): Player {
         require(currentTurn != null) { "No turn in progress" }
         require(!currentTurn.isBusted) { "Cannot commit a busted turn" }
 
         val turnPoints = currentTurn.turnTotal
         val newTotalScore = totalScore + turnPoints
-        val nowEntered = hasEnteredGame || turnPoints >= entryMinimumScore
+        val nowEntered = hasEnteredGame || turnPoints.value >= entryMinimumScore.value
 
         return copy(
             totalScore = if (nowEntered) newTotalScore else totalScore,

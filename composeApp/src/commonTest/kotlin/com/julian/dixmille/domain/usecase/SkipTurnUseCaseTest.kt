@@ -4,8 +4,13 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.BustCount
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -27,12 +32,12 @@ class SkipTurnUseCaseTest {
 
     @Test
     fun `Should leave score unchanged and advance when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 0))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.NONE))
 
         useCase()
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(600, game.players[0].totalScore)
+        assertEquals(600, game.players[0].totalScore.value)
         assertEquals(1, game.currentPlayerIndex)
         assertNotNull(game.players[1].currentTurn)
     }
@@ -41,7 +46,7 @@ class SkipTurnUseCaseTest {
 
     @Test
     fun `Should record skip outcome in history when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 0))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.NONE))
 
         useCase()
 
@@ -49,45 +54,45 @@ class SkipTurnUseCaseTest {
         assertEquals(1, game.turnHistory.size)
         val record = game.turnHistory[0]
         assertEquals(TurnOutcome.SKIP, record.outcome)
-        assertEquals(0, record.points)
-        assertEquals(600, record.previousScore)
-        assertEquals("p1", record.playerId)
+        assertEquals(0, record.points.value)
+        assertEquals(600, record.previousScore.value)
+        assertEquals("p1", record.playerId.value)
     }
 
     // ── State preconditions ───────────────────────────────────────────────────
 
     @Test
     fun `Should not increment bust counter when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 1))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.of(1)))
 
         useCase()
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(1, game.players[0].consecutiveBusts)
+        assertEquals(1, game.players[0].consecutiveBusts.value)
     }
 
     @Test
     fun `Should not reset bust counter when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = 600, consecutiveBusts = 2))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.of(2)))
 
         useCase()
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(2, game.players[0].consecutiveBusts)
+        assertEquals(2, game.players[0].consecutiveBusts.value)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private fun gameWithAliceTurn(totalScore: Int, consecutiveBusts: Int): Game {
+    private fun gameWithAliceTurn(totalScore: Score, consecutiveBusts: BustCount): Game {
         val alice = Player(
-            id = "p1",
-            name = "Alice",
+            id = PlayerId.of("p1"),
+            name = PlayerName.of("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             consecutiveBusts = consecutiveBusts,
-            currentTurn = com.julian.dixmille.core.domain.model.Turn(id = UuidGenerator.generate())
+            currentTurn = com.julian.dixmille.core.domain.model.Turn(id = TurnId.of(UuidGenerator.generate()))
         )
-        val bob = Player(id = "p2", name = "Bob")
+        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
         return Game(
             id = "game1",
             players = listOf(alice, bob),

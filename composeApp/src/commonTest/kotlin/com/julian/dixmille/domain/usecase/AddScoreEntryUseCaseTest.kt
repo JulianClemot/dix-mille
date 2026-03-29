@@ -5,8 +5,12 @@ import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreType
 import com.julian.dixmille.core.domain.model.Turn
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.AddScoreEntryUseCase
+import com.julian.dixmille.core.domain.model.vo.PlayerId
+import com.julian.dixmille.core.domain.model.vo.PlayerName
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -37,7 +41,7 @@ class AddScoreEntryUseCaseTest {
         val game = repository.getCurrentGame().getOrThrow()
         val turn = game.currentPlayer.currentTurn!!
         assertEquals(1, turn.entries.size)
-        assertEquals(100, turn.entries[0].points)
+        assertEquals(100, turn.entries[0].points.value)
         assertEquals(ScoreType.PRESET, turn.entries[0].type)
     }
 
@@ -52,7 +56,7 @@ class AddScoreEntryUseCaseTest {
         val entry = game.currentPlayer.currentTurn!!.entries[0]
         assertEquals(ScoreType.CUSTOM, entry.type)
         assertEquals("Custom", entry.label)
-        assertEquals(750, entry.points)
+        assertEquals(750, entry.points.value)
     }
 
     @Test
@@ -65,7 +69,7 @@ class AddScoreEntryUseCaseTest {
         val game = repository.getCurrentGame().getOrThrow()
         val turn = game.currentPlayer.currentTurn!!
         assertEquals(2, turn.entries.size)
-        assertEquals(300, turn.turnTotal)
+        assertEquals(300, turn.turnTotal.value)
     }
 
     @Test
@@ -83,7 +87,7 @@ class AddScoreEntryUseCaseTest {
 
     @Test
     fun `Should allow entry when score exactly reaches target`() = runTest {
-        repository.saveGame(gameWithCurrentPlayer(totalScore = 9900, targetScore = 10_000))
+        repository.saveGame(gameWithCurrentPlayer(totalScore = Score.of(9900), targetScore = 10_000))
 
         val result = useCase(points = 100, isPreset = true)
 
@@ -125,7 +129,7 @@ class AddScoreEntryUseCaseTest {
 
     @Test
     fun `Should reject entry when score would exceed target`() = runTest {
-        repository.saveGame(gameWithCurrentPlayer(totalScore = 9800, targetScore = 10_000))
+        repository.saveGame(gameWithCurrentPlayer(totalScore = Score.of(9800), targetScore = 10_000))
 
         val result = useCase(points = 300)
 
@@ -149,15 +153,15 @@ class AddScoreEntryUseCaseTest {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun gameWithCurrentPlayer(
-        totalScore: Int = 0,
+        totalScore: Score = Score.of(0),
         targetScore: Int = 10_000,
         phase: GamePhase = GamePhase.IN_PROGRESS,
-        currentTurn: Turn? = Turn(id = UuidGenerator.generate()),
+        currentTurn: Turn? = Turn(id = TurnId.of(UuidGenerator.generate())),
         hasPlayedFinalRound: Boolean = false
     ): Game {
         val player = Player(
-            id = "p1",
-            name = "Alice",
+            id = PlayerId.of("p1"),
+            name = PlayerName.of("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             currentTurn = currentTurn,
@@ -165,7 +169,7 @@ class AddScoreEntryUseCaseTest {
         )
         return Game(
             id = "game1",
-            players = listOf(player, Player(id = "p2", name = "Bob")),
+            players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
             targetScore = targetScore,
             currentPlayerIndex = 0,
             gamePhase = phase,

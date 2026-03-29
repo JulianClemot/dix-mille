@@ -1,5 +1,7 @@
 package com.julian.dixmille.core.domain.model
 
+import com.julian.dixmille.core.domain.model.vo.EntryId
+import com.julian.dixmille.core.domain.model.vo.Score
 import kotlinx.serialization.Serializable
 
 /**
@@ -9,8 +11,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class ScoreEntry(
-    val id: String,
-    val points: Int,
+    val id: EntryId,
+    val points: Score,
     val type: ScoreType = ScoreType.PRESET,
     val label: String? = null
 )

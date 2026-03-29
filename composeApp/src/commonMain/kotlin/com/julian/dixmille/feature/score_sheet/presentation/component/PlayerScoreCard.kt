@@ -58,7 +58,7 @@ fun PlayerScoreCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = player.name,
+                    text = player.name.value,
                     style = MaterialTheme.typography.labelMedium,
                     color = if (isCurrentPlayer) {
                         MaterialTheme.colorScheme.secondary

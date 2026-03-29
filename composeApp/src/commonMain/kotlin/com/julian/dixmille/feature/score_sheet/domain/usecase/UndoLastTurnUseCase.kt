@@ -2,6 +2,9 @@ package com.julian.dixmille.feature.score_sheet.domain.usecase
 
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.vo.BustCount
+import com.julian.dixmille.core.domain.model.vo.Score
+import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.core.domain.validation.ValidationResult
@@ -36,7 +39,7 @@ class UndoLastTurnUseCase(
             val collisionRecord = game.turnHistory.last()
 
             // Find the collided player and restore their score
-            val playerIndex = game.players.indexOfFirst { it.id == collisionRecord.playerId }
+            val playerIndex = game.players.indexOfFirst { it.id.value == collisionRecord.playerId.value }
             if (playerIndex != -1) {
                 val player = game.players[playerIndex]
                 val restoredPlayer = player.copy(totalScore = collisionRecord.previousScore)
@@ -54,7 +57,7 @@ class UndoLastTurnUseCase(
             ?: throw IllegalStateException("No turns to undo")
 
         // Find the player who made the last turn
-        val playerIndex = game.players.indexOfFirst { it.id == lastTurn.playerId }
+        val playerIndex = game.players.indexOfFirst { it.id.value == lastTurn.playerId.value }
         if (playerIndex == -1) {
             throw IllegalStateException("Player not found for turn record")
         }
@@ -65,11 +68,11 @@ class UndoLastTurnUseCase(
         val previousScore = lastTurn.previousScore
 
         // If this was the player's entry turn (first scoring turn), mark as not entered
-        val wasEntryTurn = lastTurn.outcome == TurnOutcome.SCORED && previousScore == 0 && player.hasEnteredGame
+        val wasEntryTurn = lastTurn.outcome == TurnOutcome.SCORED && previousScore == Score.ZERO && player.hasEnteredGame
 
         // Re-derive consecutive bust count from remaining history
         val remainingHistory = game.turnHistory.dropLast(1)
-        val playerTurns = remainingHistory.filter { it.playerId == player.id }
+        val playerTurns = remainingHistory.filter { it.playerId.value == player.id.value }
         var bustCount = 0
         for (turn in playerTurns.reversed()) {
             when (turn.outcome) {
@@ -86,7 +89,7 @@ class UndoLastTurnUseCase(
             hasEnteredGame = if (wasEntryTurn) false else player.hasEnteredGame,
             currentTurn = null,  // Clear any active turn
             hasPlayedFinalRound = false,  // Reset final round flag (conservative approach)
-            consecutiveBusts = bustCount
+            consecutiveBusts = BustCount.of(bustCount)
         )
 
         // Update players list
@@ -102,13 +105,13 @@ class UndoLastTurnUseCase(
         game = game.copy(currentPlayerIndex = playerIndex)
 
         // Start a new turn for the current player
-        val currentPlayer = game.currentPlayer.startTurn(UuidGenerator.generate())
+        val currentPlayer = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
 
         // If undoing triggered the end of the game, revert to FINAL_ROUND or IN_PROGRESS
         if (game.gamePhase == GamePhase.ENDED) {
             // Check if any player has reached target score
-            val hasPlayerReachedTarget = game.players.any { it.totalScore >= game.targetScore }
+            val hasPlayerReachedTarget = game.players.any { it.totalScore.value >= game.targetScore }
             game = game.copy(
                 gamePhase = if (hasPlayerReachedTarget) GamePhase.FINAL_ROUND else GamePhase.IN_PROGRESS
             )
