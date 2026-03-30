@@ -21,11 +21,12 @@ import com.julian.dixmille.core.domain.util.UuidGenerator
  * - Turn advancement
  *
  * @param repository The game repository for persistence
+ * @param validator The validator for score and game state checks
  */
 class CommitTurnUseCase(
-    private val repository: GameRepository
+    private val repository: GameRepository,
+    private val validator: ScoreValidator
 ) {
-    private val validator = ScoreValidator()
 
     /**
      * Commits the current turn and advances to the next player.

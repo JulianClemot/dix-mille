@@ -9,6 +9,7 @@ import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.EntryMinimumScore
 import com.julian.dixmille.core.domain.model.vo.GameId
@@ -31,7 +32,7 @@ class EntryRuleTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        useCase = CommitTurnUseCase(repository)
+        useCase = CommitTurnUseCase(repository, ScoreValidator())
     }
 
     // ── Boundary values ───────────────────────────────────────────────────────

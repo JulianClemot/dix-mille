@@ -6,6 +6,7 @@ import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.AddScoreEntryUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.GameId
@@ -28,8 +29,8 @@ class AutoCommitIntegrationTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        addScoreEntryUseCase = AddScoreEntryUseCase(repository)
-        commitTurnUseCase = CommitTurnUseCase(repository)
+        addScoreEntryUseCase = AddScoreEntryUseCase(repository, ScoreValidator())
+        commitTurnUseCase = CommitTurnUseCase(repository, ScoreValidator())
     }
 
     @Test

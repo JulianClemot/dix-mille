@@ -19,11 +19,12 @@ import com.julian.dixmille.core.domain.util.UuidGenerator
  * - If in final round, mark player as having played
  *
  * @param repository The game repository for persistence
+ * @param validator The validator for score and game state checks
  */
 class SkipTurnUseCase(
-    private val repository: GameRepository
+    private val repository: GameRepository,
+    private val validator: ScoreValidator
 ) {
-    private val validator = ScoreValidator()
 
     /**
      * Skips the current turn and advances to the next player.

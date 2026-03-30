@@ -7,6 +7,7 @@ import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.UndoLastEntryUseCase
 import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
@@ -27,7 +28,7 @@ class UndoLastEntryUseCaseTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        useCase = UndoLastEntryUseCase(repository)
+        useCase = UndoLastEntryUseCase(repository, ScoreValidator())
     }
 
     @Test

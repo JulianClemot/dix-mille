@@ -10,11 +10,12 @@ import com.julian.dixmille.core.domain.service.ValidationResult
  * Useful for correcting entry mistakes.
  *
  * @param repository The game repository for persistence
+ * @param validator The validator for score and game state checks
  */
 class UndoLastEntryUseCase(
-    private val repository: GameRepository
+    private val repository: GameRepository,
+    private val validator: ScoreValidator
 ) {
-    private val validator = ScoreValidator()
 
     /**
      * Removes the last score entry from the current turn.

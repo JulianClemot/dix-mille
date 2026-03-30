@@ -9,6 +9,7 @@ import com.julian.dixmille.core.domain.model.TurnRecord
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
@@ -37,10 +38,10 @@ class GameCollisionTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        commitTurnUseCase = CommitTurnUseCase(repository)
+        commitTurnUseCase = CommitTurnUseCase(repository, ScoreValidator())
         undoLastTurnUseCase = UndoLastTurnUseCase(repository)
-        skipTurnUseCase = SkipTurnUseCase(repository)
-        bustTurnUseCase = BustTurnUseCase(repository)
+        skipTurnUseCase = SkipTurnUseCase(repository, ScoreValidator())
+        bustTurnUseCase = BustTurnUseCase(repository, ScoreValidator())
     }
 
     @Test

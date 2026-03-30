@@ -10,6 +10,7 @@ import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.CommitTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.PlayerId
@@ -32,8 +33,8 @@ class FinalRoundTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        commitTurnUseCase = CommitTurnUseCase(repository)
-        bustTurnUseCase = BustTurnUseCase(repository)
+        commitTurnUseCase = CommitTurnUseCase(repository, ScoreValidator())
+        bustTurnUseCase = BustTurnUseCase(repository, ScoreValidator())
     }
 
     // ── Test 1 ────────────────────────────────────────────────────────────────

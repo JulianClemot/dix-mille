@@ -2,6 +2,7 @@ package com.julian.dixmille.di
 
 import com.julian.dixmille.core.data.repository.GameRepositoryImpl
 import com.julian.dixmille.core.domain.repository.GameRepository
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.core.domain.usecase.GetCurrentGameUseCase
 import com.julian.dixmille.feature.game_end.di.gameEndModule
 import com.julian.dixmille.feature.game_rules.di.gameRulesModule
@@ -20,9 +21,10 @@ val coreDataModule = module {
 }
 
 /**
- * Core domain module - provides shared use cases.
+ * Core domain module - provides shared use cases and domain services.
  */
 val coreDomainModule = module {
+    single { ScoreValidator() }
     singleOf(::GetCurrentGameUseCase)
 }
 

@@ -6,6 +6,7 @@ import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.TurnOutcome
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
@@ -27,7 +28,7 @@ class SkipTurnUseCaseTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        useCase = SkipTurnUseCase(repository)
+        useCase = SkipTurnUseCase(repository, ScoreValidator())
     }
 
     // ── Happy path ────────────────────────────────────────────────────────────

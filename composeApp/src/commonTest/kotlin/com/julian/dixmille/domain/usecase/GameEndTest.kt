@@ -6,6 +6,7 @@ import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
+import com.julian.dixmille.core.domain.service.ScoreValidator
 import com.julian.dixmille.feature.score_sheet.domain.usecase.BustTurnUseCase
 import com.julian.dixmille.feature.score_sheet.domain.usecase.SkipTurnUseCase
 import com.julian.dixmille.core.domain.model.vo.GameId
@@ -29,8 +30,8 @@ class GameEndTest {
     @BeforeTest
     fun setup() {
         repository = FakeGameRepository()
-        bustTurnUseCase = BustTurnUseCase(repository)
-        skipTurnUseCase = SkipTurnUseCase(repository)
+        bustTurnUseCase = BustTurnUseCase(repository, ScoreValidator())
+        skipTurnUseCase = SkipTurnUseCase(repository, ScoreValidator())
     }
 
     @Test
