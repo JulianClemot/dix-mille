@@ -309,7 +309,7 @@ fun ScoreSheetContent(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Clip,
                         autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
                         color = if (state.canUndoTurn) {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -339,7 +339,7 @@ fun ScoreSheetContent(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Clip,
                         autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -366,7 +366,7 @@ fun ScoreSheetContent(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Clip,
                         autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
                         color = MaterialTheme.colorScheme.error
                     )
