@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.julian.dixmille.numericPlatformImeOptions
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.custom_score_input_add_button
 import dixmille.composeapp.generated.resources.custom_score_input_error_invalid
@@ -88,7 +89,20 @@ fun CustomScoreInput(
             },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Send
+                imeAction = ImeAction.Send,
+                platformImeOptions = numericPlatformImeOptions(
+                    onIosDone = {
+                        submit()
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    },
+                    onIosCancel = {
+                        text = ""
+                        error = null
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
+                )
             ),
             keyboardActions = KeyboardActions(
                 onSend = {
