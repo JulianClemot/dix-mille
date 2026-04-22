@@ -50,63 +50,65 @@ Use `@JvmInline value class` for zero-overhead wrapping on the JVM and Native ta
 
 ```kotlin
 @JvmInline
-value class Score private constructor(val value: Int) {
+value class Score(val value: Int) : Comparable<Score> {
+    init {
+        require(value >= 0) { "Score cannot be negative" }
+        require(value % 50 == 0) { "Score must be a multiple of 50" }
+    }
     override fun toString(): String = value.toString()
+    override fun compareTo(other: Score): Int = value.compareTo(other.value)
+    operator fun plus(other: Score): Score = Score(value + other.value)
+    fun meetsEntryThreshold(): Boolean = value >= 500
     companion object {
-        fun of(value: Int): Score {
-            require(value >= 0) { "Score cannot be negative" }
-            require(value % 50 == 0) { "Score must be a multiple of 50" }
-            return Score(value)
-        }
         val ZERO: Score = Score(0)
     }
-    operator fun plus(other: Score): Score = of(value + other.value)
-    fun meetsEntryThreshold(): Boolean = value >= 500
 }
 
 @JvmInline
-value class PlayerName private constructor(val value: String) {
+value class PlayerName(val value: String) {
+    init {
+        require(value.isNotBlank()) { "Player name cannot be blank" }
+        require(value.length <= MAX_LENGTH) { "Player name too long" }
+    }
     override fun toString(): String = value
     companion object {
-        fun of(raw: String): PlayerName {
-            val trimmed = raw.trim()
-            require(trimmed.isNotEmpty()) { "Player name cannot be blank" }
-            require(trimmed.length <= 30) { "Player name too long" }
-            return PlayerName(trimmed)
-        }
+        const val MAX_LENGTH = 30
     }
 }
 
 @JvmInline
-value class TargetScore private constructor(val value: Int) {
+value class TargetScore(val value: Int) {
+    init {
+        require(value >= 1000) { "Target score must be at least 1000" }
+    }
     override fun toString(): String = value.toString()
     companion object {
-        fun of(value: Int): TargetScore {
-            require(value >= 1000) { "Target score must be at least 1000" }
-            return TargetScore(value)
-        }
         val DEFAULT: TargetScore = TargetScore(10_000)
     }
 }
 
 @JvmInline
-value class BustCount private constructor(val value: Int) {
+value class BustCount(val value: Int) {
+    init {
+        require(value in 0..3) { "Bust count must be between 0 and 3" }
+    }
     override fun toString(): String = value.toString()
+    fun increment(): BustCount {
+        check(value < 3) { "BustCount cannot be incremented beyond 3" }
+        return BustCount(value + 1)
+    }
+    fun isMaxed(): Boolean = value == 3
     companion object {
-        fun of(value: Int): BustCount {
-            require(value in 0..3) { "Bust count must be between 0 and 3" }
-            return BustCount(value)
-        }
         val NONE: BustCount = BustCount(0)
     }
-    fun increment(): BustCount = of(value + 1)
-    fun isMaxed(): Boolean = value == 3
 }
 ```
 
 **Rules:**
-- Always `private constructor` + `companion object { fun of(...) }` factory.
-- The factory validates — throw `IllegalArgumentException` (via `require`) for contract violations.
+- Use a **public constructor** with an `init` block that enforces invariants via `require`. No private constructor, no `of()` factory.
+- `init` validates — throw `IllegalArgumentException` (via `require`) for contract violations.
+- Named constants (`ZERO`, `NONE`, `DEFAULT`) stay in a `companion object` and are constructed via the public constructor (they pass through `init`, so they must satisfy invariants).
+- Callers are responsible for any preprocessing (e.g. trimming a `String`) before constructing a VO. The VO validates the value it receives — it does not transform it.
 - Never accept raw primitives (`Int`, `String`) in domain model constructors. Always the VO type.
 - Always override `toString()` to return the inner value directly (`value.toString()` for numeric types, `value` for `String` types). Without this, string interpolation and UI display will render `Score(value = 500)` instead of `500`.
 - VOs are equal by value, never by identity.
@@ -380,7 +382,7 @@ Write tests before each step. Tests use domain types — never raw primitives.
 ## Common Mistakes to Avoid
 
 - Accepting raw `Int` / `String` in domain model constructors instead of VOs
-- Putting validation logic in use cases instead of VO factories or aggregate methods
+- Putting validation logic in use cases instead of VO `init` blocks or aggregate methods
 - Mutating child entities outside the aggregate root
 - Leaking domain VOs into UI models (map to plain display types)
 - Naming domain objects with technical terms (`Manager`, `Handler`) instead of ubiquitous language

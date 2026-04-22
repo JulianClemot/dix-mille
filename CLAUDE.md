@@ -65,52 +65,56 @@ The domain layer follows DDD tactical patterns. All business rules live in the d
 
 ### Value Objects
 
-Wrap every domain-meaningful primitive in a `@JvmInline value class`. Validate invariants in the factory, not in use cases.
+Wrap every domain-meaningful primitive in a `@JvmInline value class`. Validate invariants in the constructor, not in use cases.
 
 ```kotlin
 @JvmInline
-value class Score private constructor(val value: Int) {
+value class Score(val value: Int) : Comparable<Score> {
+    init {
+        require(value >= 0) { "Score cannot be negative" }
+        require(value % 50 == 0) { "Score must be a multiple of 50" }
+    }
+    override fun toString(): String = value.toString()
+    override fun compareTo(other: Score): Int = value.compareTo(other.value)
+    operator fun plus(other: Score): Score = Score(value + other.value)
+    fun meetsEntryThreshold(): Boolean = value >= 500
     companion object {
-        fun of(value: Int): Score {
-            require(value >= 0) { "Score cannot be negative" }
-            require(value % 50 == 0) { "Score must be a multiple of 50" }
-            return Score(value)
-        }
         val ZERO: Score = Score(0)
     }
-    operator fun plus(other: Score): Score = of(value + other.value)
-    fun meetsEntryThreshold(): Boolean = value >= 500
 }
 
 @JvmInline
-value class PlayerName private constructor(val value: String) {
+value class PlayerName(val value: String) {
+    init {
+        require(value.isNotBlank()) { "Player name cannot be blank" }
+        require(value.length <= MAX_LENGTH) { "Player name too long" }
+    }
+    override fun toString(): String = value
     companion object {
-        fun of(raw: String): PlayerName {
-            val trimmed = raw.trim()
-            require(trimmed.isNotEmpty()) { "Player name cannot be blank" }
-            require(trimmed.length <= 30) { "Player name too long" }
-            return PlayerName(trimmed)
-        }
+        const val MAX_LENGTH = 30
     }
 }
 
 @JvmInline
-value class TargetScore private constructor(val value: Int) {
+value class TargetScore(val value: Int) {
+    init {
+        require(value >= 1000) { "Target score must be at least 1000" }
+    }
+    override fun toString(): String = value.toString()
     companion object {
-        fun of(value: Int): TargetScore {
-            require(value >= 1000) { "Target score must be at least 1000" }
-            return TargetScore(value)
-        }
         val DEFAULT: TargetScore = TargetScore(10_000)
     }
 }
 ```
 
-**Value Objects in this project:** `Score`, `PlayerId`, `PlayerName`, `GameId`, `TargetScore`, `BustCount`.
+**Value Objects in this project:** `Score`, `PlayerId`, `PlayerName`, `GameId`, `TargetScore`, `BustCount`, `EntryMinimumScore`, `TurnId`, `EntryId`.
 
 Rules:
-- Always use `private constructor` + a `companion object { fun of(...) }` factory that enforces invariants.
+- Use a **public constructor** with an `init` block that enforces invariants via `require`. No private constructor, no `of()` factory.
+- Named constants (`ZERO`, `NONE`, `DEFAULT`) live in a `companion object` and use the public constructor directly.
+- Callers handle preprocessing (e.g. `name.trim()`) before passing values to a VO constructor. The VO validates, not transforms.
 - Never accept raw `Int` / `String` in domain model constructors — always the VO type.
+- Always override `toString()` to return the raw value (`value.toString()` for numbers, `value` for strings).
 - VOs are equal by value, not identity.
 - Serialisation/deserialisation happens in the data layer only; the domain never sees raw primitives.
 
