@@ -51,6 +51,7 @@ Use `@JvmInline value class` for zero-overhead wrapping on the JVM and Native ta
 ```kotlin
 @JvmInline
 value class Score private constructor(val value: Int) {
+    override fun toString(): String = value.toString()
     companion object {
         fun of(value: Int): Score {
             require(value >= 0) { "Score cannot be negative" }
@@ -65,6 +66,7 @@ value class Score private constructor(val value: Int) {
 
 @JvmInline
 value class PlayerName private constructor(val value: String) {
+    override fun toString(): String = value
     companion object {
         fun of(raw: String): PlayerName {
             val trimmed = raw.trim()
@@ -77,6 +79,7 @@ value class PlayerName private constructor(val value: String) {
 
 @JvmInline
 value class TargetScore private constructor(val value: Int) {
+    override fun toString(): String = value.toString()
     companion object {
         fun of(value: Int): TargetScore {
             require(value >= 1000) { "Target score must be at least 1000" }
@@ -88,6 +91,7 @@ value class TargetScore private constructor(val value: Int) {
 
 @JvmInline
 value class BustCount private constructor(val value: Int) {
+    override fun toString(): String = value.toString()
     companion object {
         fun of(value: Int): BustCount {
             require(value in 0..3) { "Bust count must be between 0 and 3" }
@@ -104,6 +108,7 @@ value class BustCount private constructor(val value: Int) {
 - Always `private constructor` + `companion object { fun of(...) }` factory.
 - The factory validates — throw `IllegalArgumentException` (via `require`) for contract violations.
 - Never accept raw primitives (`Int`, `String`) in domain model constructors. Always the VO type.
+- Always override `toString()` to return the inner value directly (`value.toString()` for numeric types, `value` for `String` types). Without this, string interpolation and UI display will render `Score(value = 500)` instead of `500`.
 - VOs are equal by value, never by identity.
 - Serialisation lives in the data layer only. Mappers convert VO → primitive for persistence.
 
