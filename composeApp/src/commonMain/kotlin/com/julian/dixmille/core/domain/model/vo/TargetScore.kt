@@ -1,5 +1,8 @@
 package com.julian.dixmille.core.domain.model.vo
 
+import kotlin.jvm.JvmInline
+
+@JvmInline
 value class TargetScore private constructor(val value: Int) {
 
     companion object {

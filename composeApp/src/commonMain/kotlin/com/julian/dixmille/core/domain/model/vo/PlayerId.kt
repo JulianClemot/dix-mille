@@ -1,5 +1,8 @@
 package com.julian.dixmille.core.domain.model.vo
 
+import kotlin.jvm.JvmInline
+
+@JvmInline
 value class PlayerId private constructor(val value: String) {
 
     companion object {

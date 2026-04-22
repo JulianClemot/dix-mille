@@ -1,5 +1,8 @@
 package com.julian.dixmille.core.domain.model.vo
 
+import kotlin.jvm.JvmInline
+
+@JvmInline
 value class Score private constructor(val value: Int) : Comparable<Score> {
 
     override fun compareTo(other: Score): Int = value.compareTo(other.value)
