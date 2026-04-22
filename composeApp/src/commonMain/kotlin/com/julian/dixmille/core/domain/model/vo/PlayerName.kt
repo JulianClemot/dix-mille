@@ -3,20 +3,18 @@ package com.julian.dixmille.core.domain.model.vo
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class PlayerName private constructor(val value: String) {
+value class PlayerName(val value: String) {
+
+    init {
+        require(value.isNotBlank()) { "PlayerName must not be blank" }
+        require(value.length <= MAX_LENGTH) {
+            "PlayerName must not exceed $MAX_LENGTH characters, was ${value.length}"
+        }
+    }
 
     override fun toString(): String = value
 
     companion object {
-        private const val MAX_LENGTH = 30
-
-        fun of(value: String): PlayerName {
-            val trimmed = value.trim()
-            require(trimmed.isNotBlank()) { "PlayerName must not be blank" }
-            require(trimmed.length <= MAX_LENGTH) {
-                "PlayerName must not exceed $MAX_LENGTH characters, was ${trimmed.length}"
-            }
-            return PlayerName(trimmed)
-        }
+        const val MAX_LENGTH = 30
     }
 }

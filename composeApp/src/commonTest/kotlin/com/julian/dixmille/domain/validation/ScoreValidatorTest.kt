@@ -40,7 +40,7 @@ class ScoreValidatorTest {
     @Test
     fun `Validate score entry should return valid when preset is valid`() {
         // Act
-        val result = validator.validateScoreEntry(Score.of(100), isPreset = true)
+        val result = validator.validateScoreEntry(Score(100), isPreset = true)
 
         // Assert
         assertTrue(result.isValid)
@@ -48,8 +48,8 @@ class ScoreValidatorTest {
 
     @Test
     fun `Validate score entry should return invalid when preset is invalid`() {
-        // Score.of(700) is a valid Score (multiple of 50) but NOT in the preset list
-        val result = validator.validateScoreEntry(Score.of(700), isPreset = true)
+        // Score(700) is a valid Score (multiple of 50) but NOT in the preset list
+        val result = validator.validateScoreEntry(Score(700), isPreset = true)
 
         // Assert
         assertTrue(result.isInvalid)
@@ -58,7 +58,7 @@ class ScoreValidatorTest {
     @Test
     fun `Validate score entry should return valid when custom score is positive`() {
         // Act
-        val result = validator.validateScoreEntry(Score.of(750), isPreset = false)
+        val result = validator.validateScoreEntry(Score(750), isPreset = false)
 
         // Assert
         assertTrue(result.isValid)
@@ -69,7 +69,7 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when no turn in progress`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
 
         // Act
         val result = validator.validateCommitTurn(player)
@@ -82,8 +82,8 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when turn is busted`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
         val bustedPlayer = player.copy(
             currentTurn = player.currentTurn?.bust()
         )
@@ -99,8 +99,8 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when points are zero`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
 
         // Act
         val result = validator.validateCommitTurn(player)
@@ -113,9 +113,9 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return invalid when not entered and score is below 500`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = false)
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(400)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = false)
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(400)))
 
         // Act
         val result = validator.validateCommitTurn(player)
@@ -128,9 +128,9 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return valid when not entered and score is 500 or more`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = false)
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(500)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = false)
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(500)))
 
         // Act
         val result = validator.validateCommitTurn(player)
@@ -142,9 +142,9 @@ class ScoreValidatorTest {
     @Test
     fun `Validate commit turn should return valid when already entered and any points`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true)
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(50)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true)
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(50)))
 
         // Act
         val result = validator.validateCommitTurn(player)
@@ -198,7 +198,7 @@ class ScoreValidatorTest {
     fun `Validate player can act should return invalid when not current player`() {
         // Arrange
         val game = createTestGame()
-        val wrongPlayerId = PlayerId.of("p2")
+        val wrongPlayerId = PlayerId("p2")
 
         // Act
         val result = validator.validatePlayerCanAct(game, wrongPlayerId)
@@ -235,19 +235,19 @@ class ScoreValidatorTest {
     @Test
     fun `Validate player can act should return invalid when final round and already played`() {
         // Arrange
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = true)
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasPlayedFinalRound = true)
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p2"),
+            triggeringPlayerId = PlayerId("p2"),
             createdAt = 0L
         )
 
         // Act
-        val result = validator.validatePlayerCanAct(game, PlayerId.of("p1"))
+        val result = validator.validatePlayerCanAct(game, PlayerId("p1"))
 
         // Assert
         assertTrue(result.isInvalid)
@@ -259,11 +259,11 @@ class ScoreValidatorTest {
     @Test
     fun `Should trigger final round when in progress and score is at target`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(10_000))
         val game = Game(
-            id = GameId.of("game1"),
-            players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = TargetScore.of(10_000),
+            id = GameId("game1"),
+            players = listOf(player, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L
@@ -317,14 +317,14 @@ class ScoreValidatorTest {
     @Test
     fun `Should end game when in final round and all non-triggering players finished`() {
         // Arrange
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = true)
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_000))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasPlayedFinalRound = true)
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(10_000))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p2"),
+            triggeringPlayerId = PlayerId("p2"),
             createdAt = 0L
         )
 
@@ -338,14 +338,14 @@ class ScoreValidatorTest {
     @Test
     fun `Should not end game when in final round and some players not finished`() {
         // Arrange
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasPlayedFinalRound = false)
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_000))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasPlayedFinalRound = false)
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(10_000))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p2"),
+            triggeringPlayerId = PlayerId("p2"),
             createdAt = 0L
         )
 
@@ -373,11 +373,11 @@ class ScoreValidatorTest {
     @Test
     fun `Determine winner should return highest scorer when game has ended`() {
         // Arrange
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(9_500))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10_500))
-        val player3 = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"), totalScore = Score.of(8_000))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(9_500))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(10_500))
+        val player3 = Player(id = PlayerId("p3"), name = PlayerName("Carol"), totalScore = Score(8_000))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2, player3),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
@@ -399,9 +399,9 @@ class ScoreValidatorTest {
     fun `Should return valid when score does not exceed target`() {
         // Act
         val result = validator.validateScoreDoesNotExceedTarget(
-            points = Score.of(500),
-            playerCurrentScore = Score.of(9000),
-            targetScore = TargetScore.of(10_000)
+            points = Score(500),
+            playerCurrentScore = Score(9000),
+            targetScore = TargetScore(10_000)
         )
 
         // Assert
@@ -412,9 +412,9 @@ class ScoreValidatorTest {
     fun `Should return valid when score exactly reaches target`() {
         // Act
         val result = validator.validateScoreDoesNotExceedTarget(
-            points = Score.of(1000),
-            playerCurrentScore = Score.of(9000),
-            targetScore = TargetScore.of(10_000)
+            points = Score(1000),
+            playerCurrentScore = Score(9000),
+            targetScore = TargetScore(10_000)
         )
 
         // Assert
@@ -425,9 +425,9 @@ class ScoreValidatorTest {
     fun `Should return invalid when score exceeds target`() {
         // Act
         val result = validator.validateScoreDoesNotExceedTarget(
-            points = Score.of(1500),
-            playerCurrentScore = Score.of(9000),
-            targetScore = TargetScore.of(10_000)
+            points = Score(1500),
+            playerCurrentScore = Score(9000),
+            targetScore = TargetScore(10_000)
         )
 
         // Assert
@@ -444,9 +444,9 @@ class ScoreValidatorTest {
     fun `Should return invalid when score exceeds custom target`() {
         // Act
         val result = validator.validateScoreDoesNotExceedTarget(
-            points = Score.of(600),
-            playerCurrentScore = Score.of(4800),
-            targetScore = TargetScore.of(5000)
+            points = Score(600),
+            playerCurrentScore = Score(4800),
+            targetScore = TargetScore(5000)
         )
 
         // Assert
@@ -457,9 +457,9 @@ class ScoreValidatorTest {
     fun `Should format error message when score exceeds target`() {
         // Act
         val result = validator.validateScoreDoesNotExceedTarget(
-            points = Score.of(2000),
-            playerCurrentScore = Score.of(9500),
-            targetScore = TargetScore.of(10_000)
+            points = Score(2000),
+            playerCurrentScore = Score(9500),
+            targetScore = TargetScore(10_000)
         )
 
         // Assert
@@ -475,7 +475,7 @@ class ScoreValidatorTest {
     @Test
     fun `Should return InvalidScoreValue with Score when score is not a preset value`() {
         // Arrange — 700 is a valid Score (multiple of 50) but not in any preset list
-        val nonPresetScore = Score.of(700)
+        val nonPresetScore = Score(700)
 
         // Act
         val result = validator.validateScoreEntry(nonPresetScore, isPreset = true)
@@ -491,7 +491,7 @@ class ScoreValidatorTest {
     fun `Should return NotPlayersTurn with PlayerId when it is not player s turn`() {
         // Arrange
         val game = createTestGame()
-        val notCurrentPlayerId = PlayerId.of("p2")
+        val notCurrentPlayerId = PlayerId("p2")
 
         // Act
         val result = validator.validatePlayerCanAct(game, notCurrentPlayerId)
@@ -508,13 +508,13 @@ class ScoreValidatorTest {
     private fun createTestGame(
         gamePhase: GamePhase = GamePhase.IN_PROGRESS
     ): Game {
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(1000))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(800))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(1000))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(800))
 
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = gamePhase,
             createdAt = 0L

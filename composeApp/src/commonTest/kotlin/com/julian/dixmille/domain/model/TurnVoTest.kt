@@ -10,7 +10,7 @@ class TurnVoTest {
     @Test
     fun `Should create Turn with TurnId`() {
         // Arrange
-        val id = TurnId.of("turn-1")
+        val id = TurnId("turn-1")
 
         // Act
         val turn = Turn(id = id)

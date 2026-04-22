@@ -114,8 +114,8 @@ class GameRulesSettingsViewModel(
         // Validate constraints
         val rules = try {
             GameRules(
-                targetScore = TargetScore.of(targetScore),
-                entryMinimumScore = if (entryMinimum == 0) EntryMinimumScore.ZERO else EntryMinimumScore.of(entryMinimum),
+                targetScore = TargetScore(targetScore),
+                entryMinimumScore = if (entryMinimum == 0) EntryMinimumScore.ZERO else EntryMinimumScore(entryMinimum),
                 consecutiveBustsForPenalty = bustsForPenalty,
                 minPlayers = minPlayers,
                 maxPlayers = maxPlayers,

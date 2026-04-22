@@ -9,20 +9,20 @@ class TargetScoreTest {
 
     @Test
     fun `Should create when value is exactly 1000`() {
-        val target = TargetScore.of(1000)
+        val target = TargetScore(1000)
         assertEquals(1000, target.value)
     }
 
     @Test
     fun `Should create when value is 10000`() {
-        val target = TargetScore.of(10_000)
+        val target = TargetScore(10_000)
         assertEquals(10_000, target.value)
     }
 
     @Test
     fun `Should throw when value is below 1000`() {
         assertFailsWith<IllegalArgumentException> {
-            TargetScore.of(999)
+            TargetScore(999)
         }
     }
 

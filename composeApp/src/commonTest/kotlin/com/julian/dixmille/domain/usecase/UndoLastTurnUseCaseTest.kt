@@ -33,34 +33,34 @@ class UndoLastTurnUseCaseTest {
     @Test
     fun `Should restore bust counter when undoing bust`() = runTest {
         // Arrange - Player has 1 bust, undo it -> counter back to 0
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(500), consecutiveBusts = BustCount.of(1))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true, totalScore = Score(500), consecutiveBusts = BustCount(1))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(500),
+                    playerId = PlayerId("p1"),
+                    points = Score(500),
                     outcome = TurnOutcome.SCORED,
                     previousScore = Score.ZERO
                 ),
                 TurnRecord(
                     roundNumber = 2,
-                    playerId = PlayerId.of("p1"),
+                    playerId = PlayerId("p1"),
                     points = Score.ZERO,
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 )
             ),
             roundNumber = 2
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -79,60 +79,60 @@ class UndoLastTurnUseCaseTest {
         // Arrange - Player had score 700, 3rd bust triggered penalty reducing to 500
         // Undo the 3rd bust -> score back to 700, counter back to 2
         val player1 = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             hasEnteredGame = true,
-            totalScore = Score.of(500), // After penalty
+            totalScore = Score(500), // After penalty
             consecutiveBusts = BustCount.NONE  // Reset after penalty
         )
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(500),
+                    playerId = PlayerId("p1"),
+                    points = Score(500),
                     outcome = TurnOutcome.SCORED,
                     previousScore = Score.ZERO
                 ),
                 TurnRecord(
                     roundNumber = 2,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(200),
+                    playerId = PlayerId("p1"),
+                    points = Score(200),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 ),
                 TurnRecord(
                     roundNumber = 3,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(0),
+                    playerId = PlayerId("p1"),
+                    points = Score(0),
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(700)
+                    previousScore = Score(700)
                 ),
                 TurnRecord(
                     roundNumber = 4,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(0),
+                    playerId = PlayerId("p1"),
+                    points = Score(0),
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(700)
+                    previousScore = Score(700)
                 ),
                 TurnRecord(
                     roundNumber = 5,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(0),
+                    playerId = PlayerId("p1"),
+                    points = Score(0),
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(700)  // This was the 3rd bust that triggered penalty
+                    previousScore = Score(700)  // This was the 3rd bust that triggered penalty
                 )
             ),
             roundNumber = 5
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -151,53 +151,53 @@ class UndoLastTurnUseCaseTest {
         // Arrange - Player had 2 busts then scored (resetting counter to 0)
         // Undo the scored turn -> counter back to 2
         val player1 = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             hasEnteredGame = true,
-            totalScore = Score.of(700),
+            totalScore = Score(700),
             consecutiveBusts = BustCount.NONE  // Reset after scoring
         )
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(500),
+                    playerId = PlayerId("p1"),
+                    points = Score(500),
                     outcome = TurnOutcome.SCORED,
                     previousScore = Score.ZERO
                 ),
                 TurnRecord(
                     roundNumber = 2,
-                    playerId = PlayerId.of("p1"),
+                    playerId = PlayerId("p1"),
                     points = Score.ZERO,
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 ),
                 TurnRecord(
                     roundNumber = 3,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(0),
+                    playerId = PlayerId("p1"),
+                    points = Score(0),
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 ),
                 TurnRecord(
                     roundNumber = 4,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(200),
+                    playerId = PlayerId("p1"),
+                    points = Score(200),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 )
             ),
             roundNumber = 4
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -217,60 +217,60 @@ class UndoLastTurnUseCaseTest {
         // Then scored -> counter resets to 0
         // Undo the scored turn -> counter should be 2 (skip doesn't break the sequence)
         val player1 = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             hasEnteredGame = true,
-            totalScore = Score.of(700),
+            totalScore = Score(700),
             consecutiveBusts = BustCount.NONE
         )
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(500),
+                    playerId = PlayerId("p1"),
+                    points = Score(500),
                     outcome = TurnOutcome.SCORED,
                     previousScore = Score.ZERO
                 ),
                 TurnRecord(
                     roundNumber = 2,
-                    playerId = PlayerId.of("p1"),
+                    playerId = PlayerId("p1"),
                     points = Score.ZERO,
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 ),
                 TurnRecord(
                     roundNumber = 3,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(0),
+                    playerId = PlayerId("p1"),
+                    points = Score(0),
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 ),
                 TurnRecord(
                     roundNumber = 4,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(0),
+                    playerId = PlayerId("p1"),
+                    points = Score(0),
                     outcome = TurnOutcome.SKIP,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 ),
                 TurnRecord(
                     roundNumber = 5,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(200),
+                    playerId = PlayerId("p1"),
+                    points = Score(200),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 )
             ),
             roundNumber = 5
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -289,39 +289,39 @@ class UndoLastTurnUseCaseTest {
         // Arrange - Player scored, then busted once
         // Undo the bust -> counter should be 0
         val player1 = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             hasEnteredGame = true,
-            totalScore = Score.of(500),
-            consecutiveBusts = BustCount.of(1)
+            totalScore = Score(500),
+            consecutiveBusts = BustCount(1)
         )
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(500),
+                    playerId = PlayerId("p1"),
+                    points = Score(500),
                     outcome = TurnOutcome.SCORED,
                     previousScore = Score.ZERO
                 ),
                 TurnRecord(
                     roundNumber = 2,
-                    playerId = PlayerId.of("p1"),
+                    playerId = PlayerId("p1"),
                     points = Score.ZERO,
                     outcome = TurnOutcome.BUST,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 )
             ),
             roundNumber = 2
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -338,34 +338,34 @@ class UndoLastTurnUseCaseTest {
     @Test
     fun `Should revert score and restore turn when undoing scored turn`() = runTest {
         // Arrange - Alice committed 300 points (500->800), now Bob's turn
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(800))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true, totalScore = Score(800))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(500),
+                    playerId = PlayerId("p1"),
+                    points = Score(500),
                     outcome = TurnOutcome.SCORED,
                     previousScore = Score.ZERO
                 ),
                 TurnRecord(
                     roundNumber = 2,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(300),
+                    playerId = PlayerId("p1"),
+                    points = Score(300),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(500)
+                    previousScore = Score(500)
                 )
             ),
             roundNumber = 2
         )
-        val currentPlayer = game.players[1].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[1].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -383,27 +383,27 @@ class UndoLastTurnUseCaseTest {
     @Test
     fun `Should revert hasEnteredGame when undoing entry turn`() = runTest {
         // Arrange - Alice entered game with 600 pts (0->600, hasEnteredGame=true), now Bob's turn
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(600))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true, totalScore = Score(600))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(600),
+                    playerId = PlayerId("p1"),
+                    points = Score(600),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(0)
+                    previousScore = Score(0)
                 )
             ),
             roundNumber = 1
         )
-        val currentPlayer = game.players[1].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[1].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -421,35 +421,35 @@ class UndoLastTurnUseCaseTest {
     fun `Should revert hasPlayedFinalRound when undoing final round turn`() = runTest {
         // Arrange - FINAL_ROUND, Alice is triggering player
         // Bob committed his final turn (hasPlayedFinalRound=true, 300->500), now Alice's turn (index=0)
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(10_000))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), hasEnteredGame = true, totalScore = Score.of(500), hasPlayedFinalRound = true)
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true, totalScore = Score(10_000))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"), hasEnteredGame = true, totalScore = Score(500), hasPlayedFinalRound = true)
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(10_000),
+                    playerId = PlayerId("p1"),
+                    points = Score(10_000),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(0)
+                    previousScore = Score(0)
                 ),
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p2"),
-                    points = Score.of(200),
+                    playerId = PlayerId("p2"),
+                    points = Score(200),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(300)
+                    previousScore = Score(300)
                 )
             ),
             roundNumber = 1
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 
@@ -466,35 +466,35 @@ class UndoLastTurnUseCaseTest {
     @Test
     fun `Should revert game phase to final round when undoing last turn of game`() = runTest {
         // Arrange - Game just ENDED after Bob's final round turn
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), hasEnteredGame = true, totalScore = Score.of(10_000))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), hasEnteredGame = true, totalScore = Score.of(500), hasPlayedFinalRound = true)
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true, totalScore = Score(10_000))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"), hasEnteredGame = true, totalScore = Score(500), hasPlayedFinalRound = true)
         var game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
             createdAt = 0L,
             turnHistory = listOf(
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p1"),
-                    points = Score.of(10_000),
+                    playerId = PlayerId("p1"),
+                    points = Score(10_000),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(0)
+                    previousScore = Score(0)
                 ),
                 TurnRecord(
                     roundNumber = 1,
-                    playerId = PlayerId.of("p2"),
-                    points = Score.of(200),
+                    playerId = PlayerId("p2"),
+                    points = Score(200),
                     outcome = TurnOutcome.SCORED,
-                    previousScore = Score.of(300)
+                    previousScore = Score(300)
                 )
             ),
             roundNumber = 1
         )
-        val currentPlayer = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
         repository.saveGame(game)
 

@@ -19,15 +19,15 @@ class GameVoFieldsTest {
     fun `Should create Game with GameId and TargetScore`() {
         // Arrange
         val players = listOf(
-            Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice")),
-            Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob")),
+            Player(id = PlayerId("p1"), name = PlayerName("Alice")),
+            Player(id = PlayerId("p2"), name = PlayerName("Bob")),
         )
 
         // Act
         val game = Game(
-            id = GameId.of("game-abc"),
+            id = GameId("game-abc"),
             players = players,
-            targetScore = TargetScore.of(5_000),
+            targetScore = TargetScore(5_000),
             createdAt = 0L,
         )
 
@@ -40,16 +40,16 @@ class GameVoFieldsTest {
     fun `Should store triggeringPlayerId as PlayerId`() {
         // Arrange
         val players = listOf(
-            Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice")),
-            Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob")),
+            Player(id = PlayerId("p1"), name = PlayerName("Alice")),
+            Player(id = PlayerId("p2"), name = PlayerName("Bob")),
         )
 
         // Act
         val game = Game(
-            id = GameId.of("game-xyz"),
+            id = GameId("game-xyz"),
             players = players,
-            targetScore = TargetScore.of(10_000),
-            triggeringPlayerId = PlayerId.of("p1"),
+            targetScore = TargetScore(10_000),
+            triggeringPlayerId = PlayerId("p1"),
             gamePhase = GamePhase.FINAL_ROUND,
             createdAt = 0L,
         )
@@ -65,8 +65,8 @@ class GameVoFieldsTest {
     fun `Should create GameRules with TargetScore and EntryMinimumScore`() {
         // Arrange / Act
         val rules = GameRules(
-            targetScore = TargetScore.of(5_000),
-            entryMinimumScore = EntryMinimumScore.of(300),
+            targetScore = TargetScore(5_000),
+            entryMinimumScore = EntryMinimumScore(300),
         )
 
         // Assert

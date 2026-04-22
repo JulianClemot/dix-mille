@@ -42,7 +42,7 @@ class AddScoreEntryUseCase(
         }
 
         // Validate score entry
-        val scoreValidation = validator.validateScoreEntry(Score.of(points), isPreset)
+        val scoreValidation = validator.validateScoreEntry(Score(points), isPreset)
         if (scoreValidation is ValidationResult.Invalid) {
             throw IllegalArgumentException(scoreValidation.error.toString())
         }
@@ -55,7 +55,7 @@ class AddScoreEntryUseCase(
 
         // Validate score does not exceed target
         val targetValidation = validator.validateScoreDoesNotExceedTarget(
-            points = Score.of(points),
+            points = Score(points),
             playerCurrentScore = game.currentPlayer.totalScore,
             targetScore = game.targetScore
         )
@@ -65,8 +65,8 @@ class AddScoreEntryUseCase(
 
         // Create score entry
         val entry = ScoreEntry(
-            id = EntryId.of(UuidGenerator.generate()),
-            points = Score.of(points),
+            id = EntryId(UuidGenerator.generate()),
+            points = Score(points),
             type = if (isPreset) ScoreType.PRESET else ScoreType.CUSTOM,
             label = label
         )

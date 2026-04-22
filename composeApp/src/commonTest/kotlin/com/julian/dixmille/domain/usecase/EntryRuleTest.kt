@@ -45,7 +45,7 @@ class EntryRuleTest {
 
         assertTrue(result.isSuccess)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(500), player.totalScore)
+        assertEquals(Score(500), player.totalScore)
         assertTrue(player.hasEnteredGame)
     }
 
@@ -57,7 +57,7 @@ class EntryRuleTest {
 
         assertTrue(result.isFailure)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(0), player.totalScore)
+        assertEquals(Score(0), player.totalScore)
         assertFalse(player.hasEnteredGame)
     }
 
@@ -71,7 +71,7 @@ class EntryRuleTest {
 
         assertTrue(result.isSuccess)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(750), player.totalScore)
+        assertEquals(Score(750), player.totalScore)
         assertTrue(player.hasEnteredGame)
     }
 
@@ -95,7 +95,7 @@ class EntryRuleTest {
 
         assertTrue(result.isFailure)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(0), player.totalScore)
+        assertEquals(Score(0), player.totalScore)
         assertFalse(player.hasEnteredGame)
     }
 
@@ -103,13 +103,13 @@ class EntryRuleTest {
 
     @Test
     fun `Should allow any score when already entered game`() = runTest {
-        repository.saveGame(gameForEntered(totalScore = Score.of(600), turnPoints = 50))
+        repository.saveGame(gameForEntered(totalScore = Score(600), turnPoints = 50))
 
         val result = useCase()
 
         assertTrue(result.isSuccess)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(650), player.totalScore)
+        assertEquals(Score(650), player.totalScore)
     }
 
     // ── Configurable entry minimum ────────────────────────────────────────────
@@ -122,7 +122,7 @@ class EntryRuleTest {
 
         assertTrue(result.isSuccess)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(300), player.totalScore)
+        assertEquals(Score(300), player.totalScore)
         assertTrue(player.hasEnteredGame)
     }
 
@@ -134,7 +134,7 @@ class EntryRuleTest {
 
         assertTrue(result.isFailure)
         val player = repository.getCurrentGame().getOrThrow().players[0]
-        assertEquals(Score.of(0), player.totalScore)
+        assertEquals(Score(0), player.totalScore)
         assertFalse(player.hasEnteredGame)
     }
 
@@ -142,35 +142,35 @@ class EntryRuleTest {
 
     private fun gameForUnentered(turnPoints: Int, entryMinimum: Int = 500): Game {
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(0),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(0),
             hasEnteredGame = false,
             currentTurn = turnOf(turnPoints)
         )
         return Game(
-            id = GameId.of("game1"),
-            players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = TargetScore.of(10_000),
+            id = GameId("game1"),
+            players = listOf(alice, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
-            rules = GameRules.DEFAULT.copy(entryMinimumScore = EntryMinimumScore.of(entryMinimum))
+            rules = GameRules.DEFAULT.copy(entryMinimumScore = EntryMinimumScore(entryMinimum))
         )
     }
 
     private fun gameForEntered(totalScore: Score, turnPoints: Int): Game {
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             currentTurn = turnOf(turnPoints)
         )
         return Game(
-            id = GameId.of("game1"),
-            players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = TargetScore.of(10_000),
+            id = GameId("game1"),
+            players = listOf(alice, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L
@@ -178,7 +178,7 @@ class EntryRuleTest {
     }
 
     private fun turnOf(points: Int): Turn = Turn(
-        id = TurnId.of(UuidGenerator.generate()),
-        entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(points)))
+        id = TurnId(UuidGenerator.generate()),
+        entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(points)))
     )
 }

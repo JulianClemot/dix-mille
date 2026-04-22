@@ -35,7 +35,7 @@ class AutoCommitIntegrationTest {
 
     @Test
     fun `Should commit turn after adding entry when entry is valid`() = runTest {
-        repository.saveGame(gameWithAlice(totalScore = Score.of(500), hasEnteredGame = true))
+        repository.saveGame(gameWithAlice(totalScore = Score(500), hasEnteredGame = true))
 
         val addResult = addScoreEntryUseCase(points = 200, isPreset = true)
         assertTrue(addResult.isSuccess)
@@ -44,13 +44,13 @@ class AutoCommitIntegrationTest {
         assertTrue(commitResult.isSuccess)
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(Score.of(700), game.players[0].totalScore)
+        assertEquals(Score(700), game.players[0].totalScore)
         assertEquals(1, game.currentPlayerIndex)
     }
 
     @Test
     fun `Should fail commit when entry minimum not met`() = runTest {
-        repository.saveGame(gameWithAlice(totalScore = Score.of(0), hasEnteredGame = false))
+        repository.saveGame(gameWithAlice(totalScore = Score(0), hasEnteredGame = false))
 
         val addResult = addScoreEntryUseCase(points = 300, isPreset = true)
         assertTrue(addResult.isSuccess)
@@ -64,7 +64,7 @@ class AutoCommitIntegrationTest {
 
     @Test
     fun `Should commit turn after custom entry when entry is valid`() = runTest {
-        repository.saveGame(gameWithAlice(totalScore = Score.of(500), hasEnteredGame = true))
+        repository.saveGame(gameWithAlice(totalScore = Score(500), hasEnteredGame = true))
 
         val addResult = addScoreEntryUseCase(points = 750, isPreset = false, label = "Custom")
         assertTrue(addResult.isSuccess)
@@ -73,7 +73,7 @@ class AutoCommitIntegrationTest {
         assertTrue(commitResult.isSuccess)
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(Score.of(1250), game.players[0].totalScore)
+        assertEquals(Score(1250), game.players[0].totalScore)
         assertEquals(1, game.currentPlayerIndex)
     }
 
@@ -84,17 +84,17 @@ class AutoCommitIntegrationTest {
         hasEnteredGame: Boolean
     ): Game {
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             totalScore = totalScore,
             hasEnteredGame = hasEnteredGame,
-            currentTurn = Turn(id = TurnId.of(UuidGenerator.generate()))
+            currentTurn = Turn(id = TurnId(UuidGenerator.generate()))
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,

@@ -13,63 +13,63 @@ class DomainEventTest {
     @Test
     fun `Should create TurnCommitted with PlayerId and Score fields`() {
         val event = DomainEvent.TurnCommitted(
-            playerId = PlayerId.of("player-1"),
-            points = Score.of(500),
-            newTotalScore = Score.of(1500),
+            playerId = PlayerId("player-1"),
+            points = Score(500),
+            newTotalScore = Score(1500),
         )
 
-        assertEquals(PlayerId.of("player-1"), event.playerId)
+        assertEquals(PlayerId("player-1"), event.playerId)
         assertEquals(500, event.points.value)
         assertEquals(1500, event.newTotalScore.value)
     }
 
     @Test
     fun `Should create PlayerBusted with correct playerId`() {
-        val event = DomainEvent.PlayerBusted(playerId = PlayerId.of("player-2"))
+        val event = DomainEvent.PlayerBusted(playerId = PlayerId("player-2"))
 
-        assertEquals(PlayerId.of("player-2"), event.playerId)
+        assertEquals(PlayerId("player-2"), event.playerId)
     }
 
     @Test
     fun `Should create TurnSkipped with correct playerId`() {
-        val event = DomainEvent.TurnSkipped(playerId = PlayerId.of("player-3"))
+        val event = DomainEvent.TurnSkipped(playerId = PlayerId("player-3"))
 
-        assertEquals(PlayerId.of("player-3"), event.playerId)
+        assertEquals(PlayerId("player-3"), event.playerId)
     }
 
     @Test
     fun `Should create PlayerEnteredGame with correct playerId`() {
-        val event = DomainEvent.PlayerEnteredGame(playerId = PlayerId.of("player-4"))
+        val event = DomainEvent.PlayerEnteredGame(playerId = PlayerId("player-4"))
 
-        assertEquals(PlayerId.of("player-4"), event.playerId)
+        assertEquals(PlayerId("player-4"), event.playerId)
     }
 
     @Test
     fun `Should create FinalRoundStarted with correct triggeringPlayerId`() {
-        val event = DomainEvent.FinalRoundStarted(triggeringPlayerId = PlayerId.of("player-5"))
+        val event = DomainEvent.FinalRoundStarted(triggeringPlayerId = PlayerId("player-5"))
 
-        assertEquals(PlayerId.of("player-5"), event.triggeringPlayerId)
+        assertEquals(PlayerId("player-5"), event.triggeringPlayerId)
     }
 
     @Test
     fun `Should create GameEnded with PlayerId winnerId`() {
-        val event = DomainEvent.GameEnded(winnerId = PlayerId.of("player-6"))
+        val event = DomainEvent.GameEnded(winnerId = PlayerId("player-6"))
 
-        assertEquals(PlayerId.of("player-6"), event.winnerId)
+        assertEquals(PlayerId("player-6"), event.winnerId)
     }
 
     @Test
     fun `Should distinguish different event subtypes`() {
         val committed = DomainEvent.TurnCommitted(
-            playerId = PlayerId.of("p1"),
-            points = Score.of(500),
-            newTotalScore = Score.of(500),
+            playerId = PlayerId("p1"),
+            points = Score(500),
+            newTotalScore = Score(500),
         )
-        val busted = DomainEvent.PlayerBusted(playerId = PlayerId.of("p1"))
-        val skipped = DomainEvent.TurnSkipped(playerId = PlayerId.of("p1"))
-        val entered = DomainEvent.PlayerEnteredGame(playerId = PlayerId.of("p1"))
-        val finalRound = DomainEvent.FinalRoundStarted(triggeringPlayerId = PlayerId.of("p1"))
-        val ended = DomainEvent.GameEnded(winnerId = PlayerId.of("p1"))
+        val busted = DomainEvent.PlayerBusted(playerId = PlayerId("p1"))
+        val skipped = DomainEvent.TurnSkipped(playerId = PlayerId("p1"))
+        val entered = DomainEvent.PlayerEnteredGame(playerId = PlayerId("p1"))
+        val finalRound = DomainEvent.FinalRoundStarted(triggeringPlayerId = PlayerId("p1"))
+        val ended = DomainEvent.GameEnded(winnerId = PlayerId("p1"))
 
         assertIs<DomainEvent.TurnCommitted>(committed)
         assertIs<DomainEvent.PlayerBusted>(busted)

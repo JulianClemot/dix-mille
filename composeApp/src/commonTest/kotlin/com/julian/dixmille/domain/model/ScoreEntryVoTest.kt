@@ -13,8 +13,8 @@ class ScoreEntryVoTest {
     @Test
     fun `Should create ScoreEntry with EntryId and Score`() {
         // Arrange
-        val id = EntryId.of("entry-1")
-        val points = Score.of(100)
+        val id = EntryId("entry-1")
+        val points = Score(100)
 
         // Act
         val entry = ScoreEntry(id = id, points = points)
@@ -28,10 +28,10 @@ class ScoreEntryVoTest {
     fun `Should compute turn total as Score`() {
         // Arrange
         val turn = Turn(
-            id = TurnId.of("turn-1"),
+            id = TurnId("turn-1"),
             entries = listOf(
-                ScoreEntry(id = EntryId.of("e1"), points = Score.of(100)),
-                ScoreEntry(id = EntryId.of("e2"), points = Score.of(200))
+                ScoreEntry(id = EntryId("e1"), points = Score(100)),
+                ScoreEntry(id = EntryId("e2"), points = Score(200))
             )
         )
 
@@ -39,6 +39,6 @@ class ScoreEntryVoTest {
         val total = turn.turnTotal
 
         // Assert
-        assertEquals(Score.of(300), total)
+        assertEquals(Score(300), total)
     }
 }

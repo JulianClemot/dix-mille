@@ -40,7 +40,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should add turn points to total score when turn committed`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 300))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 300))
 
         val result = useCase()
 
@@ -51,7 +51,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should clear current turn when turn committed`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 200))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 200))
 
         useCase()
 
@@ -61,7 +61,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should reset bust counter when turn committed`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 200, consecutiveBusts = BustCount.of(2)))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 200, consecutiveBusts = BustCount(2)))
 
         useCase()
 
@@ -71,7 +71,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should record scored turn in history when turn committed`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 200))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 200))
 
         useCase()
 
@@ -86,7 +86,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should advance to next player when turn committed`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 200))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 200))
 
         useCase()
 
@@ -97,7 +97,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should save game when turn committed`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 200))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 200))
 
         useCase()
 
@@ -109,7 +109,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should wrap to first player and increment round when last player commits`() = runTest {
-        val game = gameWithBobTurn(totalScore = Score.of(500), turnPoints = 200)
+        val game = gameWithBobTurn(totalScore = Score(500), turnPoints = 200)
         repository.saveGame(game)
 
         useCase()
@@ -123,7 +123,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should reject commit when turn total is zero`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 0))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 0))
 
         val result = useCase()
 
@@ -134,8 +134,8 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should reject commit when turn is busted`() = runTest {
-        val bustedTurn = Turn(id = TurnId.of(UuidGenerator.generate()), isBusted = true)
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 0, currentTurn = bustedTurn))
+        val bustedTurn = Turn(id = TurnId(UuidGenerator.generate()), isBusted = true)
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 0, currentTurn = bustedTurn))
 
         val result = useCase()
 
@@ -145,7 +145,7 @@ class CommitTurnUseCaseTest {
 
     @Test
     fun `Should reject commit when game has ended`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(500), turnPoints = 200, phase = GamePhase.ENDED))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(500), turnPoints = 200, phase = GamePhase.ENDED))
 
         val result = useCase()
 
@@ -163,26 +163,26 @@ class CommitTurnUseCaseTest {
     ): Game {
         val turn = currentTurn ?: if (turnPoints > 0) {
             Turn(
-                id = TurnId.of(UuidGenerator.generate()),
-                entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(turnPoints)))
+                id = TurnId(UuidGenerator.generate()),
+                entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(turnPoints)))
             )
         } else {
-            Turn(id = TurnId.of(UuidGenerator.generate()))
+            Turn(id = TurnId(UuidGenerator.generate()))
         }
 
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             totalScore = totalScore,
             hasEnteredGame = totalScore > Score.ZERO,
             currentTurn = turn,
             consecutiveBusts = consecutiveBusts
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = phase,
             createdAt = 0L,
@@ -191,22 +191,22 @@ class CommitTurnUseCaseTest {
     }
 
     private fun gameWithBobTurn(totalScore: Score, turnPoints: Int): Game {
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(500), hasEnteredGame = true)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(500), hasEnteredGame = true)
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
-            entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(turnPoints)))
+            id = TurnId(UuidGenerator.generate()),
+            entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(turnPoints)))
         )
         val bob = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
             totalScore = totalScore,
             hasEnteredGame = totalScore > Score.ZERO,
             currentTurn = turn
         )
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,

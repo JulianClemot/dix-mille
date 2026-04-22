@@ -9,15 +9,26 @@ class EntryMinimumScoreTest {
 
     @Test
     fun `Should create when value is 500`() {
-        val ems = EntryMinimumScore.of(500)
+        val ems = EntryMinimumScore(500)
         assertEquals(500, ems.value)
     }
 
     @Test
-    fun `Should throw when value is zero`() {
+    fun `Should create when value is zero`() {
+        val ems = EntryMinimumScore(0)
+        assertEquals(0, ems.value)
+    }
+
+    @Test
+    fun `Should throw when value is negative`() {
         assertFailsWith<IllegalArgumentException> {
-            EntryMinimumScore.of(0)
+            EntryMinimumScore(-1)
         }
+    }
+
+    @Test
+    fun `Should return ZERO constant with value 0`() {
+        assertEquals(0, EntryMinimumScore.ZERO.value)
     }
 
     @Test

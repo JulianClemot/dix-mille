@@ -47,17 +47,17 @@ class CreateGameUseCase(
             "Target score must be positive, got $targetScore"
         }
 
-        val rules = savedRules.copy(targetScore = TargetScore.of(targetScore))
+        val rules = savedRules.copy(targetScore = TargetScore(targetScore))
 
         val players = playerNames.map { name ->
             Player(
-                id = PlayerId.of(UuidGenerator.generate()),
-                name = PlayerName.of(name.trim())
+                id = PlayerId(UuidGenerator.generate()),
+                name = PlayerName(name.trim())
             )
         }
 
         val game = Game(
-            id = GameId.of(UuidGenerator.generate()),
+            id = GameId(UuidGenerator.generate()),
             players = players,
             targetScore = rules.targetScore,
             currentPlayerIndex = 0,
@@ -69,7 +69,7 @@ class CreateGameUseCase(
 
         // Start first player's turn
         val gameWithFirstTurn = game.updateCurrentPlayer(
-            game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+            game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         )
 
         repository.saveGame(gameWithFirstTurn).getOrThrow()

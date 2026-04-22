@@ -122,21 +122,21 @@ class GameRepositoryImplTest {
         // Arrange
         setup()
         val player1 = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(1500),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(1500),
             hasEnteredGame = true
         )
         val player2 = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
-            totalScore = Score.of(800),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
+            totalScore = Score(800),
             hasEnteredGame = true
         )
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,
@@ -161,13 +161,13 @@ class GameRepositoryImplTest {
     }
 
     private fun createTestGame(): Game {
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
 
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,

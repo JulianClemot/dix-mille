@@ -17,12 +17,12 @@ import kotlin.test.assertTrue
 class GameResultTest {
 
     private fun makeGame(): Game = Game(
-        id = GameId.of("game-1"),
+        id = GameId("game-1"),
         players = listOf(
-            Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice")),
-            Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob")),
+            Player(id = PlayerId("p1"), name = PlayerName("Alice")),
+            Player(id = PlayerId("p2"), name = PlayerName("Bob")),
         ),
-        targetScore = TargetScore.of(10_000),
+        targetScore = TargetScore(10_000),
         createdAt = 0L,
     )
 
@@ -40,11 +40,11 @@ class GameResultTest {
         val game = makeGame()
         val events = listOf(
             DomainEvent.TurnCommitted(
-                playerId = PlayerId.of("p1"),
-                points = Score.of(500),
-                newTotalScore = Score.of(500),
+                playerId = PlayerId("p1"),
+                points = Score(500),
+                newTotalScore = Score(500),
             ),
-            DomainEvent.PlayerEnteredGame(playerId = PlayerId.of("p1")),
+            DomainEvent.PlayerEnteredGame(playerId = PlayerId("p1")),
         )
 
         val result = GameResult(game = game, events = events)
@@ -57,7 +57,7 @@ class GameResultTest {
     @Test
     fun `Should be equal when game and events are equal`() {
         val game = makeGame()
-        val events = listOf(DomainEvent.GameEnded(winnerId = PlayerId.of("p1")))
+        val events = listOf(DomainEvent.GameEnded(winnerId = PlayerId("p1")))
 
         val result1 = GameResult(game = game, events = events)
         val result2 = GameResult(game = game, events = events)

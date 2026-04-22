@@ -31,17 +31,17 @@ class GameRulesTest {
     @Test
     fun `Should throw exception when target score is not positive`() {
         assertFailsWith<IllegalArgumentException> {
-            GameRules(targetScore = TargetScore.of(0))
+            GameRules(targetScore = TargetScore(0))
         }
         assertFailsWith<IllegalArgumentException> {
-            GameRules(targetScore = TargetScore.of(-1))
+            GameRules(targetScore = TargetScore(-1))
         }
     }
 
     @Test
     fun `Should throw exception when entry minimum score is negative`() {
         assertFailsWith<IllegalArgumentException> {
-            GameRules(entryMinimumScore = EntryMinimumScore.of(-1))
+            GameRules(entryMinimumScore = EntryMinimumScore(-1))
         }
     }
 
@@ -82,8 +82,8 @@ class GameRulesTest {
     @Test
     fun `Should create valid rules when custom values provided`() {
         val rules = GameRules(
-            targetScore = TargetScore.of(5_000),
-            entryMinimumScore = EntryMinimumScore.of(300),
+            targetScore = TargetScore(5_000),
+            entryMinimumScore = EntryMinimumScore(300),
             consecutiveBustsForPenalty = 4,
             minPlayers = 3,
             maxPlayers = 8,

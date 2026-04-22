@@ -24,8 +24,8 @@ class GameRulesRepositoryImplTest {
     @Test
     fun `Should save and retrieve rules`() = runTest {
         val rules = GameRules(
-            targetScore = TargetScore.of(5_000),
-            entryMinimumScore = EntryMinimumScore.of(300),
+            targetScore = TargetScore(5_000),
+            entryMinimumScore = EntryMinimumScore(300),
             consecutiveBustsForPenalty = 4,
             minPlayers = 3,
             maxPlayers = 8,
@@ -57,7 +57,7 @@ class GameRulesRepositoryImplTest {
     @Test
     fun `Should preserve all fields when round tripping`() = runTest {
         val rules = GameRules(
-            targetScore = TargetScore.of(7_500),
+            targetScore = TargetScore(7_500),
             entryMinimumScore = EntryMinimumScore.ZERO,
             consecutiveBustsForPenalty = 2,
             minPlayers = 2,

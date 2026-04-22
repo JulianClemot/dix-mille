@@ -89,7 +89,7 @@ class UndoLastTurnUseCase(
             hasEnteredGame = if (wasEntryTurn) false else player.hasEnteredGame,
             currentTurn = null,  // Clear any active turn
             hasPlayedFinalRound = false,  // Reset final round flag (conservative approach)
-            consecutiveBusts = BustCount.of(bustCount)
+            consecutiveBusts = BustCount(bustCount)
         )
 
         // Update players list
@@ -105,7 +105,7 @@ class UndoLastTurnUseCase(
         game = game.copy(currentPlayerIndex = playerIndex)
 
         // Start a new turn for the current player
-        val currentPlayer = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        val currentPlayer = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(currentPlayer)
 
         // If undoing triggered the end of the game, revert to FINAL_ROUND or IN_PROGRESS

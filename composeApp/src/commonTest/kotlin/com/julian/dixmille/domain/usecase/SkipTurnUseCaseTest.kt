@@ -35,7 +35,7 @@ class SkipTurnUseCaseTest {
 
     @Test
     fun `Should leave score unchanged and advance when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.NONE))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(600), consecutiveBusts = BustCount.NONE))
 
         useCase()
 
@@ -49,7 +49,7 @@ class SkipTurnUseCaseTest {
 
     @Test
     fun `Should record skip outcome in history when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.NONE))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(600), consecutiveBusts = BustCount.NONE))
 
         useCase()
 
@@ -66,7 +66,7 @@ class SkipTurnUseCaseTest {
 
     @Test
     fun `Should not increment bust counter when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.of(1)))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(600), consecutiveBusts = BustCount(1)))
 
         useCase()
 
@@ -76,7 +76,7 @@ class SkipTurnUseCaseTest {
 
     @Test
     fun `Should not reset bust counter when player skips`() = runTest {
-        repository.saveGame(gameWithAliceTurn(totalScore = Score.of(600), consecutiveBusts = BustCount.of(2)))
+        repository.saveGame(gameWithAliceTurn(totalScore = Score(600), consecutiveBusts = BustCount(2)))
 
         useCase()
 
@@ -88,18 +88,18 @@ class SkipTurnUseCaseTest {
 
     private fun gameWithAliceTurn(totalScore: Score, consecutiveBusts: BustCount): Game {
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             consecutiveBusts = consecutiveBusts,
-            currentTurn = com.julian.dixmille.core.domain.model.Turn(id = TurnId.of(UuidGenerator.generate()))
+            currentTurn = com.julian.dixmille.core.domain.model.Turn(id = TurnId(UuidGenerator.generate()))
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L

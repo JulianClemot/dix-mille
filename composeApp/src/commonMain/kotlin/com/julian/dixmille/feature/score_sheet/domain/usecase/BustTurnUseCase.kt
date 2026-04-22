@@ -64,7 +64,7 @@ class BustTurnUseCase(
             val revertToScore = lastScoredTurn?.previousScore?.value ?: 0
 
             updatedPlayer = updatedPlayer.copy(
-                totalScore = Score.of(revertToScore),
+                totalScore = Score(revertToScore),
                 consecutiveBusts = BustCount.NONE
             )
         }
@@ -101,7 +101,7 @@ class BustTurnUseCase(
 
         // Start next player's turn if game not ended
         if (game.gamePhase != GamePhase.ENDED) {
-            val nextPlayer = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+            val nextPlayer = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(nextPlayer)
         }
 

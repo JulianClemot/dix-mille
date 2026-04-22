@@ -34,11 +34,11 @@ class UndoLastEntryUseCaseTest {
     @Test
     fun `Should remove last entry when turn has multiple entries`() = runTest {
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
+            id = TurnId(UuidGenerator.generate()),
             entries = listOf(
-                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(100)),
-                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(200)),
-                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(300))
+                ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(100)),
+                ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(200)),
+                ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(300))
             )
         )
         repository.saveGame(gameWithCurrentPlayer(currentTurn = turn))
@@ -56,9 +56,9 @@ class UndoLastEntryUseCaseTest {
     @Test
     fun `Should empty turn when undoing only entry`() = runTest {
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
+            id = TurnId(UuidGenerator.generate()),
             entries = listOf(
-                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500))
+                ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(500))
             )
         )
         repository.saveGame(gameWithCurrentPlayer(currentTurn = turn))
@@ -74,37 +74,37 @@ class UndoLastEntryUseCaseTest {
     @Test
     fun `Should not change total score when entry undone`() = runTest {
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
+            id = TurnId(UuidGenerator.generate()),
             entries = listOf(
-                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(100)),
-                ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(200))
+                ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(100)),
+                ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(200))
             )
         )
-        repository.saveGame(gameWithCurrentPlayer(totalScore = Score.of(800), currentTurn = turn))
+        repository.saveGame(gameWithCurrentPlayer(totalScore = Score(800), currentTurn = turn))
 
         useCase()
 
         val game = repository.getCurrentGame().getOrThrow()
-        assertEquals(Score.of(800), game.currentPlayer.totalScore)
+        assertEquals(Score(800), game.currentPlayer.totalScore)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun gameWithCurrentPlayer(
-        totalScore: Score = Score.of(0),
-        currentTurn: Turn = Turn(id = TurnId.of(UuidGenerator.generate()))
+        totalScore: Score = Score(0),
+        currentTurn: Turn = Turn(id = TurnId(UuidGenerator.generate()))
     ): Game {
         val player = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             currentTurn = currentTurn
         )
         return Game(
-            id = GameId.of("game1"),
-            players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = TargetScore.of(10_000),
+            id = GameId("game1"),
+            players = listOf(player, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             createdAt = 0L
         )

@@ -43,22 +43,22 @@ class FinalRoundTest {
     fun `Should trigger final round when player reaches target score`() = runTest {
         // Arrange – Alice at 9500, 500-point turn, 3 players
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
-            entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500)))
+            id = TurnId(UuidGenerator.generate()),
+            entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(500)))
         )
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(9500),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(9500),
             hasEnteredGame = true,
             currentTurn = turn
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
-        val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"))
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
+        val carol = Player(id = PlayerId("p3"), name = PlayerName("Carol"))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -83,30 +83,30 @@ class FinalRoundTest {
     fun `Should set hasPlayedFinalRound when player commits during final round`() = runTest {
         // Arrange – FINAL_ROUND game, Alice is triggering, Bob is current with a turn
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
-            entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500)))
+            id = TurnId(UuidGenerator.generate()),
+            entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(500)))
         )
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(10_000),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(10_000),
             hasEnteredGame = true
         )
         val bob = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
-            totalScore = Score.of(500),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
+            totalScore = Score(500),
             hasEnteredGame = true,
             currentTurn = turn
         )
-        val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"))
+        val carol = Player(id = PlayerId("p3"), name = PlayerName("Carol"))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
             createdAt = 0L,
             roundNumber = 1
         )
@@ -128,36 +128,36 @@ class FinalRoundTest {
     fun `Should end game when all non-triggering players have played`() = runTest {
         // Arrange – FINAL_ROUND, Alice triggering, Bob already played, Carol is current
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
-            entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500)))
+            id = TurnId(UuidGenerator.generate()),
+            entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(500)))
         )
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(10_000),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(10_000),
             hasEnteredGame = true
         )
         val bob = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
-            totalScore = Score.of(500),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
+            totalScore = Score(500),
             hasEnteredGame = true,
             hasPlayedFinalRound = true
         )
         val carol = Player(
-            id = PlayerId.of("p3"),
-            name = PlayerName.of("Carol"),
-            totalScore = Score.of(500),
+            id = PlayerId("p3"),
+            name = PlayerName("Carol"),
+            totalScore = Score(500),
             hasEnteredGame = true,
             currentTurn = turn
         )
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 2,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
             createdAt = 0L,
             roundNumber = 1
         )
@@ -178,36 +178,36 @@ class FinalRoundTest {
     fun `Should skip triggering player when advancing during final round`() = runTest {
         // Arrange – Alice (triggering, index 0), Bob (index 1, already played), Carol (index 2, current)
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
-            entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500)))
+            id = TurnId(UuidGenerator.generate()),
+            entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(500)))
         )
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(10_000),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(10_000),
             hasEnteredGame = true
         )
         val bob = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
-            totalScore = Score.of(500),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
+            totalScore = Score(500),
             hasEnteredGame = true,
             hasPlayedFinalRound = true
         )
         val carol = Player(
-            id = PlayerId.of("p3"),
-            name = PlayerName.of("Carol"),
-            totalScore = Score.of(500),
+            id = PlayerId("p3"),
+            name = PlayerName("Carol"),
+            totalScore = Score(500),
             hasEnteredGame = true,
             currentTurn = turn
         )
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 2,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
             createdAt = 0L,
             roundNumber = 1
         )
@@ -229,21 +229,21 @@ class FinalRoundTest {
         // Arrange – final round disabled, Alice at 9500 with 500-point turn
         val rules = GameRules.DEFAULT.copy(enableFinalRound = false)
         val turn = Turn(
-            id = TurnId.of(UuidGenerator.generate()),
-            entries = listOf(ScoreEntry(id = EntryId.of(UuidGenerator.generate()), points = Score.of(500)))
+            id = TurnId(UuidGenerator.generate()),
+            entries = listOf(ScoreEntry(id = EntryId(UuidGenerator.generate()), points = Score(500)))
         )
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(9500),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(9500),
             hasEnteredGame = true,
             currentTurn = turn
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -266,28 +266,28 @@ class FinalRoundTest {
     @Test
     fun `Should set hasPlayedFinalRound when player busts during final round`() = runTest {
         // Arrange – FINAL_ROUND, Alice triggering, Bob is current with an empty turn
-        val turn = Turn(id = TurnId.of(UuidGenerator.generate()))
+        val turn = Turn(id = TurnId(UuidGenerator.generate()))
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(10_000),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(10_000),
             hasEnteredGame = true
         )
         val bob = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
-            totalScore = Score.of(500),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
+            totalScore = Score(500),
             hasEnteredGame = true,
             currentTurn = turn
         )
-        val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"))
+        val carol = Player(id = PlayerId("p3"), name = PlayerName("Carol"))
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 1,
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
             createdAt = 0L,
             roundNumber = 1
         )

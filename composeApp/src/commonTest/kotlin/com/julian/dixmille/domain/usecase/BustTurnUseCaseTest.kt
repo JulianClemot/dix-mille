@@ -61,7 +61,7 @@ class BustTurnUseCaseTest {
         // Arrange
         // Player scores 500, then 200 (total 700), then busts 3 times
         var game = createGameWithTwoPlayers()
-        var player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        var player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -69,28 +69,28 @@ class BustTurnUseCaseTest {
         player1 = player1.addScoreEntry(createScoreEntry(500))
         player1 = player1.commitTurn().copy(hasEnteredGame = true, consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(500), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(500), TurnOutcome.SCORED, Score(0))
         game = game.advanceToNextPlayer()
 
         // Player 2 turn (skip for simplicity)
-        var player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        var player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Score 200 more (total = 700)
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         player1 = player1.addScoreEntry(createScoreEntry(200))
         player1 = player1.commitTurn().copy(consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(200), TurnOutcome.SCORED, Score.of(500))
+        game = game.recordTurn(player1.id, Score(200), TurnOutcome.SCORED, Score(500))
         game = game.advanceToNextPlayer()
 
         // Player 2 turn (skip)
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
@@ -98,7 +98,7 @@ class BustTurnUseCaseTest {
 
         // Now player 1 busts 3 times
         // Bust 1
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -106,13 +106,13 @@ class BustTurnUseCaseTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Bust 2 (skip player 2's turn)
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -120,13 +120,13 @@ class BustTurnUseCaseTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Bust 3 (skip player 2's turn) - should trigger penalty
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -147,7 +147,7 @@ class BustTurnUseCaseTest {
     fun `Should trigger penalty when skip occurs between busts`() = runTest {
         // Arrange - bust, bust, skip, bust should still trigger penalty
         var game = createGameWithTwoPlayers()
-        var player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        var player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -155,18 +155,18 @@ class BustTurnUseCaseTest {
         player1 = player1.addScoreEntry(createScoreEntry(500))
         player1 = player1.commitTurn().copy(hasEnteredGame = true, consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(500), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(500), TurnOutcome.SCORED, Score(0))
         game = game.advanceToNextPlayer()
 
         // Player 2 skip
-        var player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        var player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Bust 1
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -174,14 +174,14 @@ class BustTurnUseCaseTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player 2 skip
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Bust 2
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -189,14 +189,14 @@ class BustTurnUseCaseTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player 2 skip
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player 1 skip (skip doesn't reset counter)
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -204,14 +204,14 @@ class BustTurnUseCaseTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Player 2 skip
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Bust 3 - should trigger penalty
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -233,70 +233,70 @@ class BustTurnUseCaseTest {
         var player1 = game.players[0]
 
         // Round 1: Score 500 (total=500, prev=0)
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         player1 = player1.addScoreEntry(createScoreEntry(500))
         player1 = player1.commitTurn().copy(hasEnteredGame = true, consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(500), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(500), TurnOutcome.SCORED, Score(0))
         game = game.advanceToNextPlayer()
-        var player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        var player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 2: Score 200 (total=700, prev=500)
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         player1 = player1.addScoreEntry(createScoreEntry(200))
         player1 = player1.commitTurn().copy(consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(200), TurnOutcome.SCORED, Score.of(500))
+        game = game.recordTurn(player1.id, Score(200), TurnOutcome.SCORED, Score(500))
         game = game.advanceToNextPlayer()
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 3: Bust (busts=1, total=700)
-        player1 = game.players[0].copy(consecutiveBusts = BustCount.of(1))
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].copy(consecutiveBusts = BustCount(1))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(0), TurnOutcome.BUST, Score.of(700))
+        game = game.recordTurn(player1.id, Score(0), TurnOutcome.BUST, Score(700))
         game = game.advanceToNextPlayer()
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 4: Bust (busts=2, total=700)
-        player1 = game.players[0].copy(consecutiveBusts = BustCount.of(2))
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].copy(consecutiveBusts = BustCount(2))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(0), TurnOutcome.BUST, Score.of(700))
+        game = game.recordTurn(player1.id, Score(0), TurnOutcome.BUST, Score(700))
         game = game.advanceToNextPlayer()
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 5: Skip (busts=2, total=700)
-        player1 = game.players[0].copy(consecutiveBusts = BustCount.of(2))
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].copy(consecutiveBusts = BustCount(2))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(0), TurnOutcome.SKIP, Score.of(700))
+        game = game.recordTurn(player1.id, Score(0), TurnOutcome.SKIP, Score(700))
         game = game.advanceToNextPlayer()
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 6: Bust (busts=3 -> PENALTY: revert to 500, busts=0)
-        player1 = game.players[0].copy(consecutiveBusts = BustCount.of(2))
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].copy(consecutiveBusts = BustCount(2))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -306,38 +306,38 @@ class BustTurnUseCaseTest {
         assertEquals(500, player1.totalScore.value)
         assertEquals(0, player1.consecutiveBusts.value)
 
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 7: Score 100 (total=600, prev=500)
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         player1 = player1.addScoreEntry(createScoreEntry(100))
         player1 = player1.commitTurn().copy(consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(100), TurnOutcome.SCORED, Score.of(500))
+        game = game.recordTurn(player1.id, Score(100), TurnOutcome.SCORED, Score(500))
         game = game.advanceToNextPlayer()
-        player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
-        game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+        game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
         game = game.advanceToNextPlayer()
 
         // Round 8-10: Bust 3 times (should revert to 500 again)
         for (i in 0 until 3) {
-            player1 = game.players[0].copy(consecutiveBusts = BustCount.of(i))
-            player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+            player1 = game.players[0].copy(consecutiveBusts = BustCount(i))
+            player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
             game = game.copy(currentPlayerIndex = 0)
             game = game.updateCurrentPlayer(player1)
             repository.saveGame(game)
             bustTurnUseCase()
             game = repository.getCurrentGame().getOrThrow()
 
-            player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+            player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(player2)
-            game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+            game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
             game = game.advanceToNextPlayer()
         }
 
@@ -347,17 +347,17 @@ class BustTurnUseCaseTest {
 
         // Round 11-13: Bust 3 more times (should revert to 0)
         for (i in 0 until 3) {
-            player1 = game.players[0].copy(consecutiveBusts = BustCount.of(i))
-            player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+            player1 = game.players[0].copy(consecutiveBusts = BustCount(i))
+            player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
             game = game.copy(currentPlayerIndex = 0)
             game = game.updateCurrentPlayer(player1)
             repository.saveGame(game)
             bustTurnUseCase()
             game = repository.getCurrentGame().getOrThrow()
 
-            player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+            player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(player2)
-            game = game.recordTurn(player2.id, Score.of(0), TurnOutcome.SKIP, Score.of(0))
+            game = game.recordTurn(player2.id, Score(0), TurnOutcome.SKIP, Score(0))
             game = game.advanceToNextPlayer()
         }
 
@@ -372,7 +372,7 @@ class BustTurnUseCaseTest {
     fun `Should revert to zero when only one scoring turn`() = runTest {
         // Arrange - Score 500, then bust 3 times
         var game = createGameWithTwoPlayers()
-        var player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        var player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -380,19 +380,19 @@ class BustTurnUseCaseTest {
         player1 = player1.addScoreEntry(createScoreEntry(500))
         player1 = player1.commitTurn().copy(hasEnteredGame = true, consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(500), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(500), TurnOutcome.SCORED, Score(0))
         game = game.advanceToNextPlayer()
 
         // Bust 3 times
         for (i in 0 until 3) {
-            var player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+            var player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(player2)
             repository.saveGame(game)
             skipTurnUseCase()
             game = repository.getCurrentGame().getOrThrow()
 
-            player1 = game.players[0].copy(consecutiveBusts = BustCount.of(i))
-            player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+            player1 = game.players[0].copy(consecutiveBusts = BustCount(i))
+            player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
             game = game.copy(currentPlayerIndex = 0)
             game = game.updateCurrentPlayer(player1)
             repository.saveGame(game)
@@ -411,26 +411,26 @@ class BustTurnUseCaseTest {
     fun `Should reset counter when penalty applied`() = runTest {
         // Arrange - verify counter is reset after penalty
         var game = createGameWithTwoPlayers()
-        var player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        var player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
 
         // Score 500
         player1 = player1.addScoreEntry(createScoreEntry(500))
         player1 = player1.commitTurn().copy(hasEnteredGame = true, consecutiveBusts = BustCount.NONE)
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(500), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(500), TurnOutcome.SCORED, Score(0))
         game = game.advanceToNextPlayer()
 
         // Bust 3 times
         for (i in 0 until 3) {
-            var player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+            var player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
             game = game.updateCurrentPlayer(player2)
             repository.saveGame(game)
             skipTurnUseCase()
             game = repository.getCurrentGame().getOrThrow()
 
-            player1 = game.players[0].copy(consecutiveBusts = BustCount.of(i))
-            player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+            player1 = game.players[0].copy(consecutiveBusts = BustCount(i))
+            player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
             game = game.copy(currentPlayerIndex = 0)
             game = game.updateCurrentPlayer(player1)
             repository.saveGame(game)
@@ -451,11 +451,11 @@ class BustTurnUseCaseTest {
         // Arrange
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].copy(
-            totalScore = Score.of(500),
+            totalScore = Score(500),
             hasEnteredGame = true,
             consecutiveBusts = BustCount.NONE
         )
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         player1 = player1.addScoreEntry(createScoreEntry(300))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -473,10 +473,10 @@ class BustTurnUseCaseTest {
         // Arrange
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].copy(
-            totalScore = Score.of(500),
+            totalScore = Score(500),
             hasEnteredGame = true
         )
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -496,8 +496,8 @@ class BustTurnUseCaseTest {
     fun `Should advance to next player when player busts`() = runTest {
         // Arrange
         var game = createGameWithTwoPlayers()
-        var player1 = game.players[0].copy(hasEnteredGame = true, totalScore = Score.of(500))
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        var player1 = game.players[0].copy(hasEnteredGame = true, totalScore = Score(500))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -514,8 +514,8 @@ class BustTurnUseCaseTest {
     fun `Should increment bust counter when unentered player busts`() = runTest {
         // Arrange
         var game = createGameWithTwoPlayers()
-        var player1 = game.players[0] // hasEnteredGame=false, totalScore=Score.of(0)
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        var player1 = game.players[0] // hasEnteredGame=false, totalScore=Score(0)
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -534,11 +534,11 @@ class BustTurnUseCaseTest {
         val rules = GameRules.DEFAULT.copy(enableBustPenalty = false)
         var game = createGameWithTwoPlayers().copy(rules = rules)
         var player1 = game.players[0].copy(
-            totalScore = Score.of(700),
+            totalScore = Score(700),
             hasEnteredGame = true,
-            consecutiveBusts = BustCount.of(2)
+            consecutiveBusts = BustCount(2)
         )
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
 
@@ -561,13 +561,13 @@ class BustTurnUseCaseTest {
         // Set up Alice with score 700, 1 consecutive bust, and a SCORED turn history entry
         // (previousScore = 0, i.e. she scored 700 from 0)
         var player1 = game.players[0].copy(
-            totalScore = Score.of(700),
+            totalScore = Score(700),
             hasEnteredGame = true,
-            consecutiveBusts = BustCount.of(1)
+            consecutiveBusts = BustCount(1)
         )
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(700), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(700), TurnOutcome.SCORED, Score(0))
         repository.saveGame(game)
 
         // Act – 2nd bust, should trigger penalty
@@ -586,13 +586,13 @@ class BustTurnUseCaseTest {
         // then busts once; consecutiveBusts should be 1 and no penalty
         var game = createGameWithTwoPlayers()
         var player1 = game.players[0].copy(
-            totalScore = Score.of(500),
+            totalScore = Score(500),
             hasEnteredGame = true,
-            consecutiveBusts = BustCount.of(2)
+            consecutiveBusts = BustCount(2)
         )
-        player1 = player1.startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = player1.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player1)
-        game = game.recordTurn(player1.id, Score.of(500), TurnOutcome.SCORED, Score.of(0))
+        game = game.recordTurn(player1.id, Score(500), TurnOutcome.SCORED, Score(0))
 
         // Score 200 via CommitTurnUseCase (resets bust counter to 0)
         player1 = game.players[0].addScoreEntry(createScoreEntry(200))
@@ -602,14 +602,14 @@ class BustTurnUseCaseTest {
         game = repository.getCurrentGame().getOrThrow()
 
         // Now it's player 2's turn — advance back to player 1 for the bust
-        var player2 = game.currentPlayer.startTurn(TurnId.of(UuidGenerator.generate()))
+        var player2 = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         game = game.updateCurrentPlayer(player2)
         repository.saveGame(game)
         skipTurnUseCase()
         game = repository.getCurrentGame().getOrThrow()
 
         // Player 1 busts once
-        player1 = game.players[0].startTurn(TurnId.of(UuidGenerator.generate()))
+        player1 = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
         game = game.copy(currentPlayerIndex = 0)
         game = game.updateCurrentPlayer(player1)
         repository.saveGame(game)
@@ -625,12 +625,12 @@ class BustTurnUseCaseTest {
     }
 
     private fun createGameWithTwoPlayers(): Game {
-        val player1 = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-        val player2 = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))
+        val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+        val player2 = Player(id = PlayerId("p2"), name = PlayerName("Bob"))
         return Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L,
@@ -641,8 +641,8 @@ class BustTurnUseCaseTest {
 
     private fun createScoreEntry(points: Int): ScoreEntry {
         return ScoreEntry(
-            id = EntryId.of(UuidGenerator.generate()),
-            points = Score.of(points)
+            id = EntryId(UuidGenerator.generate()),
+            points = Score(points)
         )
     }
 }

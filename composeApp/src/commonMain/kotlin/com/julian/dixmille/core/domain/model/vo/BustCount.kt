@@ -3,7 +3,11 @@ package com.julian.dixmille.core.domain.model.vo
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class BustCount private constructor(val value: Int) {
+value class BustCount(val value: Int) {
+
+    init {
+        require(value in 0..3) { "BustCount value must be in 0..3, was $value" }
+    }
 
     override fun toString(): String = value.toString()
 
@@ -16,10 +20,5 @@ value class BustCount private constructor(val value: Int) {
 
     companion object {
         val NONE: BustCount = BustCount(0)
-
-        fun of(value: Int): BustCount {
-            require(value in 0..3) { "BustCount value must be in 0..3, was $value" }
-            return BustCount(value)
-        }
     }
 }

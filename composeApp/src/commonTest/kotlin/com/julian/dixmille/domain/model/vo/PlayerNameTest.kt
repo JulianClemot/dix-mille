@@ -9,27 +9,21 @@ class PlayerNameTest {
 
     @Test
     fun `Should create name when value is valid`() {
-        val name = PlayerName.of("Alice")
+        val name = PlayerName("Alice")
         assertEquals("Alice", name.value)
     }
 
     @Test
-    fun `Should trim whitespace on creation`() {
-        val name = PlayerName.of("  Bob  ")
-        assertEquals("Bob", name.value)
-    }
-
-    @Test
-    fun `Should throw when name is blank after trimming`() {
+    fun `Should throw when name is blank`() {
         assertFailsWith<IllegalArgumentException> {
-            PlayerName.of("   ")
+            PlayerName("   ")
         }
     }
 
     @Test
     fun `Should throw when name exceeds 30 characters`() {
         assertFailsWith<IllegalArgumentException> {
-            PlayerName.of("A".repeat(31))
+            PlayerName("A".repeat(31))
         }
     }
 }

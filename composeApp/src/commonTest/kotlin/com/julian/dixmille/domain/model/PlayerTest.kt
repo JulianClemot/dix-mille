@@ -19,53 +19,53 @@ class PlayerTest {
     @Test
     fun `Start turn should create new turn`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
 
         // Act
-        val updated = player.startTurn(TurnId.of("turn1"))
+        val updated = player.startTurn(TurnId("turn1"))
 
         // Assert
         assertNotNull(updated.currentTurn)
-        assertEquals(TurnId.of("turn1"), updated.currentTurn?.id)
+        assertEquals(TurnId("turn1"), updated.currentTurn?.id)
     }
 
     @Test
     fun `Add score entry should add entry to current turn`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
-        val entry = ScoreEntry(id = EntryId.of("e1"), points = Score.of(100))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
+        val entry = ScoreEntry(id = EntryId("e1"), points = Score(100))
 
         // Act
         val updated = player.addScoreEntry(entry)
 
         // Assert
         assertEquals(1, updated.currentTurn?.entries?.size)
-        assertEquals(Score.of(100), updated.currentTurn?.turnTotal)
+        assertEquals(Score(100), updated.currentTurn?.turnTotal)
     }
 
     @Test
     fun `Undo last entry should remove last entry`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(100)))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e2"), points = Score.of(200)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(100)))
+            .addScoreEntry(ScoreEntry(id = EntryId("e2"), points = Score(200)))
 
         // Act
         val updated = player.undoLastEntry()
 
         // Assert
         assertEquals(1, updated.currentTurn?.entries?.size)
-        assertEquals(Score.of(100), updated.currentTurn?.turnTotal)
+        assertEquals(Score(100), updated.currentTurn?.turnTotal)
     }
 
     @Test
     fun `Bust turn should clear current turn`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(100)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(100)))
 
         // Act
         val updated = player.bustTurn()
@@ -78,9 +78,9 @@ class PlayerTest {
     @Test
     fun `Commit turn should not add points when not entered and score is below 500`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(200)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(200)))
 
         // Act
         val updated = player.commitTurn()
@@ -94,9 +94,9 @@ class PlayerTest {
     @Test
     fun `Commit turn should enter game and add points when not entered and score is 500 or more`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(500)))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(500)))
 
         // Act
         val updated = player.commitTurn()
@@ -111,13 +111,13 @@ class PlayerTest {
     fun `Commit turn should add points regardless of amount when already entered`() {
         // Arrange
         val player = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(1000),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(1000),
             hasEnteredGame = true
         )
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(50)))
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(50)))
 
         // Act
         val updated = player.commitTurn()
@@ -131,7 +131,7 @@ class PlayerTest {
     @Test
     fun `Mark final round played should set flag`() {
         // Arrange
-        val player = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"))
+        val player = Player(id = PlayerId("p1"), name = PlayerName("Alice"))
 
         // Act
         val updated = player.markFinalRoundPlayed()

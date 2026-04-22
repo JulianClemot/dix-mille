@@ -3,7 +3,12 @@ package com.julian.dixmille.core.domain.model.vo
 import kotlin.jvm.JvmInline
 
 @JvmInline
-value class Score private constructor(val value: Int) : Comparable<Score> {
+value class Score(val value: Int) : Comparable<Score> {
+
+    init {
+        require(value >= 0) { "Score value must be >= 0, was $value" }
+        require(value % 50 == 0) { "Score value must be a multiple of 50, was $value" }
+    }
 
     override fun toString(): String = value.toString()
 
@@ -15,11 +20,5 @@ value class Score private constructor(val value: Int) : Comparable<Score> {
 
     companion object {
         val ZERO: Score = Score(0)
-
-        fun of(value: Int): Score {
-            require(value >= 0) { "Score value must be >= 0, was $value" }
-            require(value % 50 == 0) { "Score value must be a multiple of 50, was $value" }
-            return Score(value)
-        }
     }
 }

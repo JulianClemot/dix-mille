@@ -19,45 +19,45 @@ class PlayerVoTest {
     fun `Should create Player with PlayerId and PlayerName`() {
         // Arrange & Act
         val player = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice")
+            id = PlayerId("p1"),
+            name = PlayerName("Alice")
         )
 
         // Assert
-        assertEquals(PlayerId.of("p1"), player.id)
-        assertEquals(PlayerName.of("Alice"), player.name)
+        assertEquals(PlayerId("p1"), player.id)
+        assertEquals(PlayerName("Alice"), player.name)
     }
 
     @Test
     fun `Should create Player with Score totalScore and BustCount consecutiveBusts`() {
         // Arrange & Act
         val player = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(1000),
-            consecutiveBusts = BustCount.of(2)
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(1000),
+            consecutiveBusts = BustCount(2)
         )
 
         // Assert
-        assertEquals(Score.of(1000), player.totalScore)
-        assertEquals(BustCount.of(2), player.consecutiveBusts)
+        assertEquals(Score(1000), player.totalScore)
+        assertEquals(BustCount(2), player.consecutiveBusts)
     }
 
     @Test
     fun `Should commit turn using EntryMinimumScore`() {
         // Arrange
         val player = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice")
+            id = PlayerId("p1"),
+            name = PlayerName("Alice")
         )
-            .startTurn(TurnId.of("turn1"))
-            .addScoreEntry(ScoreEntry(id = EntryId.of("e1"), points = Score.of(500)))
+            .startTurn(TurnId("turn1"))
+            .addScoreEntry(ScoreEntry(id = EntryId("e1"), points = Score(500)))
 
         // Act
         val updated = player.commitTurn(entryMinimumScore = EntryMinimumScore.DEFAULT)
 
         // Assert
         assertTrue(updated.hasEnteredGame)
-        assertEquals(Score.of(500), updated.totalScore)
+        assertEquals(Score(500), updated.totalScore)
     }
 }

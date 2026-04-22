@@ -11,27 +11,27 @@ class ScoreTest {
 
     @Test
     fun `Should create score when value is zero`() {
-        val score = Score.of(0)
+        val score = Score(0)
         assertEquals(0, score.value)
     }
 
     @Test
     fun `Should create score when value is a valid multiple of 50`() {
-        val score = Score.of(350)
+        val score = Score(350)
         assertEquals(350, score.value)
     }
 
     @Test
     fun `Should throw when score is negative`() {
         assertFailsWith<IllegalArgumentException> {
-            Score.of(-50)
+            Score(-50)
         }
     }
 
     @Test
     fun `Should throw when score is not a multiple of 50`() {
         assertFailsWith<IllegalArgumentException> {
-            Score.of(123)
+            Score(123)
         }
     }
 
@@ -42,21 +42,21 @@ class ScoreTest {
 
     @Test
     fun `Should add two scores correctly`() {
-        val a = Score.of(300)
-        val b = Score.of(200)
+        val a = Score(300)
+        val b = Score(200)
         val result = a + b
         assertEquals(500, result.value)
     }
 
     @Test
     fun `Should return true for meetsEntryThreshold when score is 500`() {
-        val score = Score.of(500)
+        val score = Score(500)
         assertTrue(score.meetsEntryThreshold())
     }
 
     @Test
     fun `Should return false for meetsEntryThreshold when score is 450`() {
-        val score = Score.of(450)
+        val score = Score(450)
         assertFalse(score.meetsEntryThreshold())
     }
 }

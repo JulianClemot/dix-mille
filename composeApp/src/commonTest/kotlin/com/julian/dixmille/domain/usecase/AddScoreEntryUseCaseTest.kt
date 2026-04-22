@@ -90,7 +90,7 @@ class AddScoreEntryUseCaseTest {
 
     @Test
     fun `Should allow entry when score exactly reaches target`() = runTest {
-        repository.saveGame(gameWithCurrentPlayer(totalScore = Score.of(9900), targetScore = 10_000))
+        repository.saveGame(gameWithCurrentPlayer(totalScore = Score(9900), targetScore = 10_000))
 
         val result = useCase(points = 100, isPreset = true)
 
@@ -132,7 +132,7 @@ class AddScoreEntryUseCaseTest {
 
     @Test
     fun `Should reject entry when score would exceed target`() = runTest {
-        repository.saveGame(gameWithCurrentPlayer(totalScore = Score.of(9800), targetScore = 10_000))
+        repository.saveGame(gameWithCurrentPlayer(totalScore = Score(9800), targetScore = 10_000))
 
         val result = useCase(points = 300)
 
@@ -156,24 +156,24 @@ class AddScoreEntryUseCaseTest {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun gameWithCurrentPlayer(
-        totalScore: Score = Score.of(0),
+        totalScore: Score = Score(0),
         targetScore: Int = 10_000,
         phase: GamePhase = GamePhase.IN_PROGRESS,
-        currentTurn: Turn? = Turn(id = TurnId.of(UuidGenerator.generate())),
+        currentTurn: Turn? = Turn(id = TurnId(UuidGenerator.generate())),
         hasPlayedFinalRound: Boolean = false
     ): Game {
         val player = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
             totalScore = totalScore,
             hasEnteredGame = true,
             currentTurn = currentTurn,
             hasPlayedFinalRound = hasPlayedFinalRound
         )
         return Game(
-            id = GameId.of("game1"),
-            players = listOf(player, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
-            targetScore = TargetScore.of(targetScore),
+            id = GameId("game1"),
+            players = listOf(player, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
+            targetScore = TargetScore(targetScore),
             currentPlayerIndex = 0,
             gamePhase = phase,
             createdAt = 0L

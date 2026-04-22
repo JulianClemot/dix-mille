@@ -30,17 +30,17 @@ class GameMapperTest {
     fun `Should round-trip Game through DTO without data loss`() {
         // Arrange
         val player1 = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(1500),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(1500),
             hasEnteredGame = true,
             currentTurn = null,
             hasPlayedFinalRound = false,
             consecutiveBusts = BustCount.NONE
         )
         val player2 = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
             totalScore = Score.ZERO,
             hasEnteredGame = false,
             currentTurn = null,
@@ -48,9 +48,9 @@ class GameMapperTest {
             consecutiveBusts = BustCount.NONE
         )
         val game = Game(
-            id = GameId.of("game-1"),
+            id = GameId("game-1"),
             players = listOf(player1, player2),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,
@@ -82,8 +82,8 @@ class GameMapperTest {
     fun `Should round-trip GameRules through DTO without data loss`() {
         // Arrange
         val rules = GameRules(
-            targetScore = TargetScore.of(5_000),
-            entryMinimumScore = EntryMinimumScore.of(300),
+            targetScore = TargetScore(5_000),
+            entryMinimumScore = EntryMinimumScore(300),
             consecutiveBustsForPenalty = 4,
             minPlayers = 3,
             maxPlayers = 8,
@@ -108,11 +108,11 @@ class GameMapperTest {
     fun `Should preserve all Player fields through DTO mapping`() {
         // Arrange
         val turn = Turn(
-            id = TurnId.of("turn-1"),
+            id = TurnId("turn-1"),
             entries = listOf(
                 ScoreEntry(
-                    id = EntryId.of("entry-1"),
-                    points = Score.of(500),
+                    id = EntryId("entry-1"),
+                    points = Score(500),
                     type = ScoreType.PRESET,
                     label = null
                 )
@@ -120,13 +120,13 @@ class GameMapperTest {
             isBusted = false
         )
         val player = Player(
-            id = PlayerId.of("p2"),
-            name = PlayerName.of("Bob"),
-            totalScore = Score.of(2500),
+            id = PlayerId("p2"),
+            name = PlayerName("Bob"),
+            totalScore = Score(2500),
             hasEnteredGame = true,
             currentTurn = turn,
             hasPlayedFinalRound = true,
-            consecutiveBusts = BustCount.of(2)
+            consecutiveBusts = BustCount(2)
         )
 
         // Act
@@ -147,17 +147,17 @@ class GameMapperTest {
     fun `Should preserve Turn entries through DTO mapping`() {
         // Arrange
         val turn = Turn(
-            id = TurnId.of("turn-42"),
+            id = TurnId("turn-42"),
             entries = listOf(
                 ScoreEntry(
-                    id = EntryId.of("e1"),
-                    points = Score.of(100),
+                    id = EntryId("e1"),
+                    points = Score(100),
                     type = ScoreType.PRESET,
                     label = null
                 ),
                 ScoreEntry(
-                    id = EntryId.of("e2"),
-                    points = Score.of(200),
+                    id = EntryId("e2"),
+                    points = Score(200),
                     type = ScoreType.CUSTOM,
                     label = "special"
                 )
@@ -187,10 +187,10 @@ class GameMapperTest {
         // Arrange
         val record = TurnRecord(
             roundNumber = 5,
-            playerId = PlayerId.of("p3"),
-            points = Score.of(750),
+            playerId = PlayerId("p3"),
+            points = Score(750),
             outcome = TurnOutcome.SCORED,
-            previousScore = Score.of(1000)
+            previousScore = Score(1000)
         )
 
         // Act

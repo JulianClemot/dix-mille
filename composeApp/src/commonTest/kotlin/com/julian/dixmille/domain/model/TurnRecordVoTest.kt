@@ -12,9 +12,9 @@ class TurnRecordVoTest {
     @Test
     fun `Should create TurnRecord with PlayerId Score and previousScore as Score`() {
         // Arrange
-        val playerId = PlayerId.of("player-1")
-        val points = Score.of(500)
-        val previousScore = Score.of(1000)
+        val playerId = PlayerId("player-1")
+        val points = Score(500)
+        val previousScore = Score(1000)
 
         // Act
         val record = TurnRecord(

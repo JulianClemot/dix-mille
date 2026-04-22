@@ -81,12 +81,12 @@ fun GameRules.toDto(): GameRulesDto = GameRulesDto(
 // --- DTO → Domain ---
 
 fun GameDto.toDomain(): Game = Game(
-    id = GameId.of(id),
+    id = GameId(id),
     players = players.map { it.toDomain() },
-    targetScore = TargetScore.of(targetScore),
+    targetScore = TargetScore(targetScore),
     currentPlayerIndex = currentPlayerIndex,
     gamePhase = gamePhase,
-    triggeringPlayerId = triggeringPlayerId?.let { PlayerId.of(it) },
+    triggeringPlayerId = triggeringPlayerId?.let { PlayerId(it) },
     createdAt = createdAt,
     turnHistory = turnHistory.map { it.toDomain() },
     roundNumber = roundNumber,
@@ -94,39 +94,39 @@ fun GameDto.toDomain(): Game = Game(
 )
 
 fun PlayerDto.toDomain(): Player = Player(
-    id = PlayerId.of(id),
-    name = PlayerName.of(name),
-    totalScore = Score.of(totalScore),
+    id = PlayerId(id),
+    name = PlayerName(name),
+    totalScore = Score(totalScore),
     hasEnteredGame = hasEnteredGame,
     currentTurn = currentTurn?.toDomain(),
     hasPlayedFinalRound = hasPlayedFinalRound,
-    consecutiveBusts = BustCount.of(consecutiveBusts)
+    consecutiveBusts = BustCount(consecutiveBusts)
 )
 
 fun TurnDto.toDomain(): Turn = Turn(
-    id = TurnId.of(id),
+    id = TurnId(id),
     entries = entries.map { it.toDomain() },
     isBusted = isBusted
 )
 
 fun ScoreEntryDto.toDomain(): ScoreEntry = ScoreEntry(
-    id = EntryId.of(id),
-    points = Score.of(points),
+    id = EntryId(id),
+    points = Score(points),
     type = type,
     label = label
 )
 
 fun TurnRecordDto.toDomain(): TurnRecord = TurnRecord(
     roundNumber = roundNumber,
-    playerId = PlayerId.of(playerId),
-    points = Score.of(points),
+    playerId = PlayerId(playerId),
+    points = Score(points),
     outcome = outcome,
-    previousScore = Score.of(previousScore)
+    previousScore = Score(previousScore)
 )
 
 fun GameRulesDto.toDomain(): GameRules = GameRules(
-    targetScore = TargetScore.of(targetScore),
-    entryMinimumScore = if (entryMinimumScore == 0) EntryMinimumScore.ZERO else EntryMinimumScore.of(entryMinimumScore),
+    targetScore = TargetScore(targetScore),
+    entryMinimumScore = if (entryMinimumScore == 0) EntryMinimumScore.ZERO else EntryMinimumScore(entryMinimumScore),
     consecutiveBustsForPenalty = consecutiveBustsForPenalty,
     minPlayers = minPlayers,
     maxPlayers = maxPlayers,

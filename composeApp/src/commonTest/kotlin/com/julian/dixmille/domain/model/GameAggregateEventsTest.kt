@@ -22,8 +22,8 @@ class GameAggregateEventsTest {
 
     private fun makeGame(
         players: List<Player> = listOf(
-            Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice")),
-            Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob")),
+            Player(id = PlayerId("p1"), name = PlayerName("Alice")),
+            Player(id = PlayerId("p2"), name = PlayerName("Bob")),
         ),
         targetScore: Int = 10_000,
         gamePhase: GamePhase = GamePhase.IN_PROGRESS,
@@ -31,9 +31,9 @@ class GameAggregateEventsTest {
         rules: GameRules = GameRules(),
         currentPlayerIndex: Int = 0,
     ): Game = Game(
-        id = GameId.of("game-1"),
+        id = GameId("game-1"),
         players = players,
-        targetScore = TargetScore.of(targetScore),
+        targetScore = TargetScore(targetScore),
         gamePhase = gamePhase,
         triggeringPlayerId = triggeringPlayerId,
         createdAt = 0L,
@@ -48,8 +48,8 @@ class GameAggregateEventsTest {
     @Test
     fun `Should emit FinalRoundStarted event when player reaches target score`() {
         // Arrange
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000), hasEnteredGame = true)
-        val game = makeGame(players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))))
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(10_000), hasEnteredGame = true)
+        val game = makeGame(players = listOf(alice, Player(id = PlayerId("p2"), name = PlayerName("Bob"))))
 
         // Act
         val result = game.checkAndTriggerFinalRound()
@@ -65,8 +65,8 @@ class GameAggregateEventsTest {
     @Test
     fun `Should not emit FinalRoundStarted event when player is below target score`() {
         // Arrange
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(9_000), hasEnteredGame = true)
-        val game = makeGame(players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))))
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(9_000), hasEnteredGame = true)
+        val game = makeGame(players = listOf(alice, Player(id = PlayerId("p2"), name = PlayerName("Bob"))))
 
         // Act
         val result = game.checkAndTriggerFinalRound()
@@ -79,11 +79,11 @@ class GameAggregateEventsTest {
     @Test
     fun `Should return empty events when game is already in final round on checkAndTriggerFinalRound`() {
         // Arrange
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000), hasEnteredGame = true)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(10_000), hasEnteredGame = true)
         val game = makeGame(
-            players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
+            players = listOf(alice, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
         )
 
         // Act
@@ -97,9 +97,9 @@ class GameAggregateEventsTest {
     @Test
     fun `Should emit GameEnded event when final round is disabled and player reaches target score`() {
         // Arrange
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000), hasEnteredGame = true)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(10_000), hasEnteredGame = true)
         val game = makeGame(
-            players = listOf(alice, Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"))),
+            players = listOf(alice, Player(id = PlayerId("p2"), name = PlayerName("Bob"))),
             rules = GameRules(enableFinalRound = false),
         )
 
@@ -121,12 +121,12 @@ class GameAggregateEventsTest {
     @Test
     fun `Should emit GameEnded event when all final round players have played`() {
         // Arrange: p2 has played final round; p1 is triggering player
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000), hasEnteredGame = true)
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(8_000), hasEnteredGame = true, hasPlayedFinalRound = true)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(10_000), hasEnteredGame = true)
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(8_000), hasEnteredGame = true, hasPlayedFinalRound = true)
         val game = makeGame(
             players = listOf(alice, bob),
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
         )
 
         // Act
@@ -144,12 +144,12 @@ class GameAggregateEventsTest {
     @Test
     fun `Should not emit GameEnded event when not all final round players have played`() {
         // Arrange: p2 has NOT played final round yet
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(10_000), hasEnteredGame = true)
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(8_000), hasEnteredGame = true, hasPlayedFinalRound = false)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(10_000), hasEnteredGame = true)
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(8_000), hasEnteredGame = true, hasPlayedFinalRound = false)
         val game = makeGame(
             players = listOf(alice, bob),
             gamePhase = GamePhase.FINAL_ROUND,
-            triggeringPlayerId = PlayerId.of("p1"),
+            triggeringPlayerId = PlayerId("p1"),
         )
 
         // Act

@@ -107,7 +107,7 @@ data class Game(
             val endedGame = copy(gamePhase = GamePhase.ENDED)
             GameResult(
                 game = endedGame,
-                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id ?: PlayerId.of("unknown")))
+                events = listOf(DomainEvent.GameEnded(winnerId = endedGame.getWinner()?.id ?: PlayerId("unknown")))
             )
         } else {
             GameResult(game = this, events = emptyList())
@@ -240,17 +240,17 @@ data class Game(
                 // Update the player's score
                 val playerIndex = game.players.indexOfFirst { it.id.value == playerId }
                 if (playerIndex != -1) {
-                    val updatedPlayer = collidedPlayer.copy(totalScore = Score.of(revertToScore))
+                    val updatedPlayer = collidedPlayer.copy(totalScore = Score(revertToScore))
                     val updatedPlayers = game.players.toMutableList()
                     updatedPlayers[playerIndex] = updatedPlayer
                     game = game.copy(players = updatedPlayers)
 
                     // Record the collision
                     game = game.recordTurn(
-                        playerId = PlayerId.of(playerId),
+                        playerId = PlayerId(playerId),
                         points = Score.ZERO,
                         outcome = TurnOutcome.COLLISION,
-                        previousScore = Score.of(scoreToCheck)
+                        previousScore = Score(scoreToCheck)
                     )
 
                     // Mark this player as immune (can't be hit twice in same cascade)

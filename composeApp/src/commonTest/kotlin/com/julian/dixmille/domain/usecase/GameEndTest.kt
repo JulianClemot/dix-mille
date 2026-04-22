@@ -37,13 +37,13 @@ class GameEndTest {
     @Test
     fun `Should return highest scoring player when game ended`() = runTest {
         // Arrange
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(12500), hasEnteredGame = true)
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10800), hasEnteredGame = true)
-        val carol = Player(id = PlayerId.of("p3"), name = PlayerName.of("Carol"), totalScore = Score.of(9200), hasEnteredGame = true)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(12500), hasEnteredGame = true)
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(10800), hasEnteredGame = true)
+        val carol = Player(id = PlayerId("p3"), name = PlayerName("Carol"), totalScore = Score(9200), hasEnteredGame = true)
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob, carol),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
             createdAt = 0L
@@ -59,12 +59,12 @@ class GameEndTest {
     @Test
     fun `Should return null when game has not ended`() = runTest {
         // Arrange
-        val alice = Player(id = PlayerId.of("p1"), name = PlayerName.of("Alice"), totalScore = Score.of(12500), hasEnteredGame = true)
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(10800), hasEnteredGame = true)
+        val alice = Player(id = PlayerId("p1"), name = PlayerName("Alice"), totalScore = Score(12500), hasEnteredGame = true)
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(10800), hasEnteredGame = true)
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.IN_PROGRESS,
             createdAt = 0L
@@ -81,17 +81,17 @@ class GameEndTest {
     fun `Should reject bust when game has ended`() = runTest {
         // Arrange
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(10500),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(10500),
             hasEnteredGame = true,
-            currentTurn = Turn(id = TurnId.of(UuidGenerator.generate()))
+            currentTurn = Turn(id = TurnId(UuidGenerator.generate()))
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(9000), hasEnteredGame = true)
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(9000), hasEnteredGame = true)
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
             createdAt = 0L
@@ -109,17 +109,17 @@ class GameEndTest {
     fun `Should reject skip when game has ended`() = runTest {
         // Arrange
         val alice = Player(
-            id = PlayerId.of("p1"),
-            name = PlayerName.of("Alice"),
-            totalScore = Score.of(10500),
+            id = PlayerId("p1"),
+            name = PlayerName("Alice"),
+            totalScore = Score(10500),
             hasEnteredGame = true,
-            currentTurn = Turn(id = TurnId.of(UuidGenerator.generate()))
+            currentTurn = Turn(id = TurnId(UuidGenerator.generate()))
         )
-        val bob = Player(id = PlayerId.of("p2"), name = PlayerName.of("Bob"), totalScore = Score.of(9000), hasEnteredGame = true)
+        val bob = Player(id = PlayerId("p2"), name = PlayerName("Bob"), totalScore = Score(9000), hasEnteredGame = true)
         val game = Game(
-            id = GameId.of("game1"),
+            id = GameId("game1"),
             players = listOf(alice, bob),
-            targetScore = TargetScore.of(10_000),
+            targetScore = TargetScore(10_000),
             currentPlayerIndex = 0,
             gamePhase = GamePhase.ENDED,
             createdAt = 0L
