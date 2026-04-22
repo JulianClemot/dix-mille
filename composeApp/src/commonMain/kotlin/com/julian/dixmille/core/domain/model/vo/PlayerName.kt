@@ -5,6 +5,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class PlayerName private constructor(val value: String) {
 
+    override fun toString(): String = value
+
     companion object {
         private const val MAX_LENGTH = 30
 

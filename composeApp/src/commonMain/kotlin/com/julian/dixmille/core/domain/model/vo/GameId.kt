@@ -5,6 +5,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class GameId private constructor(val value: String) {
 
+    override fun toString(): String = value
+
     companion object {
         fun of(value: String): GameId {
             require(value.isNotBlank()) { "GameId value must not be blank" }

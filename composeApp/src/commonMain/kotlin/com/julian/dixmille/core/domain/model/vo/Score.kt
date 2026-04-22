@@ -5,6 +5,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class Score private constructor(val value: Int) : Comparable<Score> {
 
+    override fun toString(): String = value.toString()
+
     override fun compareTo(other: Score): Int = value.compareTo(other.value)
 
     operator fun plus(other: Score): Score = Score(value + other.value)

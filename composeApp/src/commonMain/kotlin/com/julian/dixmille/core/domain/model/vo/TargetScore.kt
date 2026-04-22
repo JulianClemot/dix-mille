@@ -5,6 +5,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class TargetScore private constructor(val value: Int) {
 
+    override fun toString(): String = value.toString()
+
     companion object {
         val DEFAULT: TargetScore = TargetScore(10_000)
 

@@ -5,6 +5,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class EntryMinimumScore private constructor(val value: Int) {
 
+    override fun toString(): String = value.toString()
+
     companion object {
         val DEFAULT: EntryMinimumScore = EntryMinimumScore(500)
         val ZERO: EntryMinimumScore = EntryMinimumScore(0)

@@ -5,6 +5,8 @@ import kotlin.jvm.JvmInline
 @JvmInline
 value class BustCount private constructor(val value: Int) {
 
+    override fun toString(): String = value.toString()
+
     fun increment(): BustCount {
         check(value < 3) { "BustCount cannot be incremented beyond 3" }
         return BustCount(value + 1)
