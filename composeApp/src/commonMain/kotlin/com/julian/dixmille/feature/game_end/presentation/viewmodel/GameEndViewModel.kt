@@ -58,10 +58,9 @@ class GameEndViewModel(
 
             getCurrentGameUseCase()
                 .onSuccess { game ->
-                    val sortedPlayers = game.players.sortedByDescending { it.totalScore }
                     _state.update {
                         it.copy(
-                            playersByScore = sortedPlayers,
+                            rankedPlayers = game.getRanking(),
                             isLoading = false
                         )
                     }
@@ -69,7 +68,7 @@ class GameEndViewModel(
                 .onFailure {
                     _state.update {
                         it.copy(
-                            playersByScore = emptyList(),
+                            rankedPlayers = emptyList(),
                             isLoading = false
                         )
                     }

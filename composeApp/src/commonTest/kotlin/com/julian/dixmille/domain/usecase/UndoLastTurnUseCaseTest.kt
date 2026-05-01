@@ -464,6 +464,376 @@ class UndoLastTurnUseCaseTest {
     }
 
     @Test
+    fun `Should revert game phase to IN_PROGRESS when undoing triggering player turn`() = runTest {
+        // Arrange - Game in FINAL_ROUND, Alice is triggering player (9500 -> 10000)
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(10_000),
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(7_000),
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = PlayerId("alice"),
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(500),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(9_500)
+                )
+            )
+        )
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert
+        val result = repository.getCurrentGame().getOrThrow()
+        assertEquals(GamePhase.IN_PROGRESS, result.gamePhase)
+        assertEquals(null, result.triggeringPlayerId)
+    }
+
+    @Test
+    fun `Should restore triggering player score when undoing triggering turn`() = runTest {
+        // Arrange - Alice scored 9500 -> 10000 triggering FINAL_ROUND
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(10_000),
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(7_000),
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = PlayerId("alice"),
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(500),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(9_500)
+                )
+            )
+        )
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert - Alice's score restored to previousScore from the TurnRecord
+        val result = repository.getCurrentGame().getOrThrow()
+        val resultAlice = result.players.first { it.id == PlayerId("alice") }
+        assertEquals(9_500, resultAlice.totalScore.value)
+    }
+
+    @Test
+    fun `Should start fresh turn for triggering player after undo`() = runTest {
+        // Arrange - Alice scored 9500 -> 10000 triggering FINAL_ROUND
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(10_000),
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(7_000),
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = PlayerId("alice"),
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(500),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(9_500)
+                )
+            )
+        )
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert - currentPlayerIndex points to Alice, and she has a fresh turn
+        val result = repository.getCurrentGame().getOrThrow()
+        val aliceIndex = result.players.indexOfFirst { it.id == PlayerId("alice") }
+        assertEquals(aliceIndex, result.currentPlayerIndex)
+        val resultAlice = result.players[aliceIndex]
+        assertEquals(true, resultAlice.currentTurn != null)
+    }
+
+    @Test
+    fun `Should keep game phase as FINAL_ROUND when undoing non-triggering player turn`() = runTest {
+        // Arrange - FINAL_ROUND, Alice is triggering player (10000 pts)
+        // Bob committed SCORED turn (hasPlayedFinalRound=true), now it's Alice's turn again
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(10_000),
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(7_500),
+            hasPlayedFinalRound = true,
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = PlayerId("alice"),
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(10_000),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score.ZERO
+                ),
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("bob"),
+                    points = Score(500),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(7_000)
+                )
+            )
+        )
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert - game phase stays FINAL_ROUND, triggeringPlayerId preserved
+        val result = repository.getCurrentGame().getOrThrow()
+        assertEquals(GamePhase.FINAL_ROUND, result.gamePhase)
+        assertEquals(PlayerId("alice"), result.triggeringPlayerId)
+    }
+
+    @Test
+    fun `Should reset hasPlayedFinalRound for undone non-triggering player only`() = runTest {
+        // Arrange - FINAL_ROUND, Alice is triggering (10000 pts), Bob committed SCORED turn
+        // Carol also exists (has NOT played final round yet)
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(10_000),
+            hasPlayedFinalRound = false,
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(7_500),
+            hasPlayedFinalRound = true,
+        )
+        val carol = Player(
+            id = PlayerId("carol"),
+            name = PlayerName("Carol"),
+            hasEnteredGame = true,
+            totalScore = Score(5_000),
+            hasPlayedFinalRound = false,
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob, carol),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = PlayerId("alice"),
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(10_000),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score.ZERO
+                ),
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("bob"),
+                    points = Score(500),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(7_000)
+                )
+            )
+        )
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert - Bob's hasPlayedFinalRound reset to false, Alice's unchanged (false)
+        val result = repository.getCurrentGame().getOrThrow()
+        val resultBob = result.players.first { it.id == PlayerId("bob") }
+        val resultAlice = result.players.first { it.id == PlayerId("alice") }
+        assertEquals(false, resultBob.hasPlayedFinalRound)
+        assertEquals(false, resultAlice.hasPlayedFinalRound)
+    }
+
+    @Test
+    fun `Should start fresh turn for non-triggering player after undo`() = runTest {
+        // Arrange - FINAL_ROUND, Alice is triggering (10000 pts), Bob committed SCORED turn
+        // After undo, Bob should get a fresh turn
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(10_000),
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(7_500),
+            hasPlayedFinalRound = true,
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 0,
+            gamePhase = GamePhase.FINAL_ROUND,
+            triggeringPlayerId = PlayerId("alice"),
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(10_000),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score.ZERO
+                ),
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("bob"),
+                    points = Score(500),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(7_000)
+                )
+            )
+        )
+        val currentPlayer = game.players[0].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert - currentPlayerIndex points to Bob, and Bob has a fresh turn
+        val result = repository.getCurrentGame().getOrThrow()
+        val bobIndex = result.players.indexOfFirst { it.id == PlayerId("bob") }
+        assertEquals(bobIndex, result.currentPlayerIndex)
+        val resultBob = result.players[bobIndex]
+        assertEquals(true, resultBob.currentTurn != null)
+    }
+
+    @Test
+    fun `Should keep game phase as IN_PROGRESS when undoing normal scored turn`() = runTest {
+        // Arrange - Game in IN_PROGRESS, no triggering player, standard scored turn
+        val alice = Player(
+            id = PlayerId("alice"),
+            name = PlayerName("Alice"),
+            hasEnteredGame = true,
+            totalScore = Score(1_500),
+        )
+        val bob = Player(
+            id = PlayerId("bob"),
+            name = PlayerName("Bob"),
+            hasEnteredGame = true,
+            totalScore = Score(2_000),
+        )
+        var game = Game(
+            id = GameId("game-1"),
+            players = listOf(alice, bob),
+            targetScore = TargetScore(10_000),
+            currentPlayerIndex = 1,
+            gamePhase = GamePhase.IN_PROGRESS,
+            triggeringPlayerId = null,
+            createdAt = 0L,
+            turnHistory = listOf(
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("alice"),
+                    points = Score(1_000),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score(500)
+                ),
+                TurnRecord(
+                    roundNumber = 1,
+                    playerId = PlayerId("bob"),
+                    points = Score(2_000),
+                    outcome = TurnOutcome.SCORED,
+                    previousScore = Score.ZERO
+                )
+            )
+        )
+        val currentPlayer = game.players[1].startTurn(TurnId(UuidGenerator.generate()))
+        game = game.updateCurrentPlayer(currentPlayer)
+        repository.saveGame(game)
+
+        // Act
+        undoLastTurnUseCase()
+
+        // Assert - game phase stays IN_PROGRESS
+        val result = repository.getCurrentGame().getOrThrow()
+        assertEquals(GamePhase.IN_PROGRESS, result.gamePhase)
+        assertEquals(null, result.triggeringPlayerId)
+    }
+
+    @Test
     fun `Should revert game phase to final round when undoing last turn of game`() = runTest {
         // Arrange - Game just ENDED after Bob's final round turn
         val player1 = Player(id = PlayerId("p1"), name = PlayerName("Alice"), hasEnteredGame = true, totalScore = Score(10_000))

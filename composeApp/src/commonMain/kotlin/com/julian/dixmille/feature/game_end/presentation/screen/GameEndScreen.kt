@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.RankedPlayer
 import com.julian.dixmille.core.presentation.navigation.GameEndNavigationEvent
 import com.julian.dixmille.feature.game_end.presentation.model.GameEndEvent
 import com.julian.dixmille.feature.game_end.presentation.viewmodel.GameEndViewModel
@@ -135,7 +136,7 @@ fun GameEndEntryPoint(
     GameEndContent(
         winnerName = winnerName,
         winnerScore = winnerScore,
-        playersByScore = state.playersByScore,
+        rankedPlayers = state.rankedPlayers,
         onEvent = viewModel::onEvent,
     )
 }
@@ -147,7 +148,7 @@ fun GameEndEntryPoint(
 fun GameEndContent(
     winnerName: String,
     winnerScore: Int,
-    playersByScore: List<Player>,
+    rankedPlayers: List<RankedPlayer>,
     onEvent: (GameEndEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -201,7 +202,7 @@ fun GameEndContent(
 
             // Rankings
             FinalRankings(
-                playersByScore = playersByScore,
+                rankedPlayers = rankedPlayers,
                 visible = showContent
             )
 
@@ -324,7 +325,7 @@ private fun AnimatedScore(
  */
 @Composable
 private fun FinalRankings(
-    playersByScore: List<Player>,
+    rankedPlayers: List<RankedPlayer>,
     visible: Boolean
 ) {
     Column(
@@ -340,10 +341,10 @@ private fun FinalRankings(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        playersByScore.forEachIndexed { index, player ->
+        rankedPlayers.forEachIndexed { index, rp ->
             AnimatedRankingRow(
-                rank = index + 1,
-                player = player,
+                rank = rp.rank,
+                player = rp.player,
                 visible = visible,
                 delay = 400 + (index * 100)
             )

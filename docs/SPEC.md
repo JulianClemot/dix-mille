@@ -1376,6 +1376,178 @@ composeApp/src/commonMain/kotlin/com/julian/dixmille/
 
 ---
 
+## Final Round System Overhaul
+
+This feature overhauls the final round to clarify undo behavior, disable score collision during the final round, and define precise ranking rules for game end.
+
+### Key Rules
+
+- **Undo triggering turn**: If the player who triggered the final round has their turn undone, the phase reverts from `FINAL_ROUND` back to `IN_PROGRESS`.
+- **Undo non-triggering turn**: If a non-triggering player's final round turn is undone, the phase stays `FINAL_ROUND`.
+- **Score collision disabled in final round**: The "Hit" rule (score collision) does not apply during `FINAL_ROUND`. Two players may share the same score.
+- **Exceeding target is a bust**: During the final round, a score entry that would bring a player's total above the target score is treated as a bust. The turn is not committed and the bust counter increments.
+- **Ranking**: Players who reached the target score are ranked by who got there first. Players below target are ranked by score descending. Ties below target are acceptable.
+- **Entry threshold unchanged**: The 500-point entry threshold still applies during the final round. Un-entered players cannot score unless they meet the threshold.
+
+### BDD Scenarios
+
+```gherkin
+Feature: Final Round System Overhaul
+  As a player
+  I want the final round to handle undo, collision, ranking, and entry correctly
+  So that the endgame is fair and predictable
+
+  Background:
+    Given a game with players Alice, Bob, Carol
+    And the target score is 10000
+
+  Scenario: Undo the triggering player's turn reverts phase to IN_PROGRESS
+    Given Alice's total score is 9500
+    And Alice commits a turn of 500 points (total becomes 10000)
+    And the game phase is FINAL_ROUND
+    And Alice is recorded as the triggering player
+    When the last turn is undone
+    Then the game phase reverts to IN_PROGRESS
+    And Alice's total score reverts to 9500
+    And Alice is no longer recorded as the triggering player
+    And it is Alice's turn again
+
+  Scenario: Undo a non-triggering player's final round turn keeps phase as FINAL_ROUND
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob commits his final round turn of 800 points
+    And Bob's hasPlayedFinalRound is true
+    When the last turn is undone
+    Then the game phase remains FINAL_ROUND
+    And Bob's hasPlayedFinalRound becomes false
+    And Bob's score reverts to before his final round turn
+    And it is Bob's turn again
+
+  Scenario: Score collision is disabled during FINAL_ROUND
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob's total score is 7000
+    And Carol's total score is 7000
+    And it is Bob's turn
+    When Bob commits a turn of 0 points (skip or bust, total stays 7000)
+    Then Carol's score remains 7000
+    And no collision event is emitted
+
+  Scenario: Score collision is disabled when a player reaches another player's score during FINAL_ROUND
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob's total score is 6500
+    And Carol's total score is 7000
+    And it is Bob's turn
+    When Bob commits a turn of 500 points (total becomes 7000)
+    Then Bob's total score is 7000
+    And Carol's total score remains 7000
+    And no collision event is emitted
+
+  Scenario: Score collision still applies during IN_PROGRESS phase
+    Given the game phase is IN_PROGRESS
+    And Alice's total score is 2000
+    And Bob's total score is 2500
+    When Bob commits a turn of score that brings Bob to 2000
+    Then Alice's score reverts to her previous score before she reached 2000
+    And a collision event is emitted for Alice
+
+  Scenario: Game ends after all non-triggering players have played their final round turn
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob has not played his final round turn
+    And Carol has not played her final round turn
+    When Bob commits his final round turn
+    And Carol commits her final round turn
+    Then the game phase becomes ENDED
+
+  Scenario: Ranking when multiple players reach the target score — ordered by who got there first
+    Given the game has ended
+    And Alice reached 10000 on turn 10 (triggering player)
+    And Bob reached 10000 on turn 11 (during final round)
+    And Carol's final score is 8500
+    Then the ranking is: 1st Alice, 2nd Bob, 3rd Carol
+
+  Scenario: Ranking when players are below target score — ordered by score descending
+    Given the game has ended
+    And Alice reached 10000 (triggering player)
+    And Bob's final score is 9200
+    And Carol's final score is 8500
+    Then the ranking is: 1st Alice, 2nd Bob, 3rd Carol
+
+  Scenario: Ranking with ties below target score — ties are acceptable
+    Given the game has ended
+    And Alice reached 10000 (triggering player)
+    And Bob's final score is 8500
+    And Carol's final score is 8500
+    Then the ranking is: 1st Alice, 2nd Bob (tied), 2nd Carol (tied)
+
+  Scenario: Ranking with two players at target score — ordered by turn order (who got there first)
+    Given a game with players Alice, Bob, Carol, Dave
+    And the game has ended
+    And Alice reached 10000 on turn 12 (triggering player)
+    And Carol reached 10000 on turn 14 (during final round)
+    And Bob's final score is 9500
+    And Dave's final score is 7000
+    Then the ranking is: 1st Alice, 2nd Carol, 3rd Bob, 4th Dave
+
+  Scenario: Exceeding the target score during the final round counts as a bust
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob's total score is 9800
+    And it is Bob's turn
+    When Bob tries to commit a turn that would bring his total to 10300
+    Then the turn is treated as a bust
+    And Bob's total score remains 9800
+    And Bob's bust count increments
+
+  Scenario: Mixed ranking — target-reaching players always rank above non-reaching players
+    Given a game with players Alice, Bob, Carol
+    And the game has ended
+    And Alice reached 10000 (triggering player)
+    And Bob's final score is 9500 (busted when trying to exceed 10000)
+    And Carol's final score is 8500
+    Then the ranking is: 1st Alice, 2nd Bob, 3rd Carol
+
+  Scenario: Entry threshold still applies during final round — un-entered player needs 500+
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob has not entered the game (hasEnteredGame = false)
+    And Bob's total score is 0
+    And it is Bob's turn
+    When Bob tries to commit a turn of 400 points
+    Then the turn is rejected because it does not meet the entry threshold of 500
+    And Bob's total score remains 0
+
+  Scenario: Un-entered player can enter during final round with 500+ points
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob has not entered the game (hasEnteredGame = false)
+    And Bob's total score is 0
+    And it is Bob's turn
+    When Bob commits a turn of 500 points
+    Then Bob's total score becomes 500
+    And Bob's hasEnteredGame becomes true
+    And Bob's hasPlayedFinalRound becomes true
+
+  Scenario: Un-entered player who busts during final round stays at score 0
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob has not entered the game (hasEnteredGame = false)
+    And Bob's total score is 0
+    And it is Bob's turn
+    When Bob busts
+    Then Bob's total score remains 0
+    And Bob's hasEnteredGame remains false
+    And Bob's hasPlayedFinalRound becomes true
+    And it advances to the next player
+
+  Scenario: Un-entered player who skips during final round stays at score 0
+    Given the game is in FINAL_ROUND with triggering player Alice
+    And Bob has not entered the game (hasEnteredGame = false)
+    And Bob's total score is 0
+    And it is Bob's turn
+    When Bob skips
+    Then Bob's total score remains 0
+    And Bob's hasEnteredGame remains false
+    And Bob's hasPlayedFinalRound becomes true
+    And it advances to the next player
+```
+
+---
+
 ## Future Enhancements (Post-Launch)
 
 - Multiple concurrent games

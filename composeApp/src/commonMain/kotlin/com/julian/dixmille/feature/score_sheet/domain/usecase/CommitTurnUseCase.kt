@@ -59,6 +59,39 @@ class CommitTurnUseCase(
         val playerId = game.currentPlayer.id
         val previousScore = game.currentPlayer.totalScore
 
+        // FINAL_ROUND: if turn total would exceed target, treat as a bust instead of committing
+        if (game.gamePhase == GamePhase.FINAL_ROUND) {
+            val projectedTotal = previousScore.value + turnPoints.value
+            if (projectedTotal > game.targetScore.value) {
+                val bustPlayer = game.currentPlayer.copy(
+                    consecutiveBusts = game.currentPlayer.consecutiveBusts.increment()
+                ).bustTurn().markFinalRoundPlayed()
+
+                game = game.updateCurrentPlayer(bustPlayer)
+                game = game.recordTurn(playerId, Score.ZERO, TurnOutcome.BUST, previousScore)
+
+                if (validator.shouldEndGame(game)) {
+                    val endResult = game.checkAndEndGame()
+                    repository.saveGame(endResult.game).getOrThrow()
+                    return@runCatching
+                }
+
+                game = game.advanceToNextPlayer()
+
+                if (game.gamePhase == GamePhase.FINAL_ROUND && game.currentPlayer.id == game.triggeringPlayerId) {
+                    game = game.advanceToNextPlayer()
+                }
+
+                if (game.gamePhase != GamePhase.ENDED) {
+                    val nextPlayer = game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
+                    game = game.updateCurrentPlayer(nextPlayer)
+                }
+
+                repository.saveGame(game).getOrThrow()
+                return@runCatching
+            }
+        }
+
         // Commit the turn (adds points to total, enters game if applicable)
         var updatedPlayer = game.currentPlayer.commitTurn(game.rules.entryMinimumScore)
 
@@ -70,8 +103,10 @@ class CommitTurnUseCase(
         // Record turn in history
         game = game.recordTurn(playerId, turnPoints, TurnOutcome.SCORED, previousScore)
 
-        // Resolve score collisions
-        game = game.resolveScoreCollisions(playerId.value)
+        // Resolve score collisions (disabled during final round — players may share the same score)
+        if (game.gamePhase != GamePhase.FINAL_ROUND) {
+            game = game.resolveScoreCollisions(playerId.value)
+        }
 
         // Check if final round should be triggered (or game ends immediately if final round disabled)
         if (validator.shouldTriggerFinalRound(game)) {

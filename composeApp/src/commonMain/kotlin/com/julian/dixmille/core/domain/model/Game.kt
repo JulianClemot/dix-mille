@@ -5,6 +5,17 @@ import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
 import com.julian.dixmille.core.domain.model.vo.Score
 import com.julian.dixmille.core.domain.model.vo.TargetScore
+
+/**
+ * Represents a player with their computed rank in the final game standings.
+ *
+ * Rank is 1-based. Players with equal scores below the target share the same rank
+ * (standard competition ranking: 1, 2, 2, 4).
+ */
+data class RankedPlayer(
+    val player: Player,
+    val rank: Int
+)
 /**
  * Represents a complete Dix Mille game.
  */
@@ -134,6 +145,53 @@ data class Game(
     }
 
     /**
+     * Computes the final game ranking.
+     *
+     * Players who reached the target score come first, ordered by when they first
+     * crossed the target in [turnHistory] (lower index = earlier = higher rank).
+     * Players below the target follow, sorted by [Player.totalScore] descending.
+     *
+     * Standard competition ranking is used: tied players below the target share
+     * the same rank number and the next distinct score skips the corresponding
+     * rank numbers (e.g. 1, 2, 2, 4).
+     *
+     * @return Ordered list of [RankedPlayer] from rank 1 downward.
+     */
+    fun getRanking(): List<RankedPlayer> {
+        val (atTarget, belowTarget) = players.partition { it.totalScore.value >= targetScore.value }
+
+        val sortedAtTarget = atTarget.sortedBy { player ->
+            val crossingIndex = turnHistory.indexOfFirst { record ->
+                record.playerId == player.id &&
+                    record.outcome == TurnOutcome.SCORED &&
+                    record.previousScore.value + record.points.value >= targetScore.value
+            }
+            if (crossingIndex >= 0) crossingIndex else Int.MAX_VALUE
+        }
+
+        val sortedBelow = belowTarget.sortedByDescending { it.totalScore }
+
+        val allSorted = sortedAtTarget + sortedBelow
+        val result = mutableListOf<RankedPlayer>()
+        var currentRank = 1
+
+        allSorted.forEachIndexed { index, player ->
+            if (index == 0) {
+                result.add(RankedPlayer(player, currentRank))
+            } else {
+                val prev = allSorted[index - 1]
+                val isTie = player in sortedBelow &&
+                    prev in sortedBelow &&
+                    player.totalScore == prev.totalScore
+                if (!isTie) currentRank = index + 1
+                result.add(RankedPlayer(player, currentRank))
+            }
+        }
+
+        return result
+    }
+
+    /**
      * Records a completed turn in the history.
      *
      * The turn is recorded with the current round number. Round advancement
@@ -162,12 +220,19 @@ data class Game(
      * If the current round is ahead of the last recorded turn's round,
      * the round number is reverted to match the undone turn's round.
      *
-     * @return Updated game with last turn removed, or unchanged if no history
+     * When undoing in FINAL_ROUND:
+     * - If the undone turn belongs to the triggering player (the turn that crossed the
+     *   target threshold), the phase reverts to IN_PROGRESS and triggeringPlayerId is
+     *   cleared — unless another player also has a score >= target, in which case
+     *   FINAL_ROUND is kept.
+     * - If the undone turn belongs to any other player, hasPlayedFinalRound is reset
+     *   for that player and the phase stays FINAL_ROUND.
+     *
+     * @return Updated game with last turn removed
+     * @throws IllegalStateException if turn history is empty
      */
     fun undoLastTurn(): Game {
-        if (turnHistory.isEmpty()) {
-            return this
-        }
+        check(turnHistory.isNotEmpty()) { "No turns to undo" }
 
         val lastTurn = turnHistory.last()
         // If we've advanced to a new round, revert to the last turn's round
@@ -177,10 +242,41 @@ data class Game(
             roundNumber
         }
 
-        return copy(
+        var updatedGame = copy(
             turnHistory = turnHistory.dropLast(1),
-            roundNumber = newRoundNumber
+            roundNumber = newRoundNumber,
         )
+
+        // Handle final round phase reversion
+        if (gamePhase == GamePhase.FINAL_ROUND && triggeringPlayerId != null) {
+            val isTriggeringTurn = lastTurn.playerId == triggeringPlayerId
+                && lastTurn.previousScore.value < targetScore.value
+                && (lastTurn.previousScore.value + lastTurn.points.value) >= targetScore.value
+
+            if (isTriggeringTurn) {
+                val otherPlayerAtTarget = players.any {
+                    it.id != triggeringPlayerId && it.totalScore.value >= targetScore.value
+                }
+                updatedGame = if (otherPlayerAtTarget) {
+                    updatedGame // Keep FINAL_ROUND and triggeringPlayerId unchanged
+                } else {
+                    updatedGame.copy(
+                        gamePhase = GamePhase.IN_PROGRESS,
+                        triggeringPlayerId = null,
+                    )
+                }
+            } else {
+                // Non-triggering player's turn was undone — reset their hasPlayedFinalRound
+                val playerIndex = updatedGame.players.indexOfFirst { it.id == lastTurn.playerId }
+                if (playerIndex != -1) {
+                    val updatedPlayers = updatedGame.players.toMutableList()
+                    updatedPlayers[playerIndex] = updatedPlayers[playerIndex].copy(hasPlayedFinalRound = false)
+                    updatedGame = updatedGame.copy(players = updatedPlayers)
+                }
+            }
+        }
+
+        return updatedGame
     }
 
     /**
