@@ -297,6 +297,35 @@ class AddScoreAndCommitIntegrationTest {
 - Platform-specific framework code
 - Generated code
 
+## Asserting Whole Objects
+
+When verifying domain objects, always assert the whole object rather than individual attributes. This catches missing fields and makes intent clear.
+
+**Prefer:**
+```kotlin
+val expectedRecord = TurnRecord(
+    roundNumber = 1,
+    playerId = PlayerId("p1"),
+    points = Score(200),
+    outcome = TurnOutcome.SCORED,
+    previousScore = Score(500)
+)
+assertEquals(expectedRecord, game.turnHistory[0])
+```
+
+**Avoid:**
+```kotlin
+val record = game.turnHistory[0]
+assertEquals(TurnOutcome.SCORED, record.outcome)
+assertEquals(200, record.points.value)
+assertEquals(500, record.previousScore.value)
+assertEquals("p1", record.playerId.value)
+```
+
+The field-by-field style silently misses new fields added to the data class. The object-level `assertEquals` fails loudly when any field diverges.
+
+Apply this rule to: `TurnRecord`, `Player`, `Game`, `ScoreEntry`, and any other `data class` in the domain.
+
 ## Best Practices
 
 1. Test behavior, not implementation
@@ -309,3 +338,4 @@ class AddScoreAndCommitIntegrationTest {
 8. Test in commonTest when possible
 9. Don't test private methods directly
 10. Don't depend on test execution order
+11. Assert whole objects, not individual attributes (see "Asserting Whole Objects" above)
