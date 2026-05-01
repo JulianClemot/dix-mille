@@ -98,6 +98,10 @@ Bump Kotlin and Compose Multiplatform versions in
 libs.versions.toml. No breaking API changes.
 ```
 
+## Arguments
+
+- `--auto`: Skip the confirmation prompt and commit immediately without asking the user. Never push.
+
 ## Workflow
 
 When the user invokes /commit:
@@ -107,6 +111,7 @@ When the user invokes /commit:
 3. Analyze ALL staged changes carefully to understand the nature of the change
 4. Choose the most appropriate gitmoji based on the primary change
 5. Write an explicit commit message following the format above
-6. Show the proposed message to the user and ask for confirmation before committing
+6. If `--auto` was passed: commit immediately and just show the message you made. If not: show the proposed message to the user and ask for confirmation before committing.
 7. Create the commit using a HEREDOC for proper formatting
 8. Run `git status` to verify success
+9. Never push, regardless of arguments.
