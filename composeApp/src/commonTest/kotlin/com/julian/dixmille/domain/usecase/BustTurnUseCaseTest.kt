@@ -6,6 +6,7 @@ import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.TurnRecord
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
@@ -486,10 +487,14 @@ class BustTurnUseCaseTest {
         // Assert
         val updatedGame = repository.getCurrentGame().getOrThrow()
         assertEquals(1, updatedGame.turnHistory.size)
-        val record = updatedGame.turnHistory[0]
-        assertEquals(com.julian.dixmille.core.domain.model.TurnOutcome.BUST, record.outcome)
-        assertEquals(0, record.points.value)
-        assertEquals(500, record.previousScore.value)
+        val expectedRecord = TurnRecord(
+            roundNumber = 1,
+            playerId = PlayerId("p1"),
+            points = Score.ZERO,
+            outcome = TurnOutcome.BUST,
+            previousScore = Score(500)
+        )
+        assertEquals(expectedRecord, updatedGame.turnHistory[0])
     }
 
     @Test

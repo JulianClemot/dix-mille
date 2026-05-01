@@ -26,9 +26,13 @@ class TurnRecordVoTest {
         )
 
         // Assert
-        assertEquals(playerId, record.playerId)
-        assertEquals(points, record.points)
-        assertEquals(previousScore, record.previousScore)
-        assertEquals(1, record.roundNumber)
+        val expected = TurnRecord(
+            roundNumber = 1,
+            playerId = PlayerId("player-1"),
+            points = Score(500),
+            outcome = TurnOutcome.SCORED,
+            previousScore = Score(1000)
+        )
+        assertEquals(expected, record)
     }
 }

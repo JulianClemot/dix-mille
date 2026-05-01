@@ -5,6 +5,7 @@ import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.TurnRecord
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
@@ -105,8 +106,14 @@ class GameFinalRoundExceedTargetTest {
         // Assert: last TurnRecord is BUST with Score.ZERO
         val result = repository.getCurrentGame().getOrThrow()
         val lastRecord = result.turnHistory.last { it.playerId.value == "p2" }
-        assertEquals(TurnOutcome.BUST, lastRecord.outcome)
-        assertEquals(0, lastRecord.points.value)
+        val expectedRecord = TurnRecord(
+            roundNumber = 2,
+            playerId = PlayerId("p2"),
+            points = Score.ZERO,
+            outcome = TurnOutcome.BUST,
+            previousScore = Score(9800)
+        )
+        assertEquals(expectedRecord, lastRecord)
     }
 
     // ---------- test 3 ----------

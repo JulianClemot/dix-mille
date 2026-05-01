@@ -6,6 +6,7 @@ import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.ScoreEntry
 import com.julian.dixmille.core.domain.model.Turn
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.TurnRecord
 import com.julian.dixmille.core.domain.model.vo.EntryId
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
@@ -77,11 +78,14 @@ class CommitTurnUseCaseTest {
 
         val game = repository.getCurrentGame().getOrThrow()
         assertEquals(1, game.turnHistory.size)
-        val record = game.turnHistory[0]
-        assertEquals(TurnOutcome.SCORED, record.outcome)
-        assertEquals(200, record.points.value)
-        assertEquals(500, record.previousScore.value)
-        assertEquals("p1", record.playerId.value)
+        val expectedRecord = TurnRecord(
+            roundNumber = 1,
+            playerId = PlayerId("p1"),
+            points = Score(200),
+            outcome = TurnOutcome.SCORED,
+            previousScore = Score(500)
+        )
+        assertEquals(expectedRecord, game.turnHistory[0])
     }
 
     @Test

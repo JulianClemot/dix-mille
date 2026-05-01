@@ -4,6 +4,7 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.Player
 import com.julian.dixmille.core.domain.model.TurnOutcome
+import com.julian.dixmille.core.domain.model.TurnRecord
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.util.UuidGenerator
 import com.julian.dixmille.core.domain.service.ScoreValidator
@@ -55,11 +56,14 @@ class SkipTurnUseCaseTest {
 
         val game = repository.getCurrentGame().getOrThrow()
         assertEquals(1, game.turnHistory.size)
-        val record = game.turnHistory[0]
-        assertEquals(TurnOutcome.SKIP, record.outcome)
-        assertEquals(0, record.points.value)
-        assertEquals(600, record.previousScore.value)
-        assertEquals("p1", record.playerId.value)
+        val expectedRecord = TurnRecord(
+            roundNumber = 1,
+            playerId = PlayerId("p1"),
+            points = Score.ZERO,
+            outcome = TurnOutcome.SKIP,
+            previousScore = Score(600)
+        )
+        assertEquals(expectedRecord, game.turnHistory[0])
     }
 
     // ── State preconditions ───────────────────────────────────────────────────

@@ -18,9 +18,12 @@ class DomainEventTest {
             newTotalScore = Score(1500),
         )
 
-        assertEquals(PlayerId("player-1"), event.playerId)
-        assertEquals(500, event.points.value)
-        assertEquals(1500, event.newTotalScore.value)
+        val expected = DomainEvent.TurnCommitted(
+            playerId = PlayerId("player-1"),
+            points = Score(500),
+            newTotalScore = Score(1500),
+        )
+        assertEquals(expected, event)
     }
 
     @Test

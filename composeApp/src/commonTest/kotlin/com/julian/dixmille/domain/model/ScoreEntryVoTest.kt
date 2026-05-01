@@ -20,8 +20,8 @@ class ScoreEntryVoTest {
         val entry = ScoreEntry(id = id, points = points)
 
         // Assert
-        assertEquals(id, entry.id)
-        assertEquals(points, entry.points)
+        val expected = ScoreEntry(id = EntryId("entry-1"), points = Score(100))
+        assertEquals(expected, entry)
     }
 
     @Test

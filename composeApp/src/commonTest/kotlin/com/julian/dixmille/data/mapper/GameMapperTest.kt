@@ -172,14 +172,20 @@ class GameMapperTest {
         assertEquals(turn.id.value, roundTripped.id.value)
         assertEquals(turn.isBusted, roundTripped.isBusted)
         assertEquals(2, roundTripped.entries.size)
-        assertEquals("e1", roundTripped.entries[0].id.value)
-        assertEquals(100, roundTripped.entries[0].points.value)
-        assertEquals(ScoreType.PRESET, roundTripped.entries[0].type)
-        assertNull(roundTripped.entries[0].label)
-        assertEquals("e2", roundTripped.entries[1].id.value)
-        assertEquals(200, roundTripped.entries[1].points.value)
-        assertEquals(ScoreType.CUSTOM, roundTripped.entries[1].type)
-        assertEquals("special", roundTripped.entries[1].label)
+        val expectedEntry0 = ScoreEntry(
+            id = EntryId("e1"),
+            points = Score(100),
+            type = ScoreType.PRESET,
+            label = null
+        )
+        assertEquals(expectedEntry0, roundTripped.entries[0])
+        val expectedEntry1 = ScoreEntry(
+            id = EntryId("e2"),
+            points = Score(200),
+            type = ScoreType.CUSTOM,
+            label = "special"
+        )
+        assertEquals(expectedEntry1, roundTripped.entries[1])
     }
 
     @Test
@@ -197,10 +203,6 @@ class GameMapperTest {
         val roundTripped = record.toDto().toDomain()
 
         // Assert
-        assertEquals(record.roundNumber, roundTripped.roundNumber)
-        assertEquals(record.playerId.value, roundTripped.playerId.value)
-        assertEquals(record.points.value, roundTripped.points.value)
-        assertEquals(record.outcome, roundTripped.outcome)
-        assertEquals(record.previousScore.value, roundTripped.previousScore.value)
+        assertEquals(record, roundTripped)
     }
 }
