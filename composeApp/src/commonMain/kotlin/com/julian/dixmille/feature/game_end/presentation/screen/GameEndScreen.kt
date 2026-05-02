@@ -448,7 +448,7 @@ private fun AnimatedButton(
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary
-        )
+        ),
     ) {
         Icon(painter = painterResource(Res.drawable.add_diamond), contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
@@ -458,7 +458,7 @@ private fun AnimatedButton(
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.5.sp,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Clip,
             autoSize = TextAutoSize.StepBased(minFontSize = 9.sp),
             modifier = Modifier.padding(vertical = 4.dp)
         )

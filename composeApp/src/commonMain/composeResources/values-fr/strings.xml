@@ -50,7 +50,7 @@
     <string name="game_end_winner_text">%1$s GAGNE !</string>
     <string name="game_end_score_display">%1$d points</string>
     <string name="game_end_standings_title">CLASSEMENT FINAL</string>
-    <string name="game_end_new_game_button">NOUVELLE PARTIE</string>
+    <string name="game_end_new_game_button">RECOMMENCER</string>
     <string name="game_end_home_button">ACCUEIL</string>
 
     <!-- Game rules settings screen -->
