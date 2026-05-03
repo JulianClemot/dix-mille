@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,14 +31,28 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiState
 import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.add_player_add_button
+import dixmille.composeapp.generated.resources.add_player_confirm_selection_cd
+import dixmille.composeapp.generated.resources.add_player_existing_players_header
+import dixmille.composeapp.generated.resources.add_player_sheet_close_cd
+import dixmille.composeapp.generated.resources.add_player_sheet_title
+import dixmille.composeapp.generated.resources.add_player_subtitle_already_in_game
+import dixmille.composeapp.generated.resources.add_player_subtitle_available
+import dixmille.composeapp.generated.resources.add_player_subtitle_days_ago
+import dixmille.composeapp.generated.resources.add_player_subtitle_one_day_ago
+import dixmille.composeapp.generated.resources.add_player_subtitle_today
+import dixmille.composeapp.generated.resources.add_player_unified_field_hint
 import dixmille.composeapp.generated.resources.play_arrow
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
 
 private const val MILLIS_PER_DAY = 86_400_000L
@@ -50,6 +66,7 @@ fun AddPlayerBottomSheet(
     nowMillis: Long = 0L,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     ModalBottomSheet(
         onDismissRequest = { onEvent(GameSetupEvent.HidePlayerSelector) },
@@ -68,10 +85,13 @@ fun AddPlayerBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(onClick = { onEvent(GameSetupEvent.HidePlayerSelector) }) {
-                        Text(text = "✕", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "✕",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
                     }
                     Text(
-                        text = "SELECT PLAYER",
+                        text = stringResource(Res.string.add_player_sheet_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp,
@@ -85,18 +105,27 @@ fun AddPlayerBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     OutlinedTextField(
-                        value = state.playerNameInput,
-                        onValueChange = { onEvent(GameSetupEvent.UpdatePlayerNameInput(it)) },
-                        label = { Text("New player name") },
+                        value = state.unifiedInput,
+                        onValueChange = { onEvent(GameSetupEvent.UpdateUnifiedInput(it)) },
+                        label = { Text(stringResource(Res.string.add_player_unified_field_hint)) },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         isError = state.quickAddError != null,
+                        trailingIcon = if (state.unifiedInput.isNotEmpty()) {
+                            {
+                                IconButton(onClick = { onEvent(GameSetupEvent.UpdateUnifiedInput("")) }) {
+                                    Text(text = "✕", style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                        } else null,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
                     )
                     Button(
-                        onClick = { onEvent(GameSetupEvent.QuickAddPlayer(state.playerNameInput)) },
-                        enabled = state.playerNameInput.isNotBlank() && state.canAddMorePlayers,
+                        onClick = { onEvent(GameSetupEvent.QuickAddPlayer(state.unifiedInput)) },
+                        enabled = state.canAddNewPlayer,
                     ) {
-                        Text("ADD")
+                        Text(stringResource(Res.string.add_player_add_button))
                     }
                 }
 
@@ -108,16 +137,8 @@ fun AddPlayerBottomSheet(
                     )
                 }
 
-                OutlinedTextField(
-                    value = state.searchQuery,
-                    onValueChange = { onEvent(GameSetupEvent.UpdateSearchQuery(it)) },
-                    label = { Text("Search players") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                )
-
                 Text(
-                    text = "FREQUENT PLAYERS",
+                    text = stringResource(Res.string.add_player_existing_players_header),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
@@ -130,19 +151,19 @@ fun AddPlayerBottomSheet(
                         .height(300.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    items(state.filteredPlayers) { player ->
+                    items(state.filteredPlayers, key = { it.id.value }) { player ->
                         val isSelected = state.selectedPlayers.any { it.id.value == player.id.value }
                         val subtitle = when {
-                            isSelected -> "ALREADY IN GAME"
+                            isSelected -> stringResource(Res.string.add_player_subtitle_already_in_game)
                             player.lastPlayedAt != null -> {
                                 val days = abs(nowMillis - player.lastPlayedAt) / MILLIS_PER_DAY
                                 when {
-                                    days == 0L -> "TODAY"
-                                    days == 1L -> "1 DAY AGO"
-                                    else -> "$days DAYS AGO"
+                                    days == 0L -> stringResource(Res.string.add_player_subtitle_today)
+                                    days == 1L -> stringResource(Res.string.add_player_subtitle_one_day_ago)
+                                    else -> stringResource(Res.string.add_player_subtitle_days_ago, days)
                                 }
                             }
-                            else -> "AVAILABLE"
+                            else -> stringResource(Res.string.add_player_subtitle_available)
                         }
 
                         Row(
@@ -209,7 +230,7 @@ fun AddPlayerBottomSheet(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.play_arrow),
-                    contentDescription = "Confirm selection",
+                    contentDescription = stringResource(Res.string.add_player_confirm_selection_cd),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(24.dp),
                 )

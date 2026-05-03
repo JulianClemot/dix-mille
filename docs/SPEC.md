@@ -1880,6 +1880,214 @@ Feature: Player Library
 
 ---
 
+## Unified Search + Add Field (Game Setup Bottom Sheet)
+
+This feature replaces the separate "search" and "quick-add" fields in the player selector bottom sheet with a single unified `OutlinedTextField`. The field serves two purposes simultaneously: filtering the existing player list as the user types, and providing input for adding a brand-new player via the ADD button.
+
+### Key Rules
+
+- **Unified field**: A single text field labelled "Search or add a player" (FR: "Rechercher ou ajouter un joueur") replaces any prior separate search / quick-add inputs.
+- **Real-time filtering**: Each keystroke filters the player list using case-insensitive "contains" matching on name.
+- **Clear (×) icon**: A trailing ×-icon appears as a trailing action whenever the field contains any text. Tapping it clears the field and resets the filter to show all players.
+- **ADD button**: Placed inline next to the field. Disabled when the field is empty OR when the trimmed text exactly matches an existing saved player name (case-insensitive). Enabled only when text is non-empty and does not exactly match any existing player name.
+- **Exact-match → must use checkbox**: When the typed text exactly matches an existing player name, ADD is disabled to prevent duplicates. The user selects that player via their checkbox.
+- **Selecting via checkbox does not clear field**: Checking or unchecking a player leaves the field text and filter state unchanged.
+- **Keyboard Done/Enter**: Only dismisses the keyboard. Does not trigger the ADD action.
+- **Section header**: The list of saved players is headed "Existing players" (FR: "Joueurs existants").
+- **String extraction**: All UI strings — labels, hints, section headers, error messages (including ViewModel-level messages) — are extracted to Compose Multiplatform string resources with both English and French translations.
+
+### BDD Scenarios
+
+```gherkin
+Feature: Unified Search + Add Field
+  As a game organiser
+  I want a single field that both filters existing players and lets me add new ones
+  So that I can quickly find or create players without switching between two inputs
+
+  Background:
+    Given the player selector bottom sheet is open
+    And the database contains players "Alice", "Bob", "Carol"
+
+  # --- Initial State ---
+
+  Scenario: Field is empty on open and shows hint text
+    When the bottom sheet opens
+    Then the unified field displays the hint "Search or add a player"
+    And the player list shows all saved players
+    And the ADD button is disabled
+    And no clear (×) icon is visible
+
+  # --- Real-Time Filtering ---
+
+  Scenario: Typing filters the player list in real time
+    When I type "al" in the unified field
+    Then the player list shows only "Alice"
+    And "Bob" and "Carol" are not visible
+
+  Scenario: Filtering is case-insensitive
+    When I type "ALI" in the unified field
+    Then the player list shows only "Alice"
+
+  Scenario: Filtering uses contains matching
+    When I type "o" in the unified field
+    Then the player list shows "Bob" and "Carol"
+    And "Alice" is not visible
+
+  Scenario: Typing with no matching players shows an empty list
+    When I type "xyz" in the unified field
+    Then the player list is empty
+
+  # --- Clear (×) Icon ---
+
+  Scenario: Clear icon appears when field has text
+    When I type "al" in the unified field
+    Then a clear (×) icon is visible as a trailing action on the field
+
+  Scenario: Clear icon is absent when field is empty
+    Given the unified field is empty
+    Then no clear (×) icon is visible
+
+  Scenario: Tapping the clear icon clears the field
+    Given I have typed "al" in the unified field
+    When I tap the clear (×) icon
+    Then the unified field is empty
+    And the hint text is shown again
+
+  Scenario: Tapping the clear icon resets the filter
+    Given I have typed "al" in the unified field
+    And the player list shows only "Alice"
+    When I tap the clear (×) icon
+    Then the player list shows all saved players: Alice, Bob, Carol
+
+  Scenario: Clear icon disappears after clearing the field
+    Given I have typed "al" in the unified field
+    When I tap the clear (×) icon
+    Then no clear (×) icon is visible
+
+  # --- ADD Button State ---
+
+  Scenario: ADD button is disabled when the field is empty
+    Given the unified field is empty
+    Then the ADD button is disabled
+
+  Scenario: ADD button is enabled when text is non-empty and does not match any existing player
+    When I type "Diana" in the unified field
+    Then the ADD button is enabled
+
+  Scenario: ADD button is disabled when text exactly matches an existing player name (case-sensitive exact match)
+    When I type "Alice" in the unified field
+    Then the ADD button is disabled
+
+  Scenario: ADD button is disabled when text exactly matches an existing player name (case-insensitive)
+    When I type "alice" in the unified field
+    Then the ADD button is disabled
+
+  Scenario: ADD button is disabled when text exactly matches an existing player name (all caps)
+    When I type "BOB" in the unified field
+    Then the ADD button is disabled
+
+  Scenario: ADD button is enabled when text is a partial match (not exact)
+    When I type "Ali" in the unified field
+    Then the ADD button is enabled
+    And the player list shows "Alice" (partial match)
+
+  Scenario: ADD button is enabled when text is a superset of an existing name
+    When I type "Alicia" in the unified field
+    And no player named "Alicia" exists
+    Then the ADD button is enabled
+
+  # --- Exact Match Guidance ---
+
+  Scenario: Exact match disables ADD — user must use checkbox
+    Given a player named "Alice" exists in the database
+    When I type "Alice" in the unified field
+    Then the ADD button is disabled
+    And "Alice" is visible in the filtered player list
+    And the user can select "Alice" by tapping her checkbox
+
+  # --- Selecting a Player Does Not Clear the Field ---
+
+  Scenario: Checking a player checkbox does not clear the field
+    Given I have typed "ali" in the unified field
+    And the player list shows "Alice"
+    When I check the checkbox next to "Alice"
+    Then the unified field still contains "ali"
+    And the player list still shows the filtered result for "ali"
+
+  Scenario: Unchecking a player checkbox does not clear the field
+    Given I have typed "al" in the unified field
+    And "Alice" is currently checked
+    When I uncheck the checkbox next to "Alice"
+    Then the unified field still contains "al"
+
+  # --- Keyboard Behavior ---
+
+  Scenario: Pressing Done on the keyboard dismisses the keyboard only
+    Given I have typed "Diana" in the unified field
+    When I press the keyboard Done / Enter action
+    Then the keyboard is dismissed
+    And no player is added
+    And the unified field still contains "Diana"
+
+  # --- Adding a New Player ---
+
+  Scenario: Tapping ADD creates a new player and auto-selects them
+    Given no player named "Diana" exists in the database
+    When I type "Diana" in the unified field
+    And I tap the ADD button
+    Then "Diana" is saved to the database
+    And "Diana" appears in the player list with a checked checkbox
+    And the unified field is cleared
+    And the player list shows all saved players (filter reset)
+
+  Scenario: ADD trims surrounding whitespace before saving
+    When I type "  Eve  " in the unified field
+    And I tap the ADD button
+    Then a player named "Eve" is saved (name trimmed)
+    And "Eve" appears in the player list with a checked checkbox
+
+  Scenario: ADD is blocked when 6 players are already checked
+    Given 6 players are currently checked
+    When I type "NewPlayer" in the unified field
+    Then the ADD button is disabled
+    And no new player can be added until a checked player is unchecked
+
+  # --- Section Header ---
+
+  Scenario: Section header reads "Existing players"
+    When the player selector bottom sheet is open
+    Then the section header above the player list reads "Existing players"
+
+  Scenario: Section header reads "Joueurs existants" in French
+    Given the device locale is "fr"
+    When the player selector bottom sheet is open
+    Then the section header reads "Joueurs existants"
+
+  # --- String Extraction ---
+
+  Scenario: Hint text is "Search or add a player" in English
+    Given the device locale is "en"
+    When the bottom sheet opens
+    Then the unified field hint reads "Search or add a player"
+
+  Scenario: Hint text is "Rechercher ou ajouter un joueur" in French
+    Given the device locale is "fr"
+    When the bottom sheet opens
+    Then the unified field hint reads "Rechercher ou ajouter un joueur"
+
+  Scenario: All UI strings in the bottom sheet come from string resources
+    Then no string in the bottom sheet is hardcoded in Kotlin or Composable source
+    And each string has a corresponding entry in both the English and French resource files
+
+  Scenario: ViewModel error messages are sourced from string resources
+    Given the device locale is "fr"
+    When a ViewModel emits an error for a duplicate player name
+    Then the displayed error message is in French
+    And the error string key exists in both English and French resource files
+```
+
+---
+
 ## Future Enhancements (Post-Launch)
 
 - Multiple concurrent games

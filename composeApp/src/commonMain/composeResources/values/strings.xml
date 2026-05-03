@@ -53,6 +53,24 @@
     <string name="game_end_new_game_button">RESTART</string>
     <string name="game_end_home_button">HOME</string>
 
+    <!-- Add player bottom sheet -->
+    <string name="add_player_sheet_title">SELECT PLAYER</string>
+    <string name="add_player_sheet_close_cd">Close</string>
+    <string name="add_player_unified_field_hint">Search or add your player\'s name</string>
+    <string name="add_player_add_button">ADD</string>
+    <string name="add_player_existing_players_header">Existing players</string>
+    <string name="add_player_subtitle_already_in_game">ALREADY IN GAME</string>
+    <string name="add_player_subtitle_today">TODAY</string>
+    <string name="add_player_subtitle_one_day_ago">1 DAY AGO</string>
+    <string name="add_player_subtitle_days_ago">%1$d DAYS AGO</string>
+    <string name="add_player_subtitle_available">AVAILABLE</string>
+    <string name="add_player_confirm_selection_cd">Confirm selection</string>
+    <string name="add_player_error_duplicate">A player with this name already exists</string>
+    <string name="add_player_error_failed">Failed to add player</string>
+    <string name="game_setup_error_need_players">Need at least %1$d players</string>
+    <string name="game_setup_error_invalid_target">Invalid target score</string>
+    <string name="game_setup_error_failed_create">Failed to create game</string>
+
     <!-- Game rules settings screen -->
     <string name="game_rules_title">GAME RULES</string>
     <string name="game_rules_section_scoring">SCORING</string>

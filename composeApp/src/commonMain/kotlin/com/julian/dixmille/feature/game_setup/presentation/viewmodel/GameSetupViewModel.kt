@@ -65,7 +65,7 @@ class GameSetupViewModel(
         when (event) {
             is GameSetupEvent.ShowPlayerSelector -> _state.update { it.copy(showPlayerSelector = true) }
             is GameSetupEvent.HidePlayerSelector -> _state.update {
-                it.copy(showPlayerSelector = false, searchQuery = "", playerNameInput = "")
+                it.copy(showPlayerSelector = false, unifiedInput = "")
             }
             is GameSetupEvent.SelectPlayer -> selectPlayer(event.player)
             is GameSetupEvent.DeselectPlayer -> _state.update { s ->
@@ -75,14 +75,13 @@ class GameSetupViewModel(
                 it.copy(
                     selectedPlayers = event.selectedPlayers.sortedBy { p -> p.name.value.lowercase() },
                     showPlayerSelector = false,
-                    searchQuery = "",
+                    unifiedInput = "",
                 )
             }
             is GameSetupEvent.RemoveSelectedPlayer -> _state.update { s ->
                 s.copy(selectedPlayers = s.selectedPlayers.filter { it.id.value != event.playerId })
             }
-            is GameSetupEvent.UpdateSearchQuery -> _state.update { it.copy(searchQuery = event.query) }
-            is GameSetupEvent.UpdatePlayerNameInput -> _state.update { it.copy(playerNameInput = event.name) }
+            is GameSetupEvent.UpdateUnifiedInput -> _state.update { it.copy(unifiedInput = event.input) }
             is GameSetupEvent.QuickAddPlayer -> quickAddPlayer(event.name)
             is GameSetupEvent.UpdateTargetScore -> updateTargetScore(event.score)
             is GameSetupEvent.CreateGame -> createGame()
@@ -114,7 +113,7 @@ class GameSetupViewModel(
                         s.copy(
                             allPlayers = updatedAll,
                             selectedPlayers = updatedSelected,
-                            playerNameInput = "",
+                            unifiedInput = "",
                             quickAddError = null,
                         )
                     }

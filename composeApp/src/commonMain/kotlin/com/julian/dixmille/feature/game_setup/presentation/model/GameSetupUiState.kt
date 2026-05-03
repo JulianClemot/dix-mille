@@ -5,8 +5,7 @@ import com.julian.dixmille.core.domain.model.SavedPlayer
 data class GameSetupUiState(
     val selectedPlayers: List<SavedPlayer> = emptyList(),
     val allPlayers: List<SavedPlayer> = emptyList(),
-    val searchQuery: String = "",
-    val playerNameInput: String = "",
+    val unifiedInput: String = "",
     val targetScore: String = "10000",
     val error: String? = null,
     val quickAddError: String? = null,
@@ -16,10 +15,19 @@ data class GameSetupUiState(
     val maxPlayers: Int = 6,
 ) {
     val filteredPlayers: List<SavedPlayer>
-        get() = if (searchQuery.isBlank()) allPlayers
-                else allPlayers.filter { it.name.value.contains(searchQuery, ignoreCase = true) }
+        get() = if (unifiedInput.isBlank()) allPlayers
+                else allPlayers.filter { it.name.value.contains(unifiedInput, ignoreCase = true) }
 
     val canStartGame: Boolean get() = selectedPlayers.size >= minPlayers
     val canAddMorePlayers: Boolean get() = selectedPlayers.size < maxPlayers
     val canConfirmSelection: Boolean get() = selectedPlayers.size >= minPlayers
+
+    val canAddNewPlayer: Boolean
+        get() {
+            if (unifiedInput.isBlank()) return false
+            if (!canAddMorePlayers) return false
+            val trimmed = unifiedInput.trim()
+            if (allPlayers.any { it.name.value.equals(trimmed, ignoreCase = true) }) return false
+            return true
+        }
 }

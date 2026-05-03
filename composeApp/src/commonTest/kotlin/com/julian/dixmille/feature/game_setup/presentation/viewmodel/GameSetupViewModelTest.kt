@@ -191,43 +191,43 @@ class GameSetupViewModelTest {
     }
 
     @Test
-    fun `should clear playerNameInput after successful QuickAddPlayer`() = runTest {
+    fun `should clear unifiedInput after successful QuickAddPlayer via legacy path`() = runTest {
         val repo = FakeSavedPlayerRepository()
         val viewModel = createViewModel(repo)
         advanceUntilIdle()
-        viewModel.onEvent(GameSetupEvent.UpdatePlayerNameInput("Charlie"))
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("Charlie"))
 
         viewModel.onEvent(GameSetupEvent.QuickAddPlayer("Charlie"))
         advanceUntilIdle()
 
-        assertEquals("", viewModel.state.value.playerNameInput)
+        assertEquals("", viewModel.state.value.unifiedInput)
     }
 
     // ── INCREMENT 14: Search / filter ─────────────────────────────────────────
 
     @Test
-    fun `should filter allPlayers by search query when UpdateSearchQuery received`() = runTest {
+    fun `should filter allPlayers by unified input when UpdateUnifiedInput received`() = runTest {
         val repo = FakeSavedPlayerRepository()
         repo.players.add(savedPlayer("1", "Alice"))
         repo.players.add(savedPlayer("2", "Bob"))
         val viewModel = createViewModel(repo)
         advanceUntilIdle()
 
-        viewModel.onEvent(GameSetupEvent.UpdateSearchQuery("ali"))
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
 
         assertEquals(listOf("Alice"), viewModel.state.value.filteredPlayers.map { it.name.value })
     }
 
     @Test
-    fun `should return all players when search query is cleared`() = runTest {
+    fun `should return all players when unified input is cleared`() = runTest {
         val repo = FakeSavedPlayerRepository()
         repo.players.add(savedPlayer("1", "Alice"))
         repo.players.add(savedPlayer("2", "Bob"))
         val viewModel = createViewModel(repo)
         advanceUntilIdle()
-        viewModel.onEvent(GameSetupEvent.UpdateSearchQuery("ali"))
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
 
-        viewModel.onEvent(GameSetupEvent.UpdateSearchQuery(""))
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput(""))
 
         assertEquals(2, viewModel.state.value.filteredPlayers.size)
     }
@@ -242,7 +242,7 @@ class GameSetupViewModelTest {
         advanceUntilIdle()
         viewModel.onEvent(GameSetupEvent.SelectPlayer(alice))
 
-        viewModel.onEvent(GameSetupEvent.UpdateSearchQuery("bob"))
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("bob"))
 
         assertTrue(viewModel.state.value.selectedPlayers.any { it.id.value == "1" })
     }
@@ -282,5 +282,87 @@ class GameSetupViewModelTest {
         advanceUntilIdle()
 
         assertNotNull(viewModel.state.value.error)
+    }
+
+    // ── INCREMENT 2: Unified input ────────────────────────────────────────────
+
+    @Test
+    fun `should update unifiedInput when UpdateUnifiedInput event received`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
+
+        assertEquals("ali", viewModel.state.value.unifiedInput)
+    }
+
+    @Test
+    fun `should clear unifiedInput when UpdateUnifiedInput received with empty string`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
+
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput(""))
+
+        assertEquals("", viewModel.state.value.unifiedInput)
+    }
+
+    @Test
+    fun `should clear unifiedInput when HidePlayerSelector event received`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
+
+        viewModel.onEvent(GameSetupEvent.HidePlayerSelector)
+
+        assertEquals("", viewModel.state.value.unifiedInput)
+    }
+
+    @Test
+    fun `should clear unifiedInput when ConfirmPlayerSelection event received`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
+
+        viewModel.onEvent(GameSetupEvent.ConfirmPlayerSelection(emptyList()))
+
+        assertEquals("", viewModel.state.value.unifiedInput)
+    }
+
+    @Test
+    fun `should clear unifiedInput after QuickAddPlayer succeeds`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("Charlie"))
+
+        viewModel.onEvent(GameSetupEvent.QuickAddPlayer("Charlie"))
+        advanceUntilIdle()
+
+        assertEquals("", viewModel.state.value.unifiedInput)
+    }
+
+    @Test
+    fun `should not change unifiedInput when SelectPlayer event received`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
+
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(savedPlayer("1", "Alice")))
+
+        assertEquals("ali", viewModel.state.value.unifiedInput)
+    }
+
+    @Test
+    fun `should not change unifiedInput when DeselectPlayer event received`() = runTest {
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        val alice = savedPlayer("1", "Alice")
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(alice))
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("ali"))
+
+        viewModel.onEvent(GameSetupEvent.DeselectPlayer("1"))
+
+        assertEquals("ali", viewModel.state.value.unifiedInput)
     }
 }
