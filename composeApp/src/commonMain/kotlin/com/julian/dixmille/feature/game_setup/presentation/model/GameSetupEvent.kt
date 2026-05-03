@@ -1,31 +1,17 @@
 package com.julian.dixmille.feature.game_setup.presentation.model
 
-/**
- * Events for the Game Setup screen.
- */
+import com.julian.dixmille.core.domain.model.SavedPlayer
+
 sealed class GameSetupEvent {
-    /**
-     * Update a player name at the given index.
-     */
-    data class UpdatePlayerName(val index: Int, val name: String) : GameSetupEvent()
-
-    /**
-     * Add a new player slot.
-     */
-    data object AddPlayer : GameSetupEvent()
-
-    /**
-     * Remove a player at the given index.
-     */
-    data class RemovePlayer(val index: Int) : GameSetupEvent()
-
-    /**
-     * Update the target score.
-     */
+    data object ShowPlayerSelector : GameSetupEvent()
+    data object HidePlayerSelector : GameSetupEvent()
+    data class SelectPlayer(val player: SavedPlayer) : GameSetupEvent()
+    data class DeselectPlayer(val playerId: String) : GameSetupEvent()
+    data class ConfirmPlayerSelection(val selectedPlayers: List<SavedPlayer>) : GameSetupEvent()
+    data class RemoveSelectedPlayer(val playerId: String) : GameSetupEvent()
+    data class UpdateSearchQuery(val query: String) : GameSetupEvent()
+    data class UpdatePlayerNameInput(val name: String) : GameSetupEvent()
+    data class QuickAddPlayer(val name: String) : GameSetupEvent()
     data class UpdateTargetScore(val score: String) : GameSetupEvent()
-
-    /**
-     * Validate and create the game.
-     */
     data object CreateGame : GameSetupEvent()
 }

@@ -1,0 +1,219 @@
+package com.julian.dixmille.feature.game_setup.presentation.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
+import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiState
+import dixmille.composeapp.generated.resources.Res
+import dixmille.composeapp.generated.resources.play_arrow
+import org.jetbrains.compose.resources.painterResource
+import kotlin.math.abs
+
+private const val MILLIS_PER_DAY = 86_400_000L
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddPlayerBottomSheet(
+    state: GameSetupUiState,
+    onEvent: (GameSetupEvent) -> Unit,
+    modifier: Modifier = Modifier,
+    nowMillis: Long = 0L,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = { onEvent(GameSetupEvent.HidePlayerSelector) },
+        sheetState = sheetState,
+        modifier = modifier,
+    ) {
+        Box(modifier = Modifier.fillMaxWidth().padding(bottom = 80.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = { onEvent(GameSetupEvent.HidePlayerSelector) }) {
+                        Text(text = "✕", style = MaterialTheme.typography.titleMedium)
+                    }
+                    Text(
+                        text = "SELECT PLAYER",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        value = state.playerNameInput,
+                        onValueChange = { onEvent(GameSetupEvent.UpdatePlayerNameInput(it)) },
+                        label = { Text("New player name") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        isError = state.quickAddError != null,
+                    )
+                    Button(
+                        onClick = { onEvent(GameSetupEvent.QuickAddPlayer(state.playerNameInput)) },
+                        enabled = state.playerNameInput.isNotBlank() && state.canAddMorePlayers,
+                    ) {
+                        Text("ADD")
+                    }
+                }
+
+                state.quickAddError?.let { errorMsg ->
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                OutlinedTextField(
+                    value = state.searchQuery,
+                    onValueChange = { onEvent(GameSetupEvent.UpdateSearchQuery(it)) },
+                    label = { Text("Search players") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+
+                Text(
+                    text = "FREQUENT PLAYERS",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(state.filteredPlayers) { player ->
+                        val isSelected = state.selectedPlayers.any { it.id.value == player.id.value }
+                        val subtitle = when {
+                            isSelected -> "ALREADY IN GAME"
+                            player.lastPlayedAt != null -> {
+                                val days = abs(nowMillis - player.lastPlayedAt) / MILLIS_PER_DAY
+                                when {
+                                    days == 0L -> "TODAY"
+                                    days == 1L -> "1 DAY AGO"
+                                    else -> "$days DAYS AGO"
+                                }
+                            }
+                            else -> "AVAILABLE"
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(MaterialTheme.colorScheme.primary, CircleShape),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = player.name.value.first().uppercaseChar().toString(),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = player.name.value,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                                Text(
+                                    text = subtitle,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        onEvent(GameSetupEvent.SelectPlayer(player))
+                                    } else {
+                                        onEvent(GameSetupEvent.DeselectPlayer(player.id.value))
+                                    }
+                                },
+                                enabled = isSelected || state.canAddMorePlayers,
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            FloatingActionButton(
+                onClick = {
+                    if (state.canConfirmSelection) {
+                        onEvent(GameSetupEvent.ConfirmPlayerSelection(state.selectedPlayers))
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 8.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(16.dp),
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.play_arrow),
+                    contentDescription = "Confirm selection",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+        }
+    }
+}

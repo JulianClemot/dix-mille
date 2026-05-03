@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room3)
 }
 
 kotlin {
@@ -46,6 +48,8 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(libs.room3.runtime)
+            implementation(libs.sqlite.bundled)
         }
         androidMain.dependencies {
             implementation(libs.koin.android)
@@ -56,4 +60,21 @@ kotlin {
             implementation(libs.koin.test)
         }
     }
+}
+
+room3 {
+    schemaDirectory("$projectDir/schemas")
+}
+
+tasks.matching { it.name == "testAndroidHostTest" }.configureEach {
+    // BundledSQLiteDriver requires Android native .so and cannot run on JVM host tests.
+    // Room integration tests run on iosSimulatorArm64 where the bundled SQLite works.
+    (this as? Test)?.exclude("**/AppDatabaseTest*")
+    (this as? Test)?.exclude("**/SavedPlayerRepositoryImplTest*")
+}
+
+dependencies {
+    add("kspAndroid", libs.room3.compiler)
+    add("kspIosArm64", libs.room3.compiler)
+    add("kspIosSimulatorArm64", libs.room3.compiler)
 }

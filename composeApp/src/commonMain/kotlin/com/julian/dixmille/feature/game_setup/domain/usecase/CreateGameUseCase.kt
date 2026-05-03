@@ -4,43 +4,38 @@ import com.julian.dixmille.core.domain.model.Game
 import com.julian.dixmille.core.domain.model.GamePhase
 import com.julian.dixmille.core.domain.model.GameRules
 import com.julian.dixmille.core.domain.model.Player
+import com.julian.dixmille.core.domain.model.SavedPlayer
 import com.julian.dixmille.core.domain.model.vo.GameId
 import com.julian.dixmille.core.domain.model.vo.PlayerId
-import com.julian.dixmille.core.domain.model.vo.PlayerName
 import com.julian.dixmille.core.domain.model.vo.TargetScore
 import com.julian.dixmille.core.domain.model.vo.TurnId
 import com.julian.dixmille.core.domain.repository.GameRepository
 import com.julian.dixmille.core.domain.repository.GameRulesRepository
+import com.julian.dixmille.core.domain.repository.SavedPlayerRepository
 import com.julian.dixmille.core.domain.util.UuidGenerator
 
-/**
- * Creates a new Dix Mille game with the specified players.
- *
- * @param repository The game repository for persistence
- */
+private object NoOpSavedPlayerRepository : SavedPlayerRepository {
+    override suspend fun getAllPlayers(): List<SavedPlayer> = emptyList()
+    override suspend fun addPlayer(player: SavedPlayer): Result<SavedPlayer> = Result.success(player)
+    override suspend fun updateLastPlayedAt(playerId: String, timestamp: Long) = Unit
+    override suspend fun playerExistsByNameIgnoreCase(name: String): Boolean = false
+}
+
 class CreateGameUseCase(
     private val repository: GameRepository,
-    private val gameRulesRepository: GameRulesRepository
+    private val gameRulesRepository: GameRulesRepository,
+    private val updateLastPlayedAtUseCase: UpdateLastPlayedAtUseCase = UpdateLastPlayedAtUseCase(NoOpSavedPlayerRepository),
 ) {
-    /**
-     * Creates and saves a new game.
-     *
-     * Loads saved game rules (or defaults) and applies the given target score override.
-     *
-     * @param playerNames List of player names
-     * @param targetScore Target score to win (default 10,000)
-     * @return Result containing the created game, or error if validation fails
-     */
     suspend operator fun invoke(
-        playerNames: List<String>,
-        targetScore: Int = 10_000
+        selectedPlayers: List<SavedPlayer>,
+        targetScore: Int = 10_000,
     ): Result<Game> = runCatching {
         val savedRules = gameRulesRepository.getRules().getOrElse { GameRules.DEFAULT }
 
-        require(playerNames.size in savedRules.minPlayers..savedRules.maxPlayers) {
-            "Game must have ${savedRules.minPlayers}-${savedRules.maxPlayers} players, got ${playerNames.size}"
+        require(selectedPlayers.size in savedRules.minPlayers..savedRules.maxPlayers) {
+            "Game must have ${savedRules.minPlayers}-${savedRules.maxPlayers} players, got ${selectedPlayers.size}"
         }
-        require(playerNames.all { it.isNotBlank() }) {
+        require(selectedPlayers.all { it.name.value.isNotBlank() }) {
             "All player names must be non-blank"
         }
         require(targetScore > 0) {
@@ -49,10 +44,10 @@ class CreateGameUseCase(
 
         val rules = savedRules.copy(targetScore = TargetScore(targetScore))
 
-        val players = playerNames.map { name ->
+        val players = selectedPlayers.map { savedPlayer ->
             Player(
                 id = PlayerId(UuidGenerator.generate()),
-                name = PlayerName(name.trim())
+                name = savedPlayer.name,
             )
         }
 
@@ -64,19 +59,19 @@ class CreateGameUseCase(
             gamePhase = GamePhase.IN_PROGRESS,
             triggeringPlayerId = null,
             createdAt = currentTimeMillis(),
-            rules = rules
+            rules = rules,
         )
 
-        // Start first player's turn
         val gameWithFirstTurn = game.updateCurrentPlayer(
             game.currentPlayer.startTurn(TurnId(UuidGenerator.generate()))
         )
 
         repository.saveGame(gameWithFirstTurn).getOrThrow()
 
+        updateLastPlayedAtUseCase(selectedPlayers.map { it.id.value })
+
         gameWithFirstTurn
     }
 
-    // Platform-specific time implementation will be added later
     private fun currentTimeMillis(): Long = 0L
 }

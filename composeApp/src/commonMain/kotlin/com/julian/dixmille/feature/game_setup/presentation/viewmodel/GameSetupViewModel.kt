@@ -3,9 +3,12 @@ package com.julian.dixmille.feature.game_setup.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.julian.dixmille.core.domain.model.GameRules
+import com.julian.dixmille.core.domain.model.SavedPlayer
 import com.julian.dixmille.core.domain.repository.GameRulesRepository
 import com.julian.dixmille.core.presentation.navigation.GameSetupNavigationEvent
+import com.julian.dixmille.feature.game_setup.domain.usecase.AddSavedPlayerUseCase
 import com.julian.dixmille.feature.game_setup.domain.usecase.CreateGameUseCase
+import com.julian.dixmille.feature.game_setup.domain.usecase.GetSavedPlayersUseCase
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiState
 import kotlinx.coroutines.channels.Channel
@@ -16,18 +19,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel for the Game Setup screen.
- *
- * Responsibilities:
- * - Manage game setup form state (player names, target score)
- * - Validate input
- * - Create new game via CreateGameUseCase
- * - Emit navigation events
- */
 class GameSetupViewModel(
     private val createGameUseCase: CreateGameUseCase,
-    private val gameRulesRepository: GameRulesRepository
+    private val gameRulesRepository: GameRulesRepository,
+    private val getSavedPlayersUseCase: GetSavedPlayersUseCase,
+    private val addSavedPlayerUseCase: AddSavedPlayerUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GameSetupUiState())
@@ -38,6 +34,7 @@ class GameSetupViewModel(
 
     init {
         loadRules()
+        loadPlayers()
     }
 
     private fun loadRules() {
@@ -47,9 +44,16 @@ class GameSetupViewModel(
                 it.copy(
                     targetScore = rules.targetScore.value.toString(),
                     minPlayers = rules.minPlayers,
-                    maxPlayers = rules.maxPlayers
+                    maxPlayers = rules.maxPlayers,
                 )
             }
+        }
+    }
+
+    private fun loadPlayers() {
+        viewModelScope.launch {
+            val players = getSavedPlayersUseCase()
+            _state.update { it.copy(allPlayers = players) }
         }
     }
 
@@ -57,81 +61,81 @@ class GameSetupViewModel(
         loadRules()
     }
 
-    /**
-     * Handles user events from the Game Setup screen.
-     */
     fun onEvent(event: GameSetupEvent) {
         when (event) {
-            is GameSetupEvent.UpdatePlayerName -> updatePlayerName(event.index, event.name)
-            is GameSetupEvent.AddPlayer -> addPlayer()
-            is GameSetupEvent.RemovePlayer -> removePlayer(event.index)
+            is GameSetupEvent.ShowPlayerSelector -> _state.update { it.copy(showPlayerSelector = true) }
+            is GameSetupEvent.HidePlayerSelector -> _state.update {
+                it.copy(showPlayerSelector = false, searchQuery = "", playerNameInput = "")
+            }
+            is GameSetupEvent.SelectPlayer -> selectPlayer(event.player)
+            is GameSetupEvent.DeselectPlayer -> _state.update { s ->
+                s.copy(selectedPlayers = s.selectedPlayers.filter { it.id.value != event.playerId })
+            }
+            is GameSetupEvent.ConfirmPlayerSelection -> _state.update {
+                it.copy(
+                    selectedPlayers = event.selectedPlayers.sortedBy { p -> p.name.value.lowercase() },
+                    showPlayerSelector = false,
+                    searchQuery = "",
+                )
+            }
+            is GameSetupEvent.RemoveSelectedPlayer -> _state.update { s ->
+                s.copy(selectedPlayers = s.selectedPlayers.filter { it.id.value != event.playerId })
+            }
+            is GameSetupEvent.UpdateSearchQuery -> _state.update { it.copy(searchQuery = event.query) }
+            is GameSetupEvent.UpdatePlayerNameInput -> _state.update { it.copy(playerNameInput = event.name) }
+            is GameSetupEvent.QuickAddPlayer -> quickAddPlayer(event.name)
             is GameSetupEvent.UpdateTargetScore -> updateTargetScore(event.score)
             is GameSetupEvent.CreateGame -> createGame()
         }
     }
 
-    private fun updatePlayerName(index: Int, name: String) {
-        _state.update { currentState ->
-            val updatedNames = currentState.playerNames.toMutableList().apply {
-                if (index in indices) {
-                    this[index] = name
-                }
-            }
-            currentState.copy(
-                playerNames = updatedNames,
-                error = null
-            )
-        }
-    }
-
-    private fun addPlayer() {
-        _state.update { currentState ->
-            if (currentState.playerNames.size < currentState.maxPlayers) {
-                currentState.copy(
-                    playerNames = currentState.playerNames + ""
-                )
+    private fun selectPlayer(player: SavedPlayer) {
+        _state.update { s ->
+            if (s.selectedPlayers.size < s.maxPlayers) {
+                val updated = (s.selectedPlayers + player).sortedBy { it.name.value.lowercase() }
+                s.copy(selectedPlayers = updated)
             } else {
-                currentState
+                s
             }
         }
     }
 
-    private fun removePlayer(index: Int) {
-        _state.update { currentState ->
-            if (currentState.playerNames.size > currentState.minPlayers && index in currentState.playerNames.indices) {
-                currentState.copy(
-                    playerNames = currentState.playerNames.toMutableList().apply {
-                        removeAt(index)
+    private fun quickAddPlayer(name: String) {
+        viewModelScope.launch {
+            addSavedPlayerUseCase(name)
+                .onSuccess { player ->
+                    _state.update { s ->
+                        val updatedAll = (s.allPlayers + player).sortedBy { it.name.value.lowercase() }
+                        val updatedSelected = if (s.selectedPlayers.size < s.maxPlayers) {
+                            (s.selectedPlayers + player).sortedBy { it.name.value.lowercase() }
+                        } else {
+                            s.selectedPlayers
+                        }
+                        s.copy(
+                            allPlayers = updatedAll,
+                            selectedPlayers = updatedSelected,
+                            playerNameInput = "",
+                            quickAddError = null,
+                        )
                     }
-                )
-            } else {
-                currentState
-            }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(quickAddError = error.message ?: "Failed to add player") }
+                }
         }
     }
 
     private fun updateTargetScore(score: String) {
-        _state.update {
-            it.copy(
-                targetScore = score,
-                error = null
-            )
-        }
+        _state.update { it.copy(targetScore = score, error = null) }
     }
 
     private fun createGame() {
         val currentState = _state.value
-        val names = currentState.playerNames.map { it.trim() }.filter { it.isNotBlank() }
         val target = currentState.targetScore.toIntOrNull()
 
-        // Validation
         when {
-            names.size < currentState.minPlayers -> {
+            !currentState.canStartGame -> {
                 _state.update { it.copy(error = "Need at least ${currentState.minPlayers} players") }
-                return
-            }
-            names.size > currentState.maxPlayers -> {
-                _state.update { it.copy(error = "Maximum ${currentState.maxPlayers} players") }
                 return
             }
             target == null || target <= 0 -> {
@@ -142,18 +146,14 @@ class GameSetupViewModel(
 
         viewModelScope.launch {
             _state.update { it.copy(isCreating = true, error = null) }
-
-            createGameUseCase(names, target)
+            createGameUseCase(currentState.selectedPlayers, target)
                 .onSuccess {
                     _state.update { it.copy(isCreating = false) }
                     _navigationEvents.send(GameSetupNavigationEvent.NavigateToScoreSheet)
                 }
                 .onFailure { error ->
                     _state.update {
-                        it.copy(
-                            isCreating = false,
-                            error = error.message ?: "Failed to create game"
-                        )
+                        it.copy(isCreating = false, error = error.message ?: "Failed to create game")
                     }
                 }
         }

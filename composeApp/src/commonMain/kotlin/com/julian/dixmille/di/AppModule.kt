@@ -7,6 +7,7 @@ import com.julian.dixmille.core.domain.usecase.GetCurrentGameUseCase
 import com.julian.dixmille.feature.game_end.di.gameEndModule
 import com.julian.dixmille.feature.game_rules.di.gameRulesModule
 import com.julian.dixmille.feature.game_setup.di.gameSetupModule
+import com.julian.dixmille.feature.game_setup.di.playerLibraryModule
 import com.julian.dixmille.feature.home.di.homeModule
 import com.julian.dixmille.feature.score_sheet.di.scoreSheetModule
 import org.koin.core.module.dsl.singleOf
@@ -34,9 +35,10 @@ val coreDomainModule = module {
 fun commonModules() = listOf(
     coreDataModule,
     coreDomainModule,
+    playerLibraryModule,
     homeModule,
     gameSetupModule,
     scoreSheetModule,
     gameEndModule,
-    gameRulesModule
+    gameRulesModule,
 )

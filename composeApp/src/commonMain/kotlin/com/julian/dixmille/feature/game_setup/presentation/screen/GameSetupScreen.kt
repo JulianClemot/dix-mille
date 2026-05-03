@@ -3,6 +3,7 @@ package com.julian.dixmille.feature.game_setup.presentation.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,9 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,18 +28,12 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,11 +44,11 @@ import com.julian.dixmille.feature.game_rules.presentation.screen.GameRulesSetti
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiState
 import com.julian.dixmille.feature.game_setup.presentation.viewmodel.GameSetupViewModel
+import com.julian.dixmille.feature.game_setup.presentation.component.AddPlayerBottomSheet
 import com.julian.dixmille.feature.score_sheet.presentation.screen.ScoreSheetRoute
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.arrow_back
 import dixmille.composeapp.generated.resources.game_setup_add_player_button
-import dixmille.composeapp.generated.resources.game_setup_player_label
 import dixmille.composeapp.generated.resources.game_setup_players_header
 import dixmille.composeapp.generated.resources.game_setup_start_game_button
 import dixmille.composeapp.generated.resources.game_setup_target_score_header
@@ -68,15 +62,9 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-/**
- * Game setup screen route - configure new game with players and target score.
- */
 @Serializable
 data object GameSetupRoute : NavKey
 
-/**
- * Game Setup screen EntryPoint - handles ViewModel injection and state collection.
- */
 @Composable
 fun GameSetupEntryPoint(
     viewModel: GameSetupViewModel = koinViewModel(),
@@ -85,19 +73,16 @@ fun GameSetupEntryPoint(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Handle navigation events
     LaunchedEffect(Unit) {
         viewModel.navigationEvents.collect { event ->
             when (event) {
                 is GameSetupNavigationEvent.NavigateToScoreSheet -> {
-                    backStack.removeLastOrNull() // Remove setup screen
+                    backStack.removeLastOrNull()
                     backStack += ScoreSheetRoute
                 }
-
                 is GameSetupNavigationEvent.NavigateBack -> {
                     backStack.removeLastOrNull()
                 }
-
                 is GameSetupNavigationEvent.NavigateToRulesSettings -> {
                     backStack += GameRulesSettingsRoute
                 }
@@ -105,12 +90,10 @@ fun GameSetupEntryPoint(
         }
     }
 
-    // Refresh rules when returning from settings (backStack size changes)
     LaunchedEffect(backStack.size) {
         viewModel.refreshRules()
     }
 
-    // Handle errors via snackbar
     LaunchedEffect(state.error) {
         onShowSnackbar(state.error)
     }
@@ -123,16 +106,13 @@ fun GameSetupEntryPoint(
     )
 }
 
-/**
- * Game Setup screen Content - pure UI composable.
- */
 @Composable
 fun GameSetupContent(
     state: GameSetupUiState,
     onEvent: (GameSetupEvent) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToRulesSettings: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -140,26 +120,25 @@ fun GameSetupContent(
         errorBorderColor = MaterialTheme.colorScheme.error,
         cursorColor = MaterialTheme.colorScheme.primary,
         focusedLabelColor = MaterialTheme.colorScheme.primary,
-        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
     ) {
-        // Custom top bar (matching ScoreSheet style)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onNavigateBack) {
                     Icon(painter = painterResource(Res.drawable.arrow_back), contentDescription = null)
@@ -167,14 +146,14 @@ fun GameSetupContent(
 
                 Column(
                     modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = stringResource(Res.string.game_setup_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
-                        letterSpacing = 2.sp
+                        letterSpacing = 2.sp,
                     )
                 }
 
@@ -184,113 +163,93 @@ fun GameSetupContent(
             }
         }
 
-        // Main content
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Players section header
             Row(
                 verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
                     text = stringResource(Res.string.game_setup_players_header),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    letterSpacing = 1.sp
+                    letterSpacing = 1.sp,
                 )
                 Text(
                     text = "(${state.minPlayers}-${state.maxPlayers})",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            val keyboardController = LocalSoftwareKeyboardController.current
-            val focusManager = LocalFocusManager.current
-            // Player input cards
-            state.playerNames.forEachIndexed { index, name ->
+
+            state.selectedPlayers.forEach { player ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { newName ->
-                            onEvent(GameSetupEvent.UpdatePlayerName(index, newName))
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Words,
-                            keyboardType = KeyboardType.Text,
-                            imeAction = if (index < state.playerNames.size - 1) ImeAction.Next else ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onSend = {
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                            }
-                        ),
-                        label = { Text(stringResource(Res.string.game_setup_player_label, index + 1)) },
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = player.name.value.first().uppercaseChar().toString(),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
+                    Text(
+                        text = player.name.value,
                         modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        colors = textFieldColors
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-
-                    if (state.playerNames.size > state.minPlayers) {
-                        TextButton(
-                            onClick = { onEvent(GameSetupEvent.RemovePlayer(index)) }
-                        ) {
-                            Text(
-                                text = "\u2715",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                    IconButton(onClick = { onEvent(GameSetupEvent.RemoveSelectedPlayer(player.id.value)) }) {
+                        Text(text = "✕", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
 
-            // Add Player button
-            if (state.playerNames.size < state.maxPlayers) {
+            if (state.canAddMorePlayers) {
                 OutlinedButton(
-                    onClick = { onEvent(GameSetupEvent.AddPlayer) },
+                    onClick = { onEvent(GameSetupEvent.ShowPlayerSelector) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.person_add),
-                        contentDescription = null
+                        contentDescription = null,
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(Res.string.game_setup_add_player_button),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 0.5.sp
+                        letterSpacing = 0.5.sp,
                     )
                 }
             }
 
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-            // Target Score section header
             Text(
                 text = stringResource(Res.string.game_setup_target_score_header),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
-                letterSpacing = 1.sp
+                letterSpacing = 1.sp,
             )
 
             OutlinedTextField(
@@ -299,35 +258,34 @@ fun GameSetupContent(
                 label = { Text(stringResource(Res.string.game_setup_target_score_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = textFieldColors
+                colors = textFieldColors,
             )
 
             state.error?.let { errorMsg ->
                 Text(
                     text = errorMsg,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Start Game button
             Button(
                 onClick = { onEvent(GameSetupEvent.CreateGame) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                enabled = !state.isCreating,
+                enabled = !state.isCreating && state.canStartGame,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ),
             ) {
                 if (state.isCreating) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
                     Icon(painter = painterResource(Res.drawable.play_arrow), contentDescription = null)
@@ -336,12 +294,16 @@ fun GameSetupContent(
                         text = stringResource(Res.string.game_setup_start_game_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        letterSpacing = 1.sp,
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (state.showPlayerSelector) {
+        AddPlayerBottomSheet(state = state, onEvent = onEvent)
     }
 }

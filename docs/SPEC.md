@@ -1240,6 +1240,20 @@ Feature: Internationalization (English / French)
 - [ ] Locale-aware number formatting (French: space separator, English: comma separator)
 - [ ] Fallback to English for unsupported locales
 
+### Phase 13: Player Library 📋
+- [ ] `SavedPlayer` domain model (`id`, `name`, `createdAt`, `lastPlayedAt`)
+- [ ] Room 3 database setup (`androidx.room3`) with `SavedPlayerEntity`, `SavedPlayerDao`
+- [ ] `SavedPlayerRepository` interface and implementation
+- [ ] Use cases: `GetSavedPlayersUseCase`, `AddSavedPlayerUseCase`, `UpdateLastPlayedAtUseCase`
+- [ ] Case-insensitive duplicate name validation
+- [ ] Player selector bottom sheet UI (checkboxes, search, quick-add)
+- [ ] Subtitle logic (ALREADY IN GAME / LAST PLAYED X DAYS AGO / AVAILABLE)
+- [ ] Max 6 player cap enforcement (disable checkboxes, hide + ADD PLAYER)
+- [ ] FAB enabled only with 2+ checked players
+- [ ] Game Setup screen: selected player chips with remove (x), alphabetical order
+- [ ] Update `lastPlayedAt` when starting a game
+- [ ] Search/filter: case-insensitive "contains" on name
+
 ---
 
 ## UI Flow
@@ -1548,6 +1562,324 @@ Feature: Final Round System Overhaul
 
 ---
 
+## Player Library
+
+This feature introduces persistent player storage so that players are saved across games and can be reused. The Game Setup screen is enhanced with a player selector bottom sheet, search, quick-add, and subtitle grouping.
+
+### Data Model
+
+```kotlin
+data class SavedPlayer(
+    val id: String,
+    val name: String,
+    val createdAt: Long,
+    val lastPlayedAt: Long? = null
+)
+```
+
+Persisted using Room 3 (`androidx.room3:room3-runtime:3.0.0-alpha03`). All DAO functions are `suspend` or `Flow`. KSP-only compilation.
+
+### Key Rules
+
+- **Unique names**: Player names must be unique, case-insensitive. "alice" and "Alice" are considered duplicates.
+- **Max 6 selected**: No more than 6 players can be selected for a game.
+- **Min 2 to start**: The "START GAME" button and the bottom sheet FAB are disabled until 2+ players are selected/checked.
+- **Quick-add auto-selects**: A newly created player is immediately checked in the bottom sheet.
+- **Alphabetical display**: Selected players on the Game Setup screen are displayed in alphabetical order.
+- **Subtitles**: Players in the bottom sheet show contextual subtitles:
+  - "ALREADY IN GAME" — player is currently selected for this game.
+  - "LAST PLAYED X DAYS AGO" — player has a `lastPlayedAt` timestamp.
+  - "AVAILABLE" — player has no play history (no `lastPlayedAt`).
+- **No deletion**: Players cannot be deleted in this version.
+- **Search**: Case-insensitive "contains" matching on name only.
+- **"+ ADD PLAYER" hidden at cap**: The button to open the bottom sheet is hidden when 6 players are already selected.
+
+### BDD Scenarios
+
+```gherkin
+Feature: Player Library
+  As a game organiser
+  I want to save players and reuse them across games
+  So that I don't have to re-enter player names every time
+
+  # --- Game Setup Screen: Viewing Selected Players ---
+
+  Scenario: Game Setup screen shows no players initially
+    Given I navigate to the Game Setup screen
+    And no players have been selected yet
+    Then the selected players list is empty
+    And the "+ ADD PLAYER" button is visible
+    And the "START GAME" button is disabled
+
+  Scenario: Selected players are displayed in alphabetical order
+    Given I have selected players "Charlie", "Alice", "Bob"
+    When I view the Game Setup screen
+    Then the players are displayed in order: Alice, Bob, Charlie
+    And each player is shown as a chip with a remove (x) button
+
+  Scenario: Remove a player via the x button on Game Setup screen
+    Given I have selected players "Alice", "Bob", "Charlie"
+    When I tap the remove (x) button on "Bob"
+    Then "Bob" is removed from the selected players list
+    And the remaining players are: Alice, Charlie
+    And the "+ ADD PLAYER" button is visible
+
+  Scenario: Removing a player below the minimum disables START GAME
+    Given I have selected exactly 2 players: "Alice" and "Bob"
+    When I tap the remove (x) button on "Alice"
+    Then only "Bob" remains in the selected players list
+    And the "START GAME" button is disabled
+
+  Scenario: START GAME is enabled with 2 or more players selected
+    Given I have selected players "Alice" and "Bob"
+    Then the "START GAME" button is enabled
+
+  Scenario: START GAME is enabled with 6 players selected
+    Given I have selected 6 players
+    Then the "START GAME" button is enabled
+
+  # --- "+ ADD PLAYER" Button Visibility ---
+
+  Scenario: ADD PLAYER button is visible when fewer than 6 players are selected
+    Given I have selected 5 players
+    Then the "+ ADD PLAYER" button is visible
+
+  Scenario: ADD PLAYER button is hidden when 6 players are selected
+    Given I have selected 6 players
+    Then the "+ ADD PLAYER" button is not visible
+
+  Scenario: ADD PLAYER button reappears after removing a player from a full selection
+    Given I have selected 6 players
+    And the "+ ADD PLAYER" button is not visible
+    When I tap the remove (x) button on one of the selected players
+    Then the "+ ADD PLAYER" button becomes visible
+
+  # --- Opening the Player Selector Bottom Sheet ---
+
+  Scenario: Tapping ADD PLAYER opens the player selector bottom sheet
+    Given I am on the Game Setup screen
+    When I tap the "+ ADD PLAYER" button
+    Then the player selector bottom sheet opens
+    And the search field is empty
+    And all saved players from the database are listed
+
+  Scenario: Bottom sheet shows previously selected players as pre-checked
+    Given I have selected players "Alice" and "Bob" on the Game Setup screen
+    When I open the player selector bottom sheet
+    Then "Alice" has a checked checkbox
+    And "Bob" has a checked checkbox
+    And all other players have unchecked checkboxes
+
+  # --- Selecting and Deselecting Players ---
+
+  Scenario: Select a player by checking their checkbox
+    Given the player selector bottom sheet is open
+    And "Carol" has an unchecked checkbox
+    When I check the checkbox next to "Carol"
+    Then "Carol" is marked as selected
+
+  Scenario: Deselect a player by unchecking their checkbox
+    Given the player selector bottom sheet is open
+    And "Alice" has a checked checkbox
+    When I uncheck the checkbox next to "Alice"
+    Then "Alice" is no longer marked as selected
+
+  Scenario: Checkboxes become disabled at max player cap (6)
+    Given the player selector bottom sheet is open
+    And 6 players are currently checked
+    Then all unchecked players' checkboxes are disabled
+    And the user cannot select additional players
+
+  Scenario: Unchecking a player re-enables other checkboxes when at cap
+    Given the player selector bottom sheet is open
+    And 6 players are currently checked
+    And all unchecked players' checkboxes are disabled
+    When I uncheck one of the selected players
+    Then all unchecked players' checkboxes become enabled again
+
+  # --- FAB (Confirm Selection) ---
+
+  Scenario: FAB is disabled with fewer than 2 players checked
+    Given the player selector bottom sheet is open
+    And only 1 player is checked
+    Then the confirm selection FAB is disabled
+
+  Scenario: FAB is disabled with 0 players checked
+    Given the player selector bottom sheet is open
+    And no players are checked
+    Then the confirm selection FAB is disabled
+
+  Scenario: FAB is enabled with 2 or more players checked
+    Given the player selector bottom sheet is open
+    And 2 players are checked
+    Then the confirm selection FAB is enabled
+
+  Scenario: FAB is enabled with 6 players checked
+    Given the player selector bottom sheet is open
+    And 6 players are checked
+    Then the confirm selection FAB is enabled
+
+  Scenario: Confirming selection closes the bottom sheet and updates Game Setup
+    Given the player selector bottom sheet is open
+    And I have checked "Alice", "Charlie", and "Bob"
+    When I tap the confirm selection FAB
+    Then the bottom sheet closes
+    And the Game Setup screen shows selected players in order: Alice, Bob, Charlie
+    And the "START GAME" button is enabled
+
+  # --- Quick-Add Player ---
+
+  Scenario: Quick-add a new player saves to DB and auto-selects
+    Given the player selector bottom sheet is open
+    And no player named "Diana" exists in the database
+    When I type "Diana" in the quick-add field
+    And I tap the add button
+    Then "Diana" is saved to the database
+    And "Diana" appears in the player list with a checked checkbox
+    And the quick-add field is cleared
+
+  Scenario: Quick-add trims whitespace from the name
+    Given the player selector bottom sheet is open
+    When I type "  Diana  " in the quick-add field
+    And I tap the add button
+    Then a player named "Diana" is saved to the database (trimmed)
+    And "Diana" appears in the player list with a checked checkbox
+
+  Scenario: Quick-add is blocked when 6 players are already checked
+    Given the player selector bottom sheet is open
+    And 6 players are currently checked
+    When I type "NewPlayer" in the quick-add field
+    Then the add button is disabled
+    And no new player can be quick-added until a player is unchecked
+
+  # --- Duplicate Name Prevention ---
+
+  Scenario: Quick-add rejects a duplicate name (exact match)
+    Given the player selector bottom sheet is open
+    And a player named "Alice" exists in the database
+    When I type "Alice" in the quick-add field
+    And I tap the add button
+    Then an error is shown indicating the name already exists
+    And no duplicate player is created
+
+  Scenario: Quick-add rejects a duplicate name (case-insensitive)
+    Given the player selector bottom sheet is open
+    And a player named "Alice" exists in the database
+    When I type "alice" in the quick-add field
+    And I tap the add button
+    Then an error is shown indicating the name already exists
+    And no duplicate player is created
+
+  Scenario: Quick-add rejects a duplicate name (case-insensitive with different casing)
+    Given the player selector bottom sheet is open
+    And a player named "Bob" exists in the database
+    When I type "BOB" in the quick-add field
+    And I tap the add button
+    Then an error is shown indicating the name already exists
+    And no duplicate player is created
+
+  Scenario: Quick-add rejects a blank name
+    Given the player selector bottom sheet is open
+    When I type "" in the quick-add field
+    Then the add button is disabled
+
+  Scenario: Quick-add rejects a whitespace-only name
+    Given the player selector bottom sheet is open
+    When I type "   " in the quick-add field
+    Then the add button is disabled
+
+  # --- Search / Filter ---
+
+  Scenario: Search filters players by name (case-insensitive contains)
+    Given the player selector bottom sheet is open
+    And the database contains players "Alice", "Alicia", "Bob", "Carol"
+    When I type "ali" in the search field
+    Then the player list shows only "Alice" and "Alicia"
+    And "Bob" and "Carol" are not visible
+
+  Scenario: Search with no results shows an empty list
+    Given the player selector bottom sheet is open
+    And the database contains players "Alice", "Bob"
+    When I type "xyz" in the search field
+    Then the player list is empty
+    And a "no results" message is displayed
+
+  Scenario: Clearing the search field restores the full player list
+    Given the player selector bottom sheet is open
+    And I have typed "ali" in the search field showing filtered results
+    When I clear the search field
+    Then all saved players are displayed again
+
+  Scenario: Search preserves check state of filtered-out players
+    Given the player selector bottom sheet is open
+    And "Alice" and "Bob" are checked
+    When I type "ali" in the search field (only "Alice" is visible)
+    And I clear the search field
+    Then "Alice" is still checked
+    And "Bob" is still checked
+
+  # --- Player Subtitle Logic ---
+
+  Scenario: Subtitle shows "ALREADY IN GAME" for currently selected players
+    Given the player selector bottom sheet is open
+    And "Alice" is currently checked (selected for this game)
+    Then "Alice" displays the subtitle "ALREADY IN GAME"
+
+  Scenario: Subtitle shows "LAST PLAYED X DAYS AGO" for players with play history
+    Given the player selector bottom sheet is open
+    And "Bob" has a lastPlayedAt timestamp from 3 days ago
+    And "Bob" is not currently checked
+    Then "Bob" displays the subtitle "LAST PLAYED 3 DAYS AGO"
+
+  Scenario: Subtitle shows "AVAILABLE" for players with no play history
+    Given the player selector bottom sheet is open
+    And "Carol" has no lastPlayedAt timestamp (null)
+    And "Carol" is not currently checked
+    Then "Carol" displays the subtitle "AVAILABLE"
+
+  Scenario: Subtitle updates from "AVAILABLE" to "ALREADY IN GAME" when checked
+    Given the player selector bottom sheet is open
+    And "Carol" has no lastPlayedAt timestamp and displays "AVAILABLE"
+    When I check the checkbox next to "Carol"
+    Then "Carol" displays the subtitle "ALREADY IN GAME"
+
+  Scenario: Subtitle updates from "ALREADY IN GAME" to prior subtitle when unchecked
+    Given the player selector bottom sheet is open
+    And "Bob" was checked and displayed "ALREADY IN GAME"
+    And "Bob" has a lastPlayedAt timestamp from 5 days ago
+    When I uncheck the checkbox next to "Bob"
+    Then "Bob" displays the subtitle "LAST PLAYED 5 DAYS AGO"
+
+  Scenario: Subtitle shows "LAST PLAYED TODAY" for a player who played today
+    Given the player selector bottom sheet is open
+    And "Eve" has a lastPlayedAt timestamp from today
+    And "Eve" is not currently checked
+    Then "Eve" displays the subtitle "LAST PLAYED TODAY"
+
+  Scenario: Subtitle shows "LAST PLAYED 1 DAY AGO" for a player who played yesterday
+    Given the player selector bottom sheet is open
+    And "Frank" has a lastPlayedAt timestamp from 1 day ago
+    And "Frank" is not currently checked
+    Then "Frank" displays the subtitle "LAST PLAYED 1 DAY AGO"
+
+  # --- Interaction with Existing Game Rules ---
+
+  Scenario: Starting a game with selected players creates the game correctly
+    Given I have selected players "Alice", "Bob", "Charlie" on the Game Setup screen
+    When I tap "START GAME"
+    Then a new game is created with players Alice, Bob, Charlie
+    And each player's lastPlayedAt is updated to the current timestamp in the database
+    And the game follows all existing rules (entry threshold, bust penalty, etc.)
+
+  Scenario: Bottom sheet shows empty list when no players exist in the database
+    Given the database contains no saved players
+    When I open the player selector bottom sheet
+    Then the player list is empty
+    And the quick-add field is visible for creating the first player
+```
+
+---
+
 ## Future Enhancements (Post-Launch)
 
 - Multiple concurrent games
@@ -1568,6 +1900,6 @@ Feature: Final Round System Overhaul
 
 ---
 
-**Version**: 3.0
-**Last Updated**: 2026-03-21
-**Status**: Phases 1-7 Complete ✅ | Phase 8 In Progress 🚧
+**Version**: 4.0
+**Last Updated**: 2026-05-03
+**Status**: Phases 1-7 Complete ✅ | Phase 8 In Progress 🚧 | Phase 13 Specified 📋
