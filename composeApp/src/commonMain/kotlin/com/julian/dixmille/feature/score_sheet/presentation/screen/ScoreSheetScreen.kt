@@ -225,7 +225,7 @@ fun ScoreSheetContent(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(game.players, key = { it.id }) { player ->
+            items(game.players, key = { it.id.value }) { player ->
                 PlayerScoreCard(
                     player = player,
                     isCurrentPlayer = player.id == state.currentPlayer?.id
