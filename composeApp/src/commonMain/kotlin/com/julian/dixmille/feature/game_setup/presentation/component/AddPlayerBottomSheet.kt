@@ -53,6 +53,7 @@ import dixmille.composeapp.generated.resources.add_player_subtitle_days_ago
 import dixmille.composeapp.generated.resources.add_player_subtitle_one_day_ago
 import dixmille.composeapp.generated.resources.add_player_subtitle_today
 import dixmille.composeapp.generated.resources.add_player_unified_field_hint
+import dixmille.composeapp.generated.resources.ic_arrow_right
 import dixmille.composeapp.generated.resources.ic_close
 import dixmille.composeapp.generated.resources.ic_search
 import dixmille.composeapp.generated.resources.play_arrow
@@ -259,7 +260,7 @@ fun AddPlayerBottomSheet(
                 containerColor = MaterialTheme.colorScheme.primary,
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.play_arrow),
+                    painter = painterResource(Res.drawable.ic_arrow_right),
                     contentDescription = stringResource(Res.string.add_player_confirm_selection_cd),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(24.dp),
