@@ -8,6 +8,7 @@ import com.julian.dixmille.core.domain.repository.GameRulesRepository
 import com.julian.dixmille.core.presentation.navigation.GameSetupNavigationEvent
 import com.julian.dixmille.feature.game_setup.domain.usecase.AddSavedPlayerUseCase
 import com.julian.dixmille.feature.game_setup.domain.usecase.CreateGameUseCase
+import com.julian.dixmille.feature.game_setup.domain.usecase.DeleteSavedPlayerUseCase
 import com.julian.dixmille.feature.game_setup.domain.usecase.GetSavedPlayersUseCase
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiState
@@ -24,6 +25,7 @@ class GameSetupViewModel(
     private val gameRulesRepository: GameRulesRepository,
     private val getSavedPlayersUseCase: GetSavedPlayersUseCase,
     private val addSavedPlayerUseCase: AddSavedPlayerUseCase,
+    private val deleteSavedPlayerUseCase: DeleteSavedPlayerUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GameSetupUiState())
@@ -71,6 +73,7 @@ class GameSetupViewModel(
             is GameSetupEvent.DeselectPlayer -> _state.update { s ->
                 s.copy(selectedPlayers = s.selectedPlayers.filter { it.id.value != event.playerId })
             }
+            is GameSetupEvent.DeleteSavedPlayer -> deleteSavedPlayer(event.playerId)
             is GameSetupEvent.ConfirmPlayerSelection -> _state.update {
                 it.copy(
                     selectedPlayers = event.selectedPlayers,
@@ -138,6 +141,24 @@ class GameSetupViewModel(
                 }
                 .onFailure { error ->
                     _state.update { it.copy(quickAddError = error.message ?: "Failed to add player") }
+                }
+        }
+    }
+
+    private fun deleteSavedPlayer(playerId: String) {
+        viewModelScope.launch {
+            deleteSavedPlayerUseCase(playerId)
+                .onSuccess {
+                    _state.update { s ->
+                        s.copy(
+                            allPlayers = s.allPlayers.filter { it.id.value != playerId },
+                            selectedPlayers = s.selectedPlayers.filter { it.id.value != playerId },
+                            deleteErrorMessage = null,
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update { it.copy(deleteErrorMessage = error.message ?: "Failed to delete player") }
                 }
         }
     }

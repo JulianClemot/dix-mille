@@ -1267,6 +1267,17 @@ Feature: Internationalization (English / French)
 - [ ] English + French string resources for reorder accessibility strings
 - [ ] Verify `CreateGameUseCase` receives `selectedPlayers` in displayed order (index 0 = starting player)
 
+### Phase 15: Delete Saved Player 📋
+- [ ] `PlayerDao` delete query (delete by id)
+- [ ] `SavedPlayerRepository.deletePlayer(playerId): Result<Unit>` interface + impl
+- [ ] `DeleteSavedPlayerUseCase` in `feature/game_setup/domain/usecase/`
+- [ ] `GameSetupEvent.DeleteSavedPlayer(playerId)` — dispatched directly on tap, no confirmation step
+- [ ] Cascade: remove the deleted player from `selectedPlayers`, preserving the turn order of the rest
+- [ ] Delete icon as the trailing element of each `AddPlayerBottomSheet` row (does not toggle the checkbox)
+- [ ] Delete failure surfaced as an error message; player remains in the list
+- [ ] English + French string resources for the delete icon content description and failure message
+- [ ] Delete icon drawable in Compose resources
+
 ---
 
 ## UI Flow
@@ -1603,7 +1614,7 @@ Persisted using Room 3 (`androidx.room3:room3-runtime:3.0.0-alpha03`). All DAO f
   - "ALREADY IN GAME" — player is currently selected for this game.
   - "LAST PLAYED X DAYS AGO" — player has a `lastPlayedAt` timestamp.
   - "AVAILABLE" — player has no play history (no `lastPlayedAt`).
-- **No deletion**: Players cannot be deleted in this version.
+- **No deletion**: Players cannot be deleted in this version. ⚠️ SUPERSEDED by Feature: Delete Saved Player — each row in the selector bottom sheet now carries a delete action that permanently removes the `SavedPlayer` from the library (see § Delete Saved Player).
 - **Search**: Case-insensitive "contains" matching on name only.
 - **"+ ADD PLAYER" hidden at cap**: The button to open the bottom sheet is hidden when 6 players are already selected.
 
@@ -2444,6 +2455,200 @@ Feature: Player Turn Order
 
 ---
 
+## Delete Saved Player
+
+This feature lets the game organiser permanently remove a player from the **player library**. Each row of the player selector bottom sheet gains a trailing delete action; tapping it immediately deletes the `SavedPlayer` row — name, `createdAt` and `lastPlayedAt` play history — from the Room database. There is no confirmation step and no undo. It supersedes the "No deletion" rule introduced by the Player Library feature.
+
+### Key Rules
+
+- **Delete action per row**: Every player row in the selector bottom sheet carries a delete icon as the **last** element of the row, after the selection checkbox.
+- **Immediate, no confirmation**: Tapping the delete icon deletes the player right away — there is no confirmation dialog and no undo affordance (no snackbar, no restore).
+- **Permanent and persistent**: Deletion removes the `SavedPlayer` from the database. The player does not reappear when the sheet is reopened, nor after an app restart.
+- **Delete is not selection**: Tapping the delete icon never toggles the row's checkbox before the row disappears.
+- **Cascading deselection**: If the deleted player is currently selected for this game setup, they are also immediately removed from `selectedPlayers`.
+- **Never blocked**: The delete icon is always enabled — including for a currently selected player, and including when the 6-player cap has disabled the unchecked checkboxes.
+- **No impact on games**: Deleting a `SavedPlayer` has no effect on any in-progress or completed `Game`. `CreateGameUseCase` copies only the player's `name` into a `Player` carrying a freshly generated `PlayerId`; a `Game` never references a `SavedPlayer.id`.
+- **Filter is preserved**: Deleting while the unified search/add field contains text keeps the field text and re-applies the filter to the remaining players.
+- **String extraction**: All new strings — delete icon content description and failure message — are Compose Multiplatform string resources with English and French translations.
+
+### Assumptions
+
+1. A new `DeleteSavedPlayerUseCase` in `feature/game_setup/domain/usecase/` wraps a new `SavedPlayerRepository.deletePlayer(playerId): Result<Unit>`, backed by a new `PlayerDao` delete query.
+2. One new event, `GameSetupEvent.DeleteSavedPlayer(playerId)`, drives the whole flow: tapping the icon dispatches it directly and the ViewModel deletes immediately — no dialog-visibility state needed in `GameSetupUiState`.
+3. Deletion is idempotent at the data layer: deleting a row that no longer exists succeeds rather than failing.
+4. Deleting the player whose name is currently typed in the unified field re-enables the ADD button, because the exact-match duplicate guard no longer matches anything.
+
+### BDD Scenarios
+
+```gherkin
+Feature: Delete Saved Player
+  As a game organiser
+  I want to permanently delete a player from my saved player library
+  So that the list stays free of names I no longer play with
+
+  Background:
+    Given the player selector bottom sheet is open
+    And the player library contains "Alice", "Bob", "Carol"
+
+  # --- The Delete Affordance ---
+
+  Scenario: Every player row exposes a delete icon
+    Then "Alice", "Bob" and "Carol" each display a delete icon
+    And the delete icon is the last element of the row, after the selection checkbox
+
+  Scenario: The delete icon stays enabled at the 6-player cap
+    Given the player library contains 7 players
+    And 6 players are currently checked
+    And all unchecked players' checkboxes are disabled
+    Then the delete icon on every row is enabled
+
+  Scenario: The delete icon is enabled for a currently selected player
+    Given "Alice" has a checked checkbox
+    Then the delete icon on "Alice" is enabled
+
+  # --- Confirming Deletion ---
+
+  Scenario: Tapping the delete icon removes the player from the list immediately
+    When I tap the delete icon on "Bob"
+    Then the player list shows only "Alice" and "Carol"
+    And "Bob" is not visible
+
+  Scenario: Tapping the delete icon removes the player from the database
+    When I tap the delete icon on "Bob"
+    Then "Bob" is deleted from the player library
+    And a subsequent read of all saved players returns only "Alice" and "Carol"
+
+  Scenario: A deleted player does not reappear when the sheet is reopened
+    Given I have deleted "Bob"
+    When I close the player selector bottom sheet
+    And I reopen the player selector bottom sheet
+    Then the player list shows only "Alice" and "Carol"
+
+  Scenario: A deleted player does not reappear after an app restart
+    Given I have deleted "Bob"
+    When the app is restarted
+    And I open the player selector bottom sheet
+    Then the player list shows only "Alice" and "Carol"
+
+  Scenario: Deleting a player also deletes their play history
+    Given "Bob" has a lastPlayedAt timestamp from 3 days ago
+    When I tap the delete icon on "Bob"
+    Then no stored play history remains for "Bob"
+
+  Scenario: A deleted name becomes available for re-adding
+    Given I have deleted "Bob"
+    When I type "Bob" in the unified field
+    Then the ADD button is enabled
+    When I tap the ADD button
+    Then a new player named "Bob" is saved to the player library
+    And "Bob" appears in the player list with a checked checkbox
+
+  # --- Interaction with the Current Game Selection ---
+
+  Scenario: Deleting an unselected player leaves the selection untouched
+    Given "Alice" and "Bob" are checked
+    And "Carol" is unchecked
+    When I delete "Carol"
+    Then the selected players are, in turn order: Alice, Bob
+    And the confirm selection FAB is enabled
+
+  Scenario: Deleting a selected player removes them from the selection
+    Given "Alice", "Bob" and "Carol" are checked
+    When I delete "Bob"
+    Then the selected players are, in turn order: Alice, Carol
+    And "Bob" is not visible in the player list
+
+  Scenario: Deleting a selected player preserves the turn order of the others
+    Given the selected players are, in turn order: Carol, Alice, Bob
+    When I delete "Alice"
+    Then the selected players are, in turn order: Carol, Bob
+
+  Scenario: Deleting a selected player below the minimum disables confirmation
+    Given exactly 2 players are checked: "Alice" and "Bob"
+    When I delete "Alice"
+    Then only "Bob" remains selected
+    And the confirm selection FAB is disabled
+    And the "START GAME" button is disabled
+
+  Scenario: Deleting a selected player at the cap re-enables the other checkboxes
+    Given the player library contains 7 players
+    And 6 players are currently checked
+    And all unchecked players' checkboxes are disabled
+    When I delete one of the checked players
+    Then 5 players remain selected
+    And all unchecked players' checkboxes become enabled again
+
+  Scenario: Deleting a selected player at the cap makes ADD PLAYER visible again
+    Given the player library contains 7 players
+    And 6 players are checked
+    And the "+ ADD PLAYER" button is not visible on the Game Setup screen
+    When I delete one of the checked players
+    And I confirm the selection
+    Then the "+ ADD PLAYER" button is visible
+
+  Scenario: Deletion does not affect an in-progress game
+    Given a game is in progress with players Alice, Bob, Carol
+    When I delete "Bob" from the player library
+    Then the in-progress game still has players Alice, Bob, Carol
+    And every player's total score is unchanged
+    And the game continues to follow all existing rules
+
+  # --- Interaction with Search / Filter ---
+
+  Scenario: Deleting while a filter is active preserves the filter text
+    Given I have typed "a" in the unified field
+    And the player list shows "Alice" and "Carol"
+    When I delete "Carol"
+    Then the unified field still contains "a"
+    And the player list shows only "Alice"
+
+  Scenario: Deleting the only match leaves an empty filtered list
+    Given I have typed "bo" in the unified field
+    And the player list shows only "Bob"
+    When I delete "Bob"
+    Then the player list is empty
+    And a "no results" message is displayed
+
+  Scenario: Deleting the typed name re-enables the ADD button
+    Given I have typed "Alice" in the unified field
+    And the ADD button is disabled because the name exactly matches an existing player
+    When I delete "Alice"
+    Then the ADD button is enabled
+
+  # --- Empty Library ---
+
+  Scenario: Deleting the last remaining player empties the library
+    Given the player library contains only "Alice"
+    When I delete "Alice"
+    Then the player list is empty
+    And the unified field is visible for creating a new player
+
+  # --- Error Handling ---
+
+  Scenario: A failed deletion keeps the player and reports the error
+    Given the player library repository will fail on delete
+    When I tap the delete icon on "Bob"
+    Then "Bob" is still displayed in the player list
+    And an error message indicating that the deletion failed is displayed
+
+  Scenario: Deleting a player that no longer exists succeeds without error
+    Given "Bob" has already been removed from the database
+    When I tap the delete icon on "Bob"
+    Then no error message is displayed
+    And the player list shows only "Alice" and "Carol"
+
+  # --- Accessibility and Internationalization ---
+
+  Scenario: The delete icon has a content description identifying the player
+    Then the delete icon on "Alice"'s row has a content description identifying it as the delete action for "Alice"
+
+  Scenario: All delete strings come from string resources
+    Then the delete icon content description and failure message are read from string resources
+    And each has a corresponding entry in both the English and French resource files
+```
+
+---
+
 ## Future Enhancements (Post-Launch)
 
 - Multiple concurrent games
@@ -2464,6 +2669,6 @@ Feature: Player Turn Order
 
 ---
 
-**Version**: 4.1
+**Version**: 4.2
 **Last Updated**: 2026-08-24
-**Status**: Phases 1-7 Complete ✅ | Phase 8 In Progress 🚧 | Phases 13-14 Specified 📋
+**Status**: Phases 1-7 Complete ✅ | Phase 8 In Progress 🚧 | Phases 13-15 Specified 📋

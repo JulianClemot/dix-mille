@@ -19,6 +19,7 @@ private object NoOpSavedPlayerRepository : SavedPlayerRepository {
     override suspend fun addPlayer(player: SavedPlayer): Result<SavedPlayer> = Result.success(player)
     override suspend fun updateLastPlayedAt(playerId: String, timestamp: Long) = Unit
     override suspend fun playerExistsByNameIgnoreCase(name: String): Boolean = false
+    override suspend fun deletePlayer(playerId: String): Result<Unit> = Result.success(Unit)
 }
 
 class CreateGameUseCase(

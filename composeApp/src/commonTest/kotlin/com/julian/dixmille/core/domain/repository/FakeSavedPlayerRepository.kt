@@ -4,6 +4,7 @@ import com.julian.dixmille.core.domain.model.SavedPlayer
 
 class FakeSavedPlayerRepository : SavedPlayerRepository {
     val players = mutableListOf<SavedPlayer>()
+    var deleteFailure: Throwable? = null
 
     override suspend fun getAllPlayers(): List<SavedPlayer> = players.toList()
 
@@ -21,4 +22,10 @@ class FakeSavedPlayerRepository : SavedPlayerRepository {
 
     override suspend fun playerExistsByNameIgnoreCase(name: String): Boolean =
         players.any { it.name.value.equals(name, ignoreCase = true) }
+
+    override suspend fun deletePlayer(playerId: String): Result<Unit> {
+        deleteFailure?.let { return Result.failure(it) }
+        players.removeAll { it.id.value == playerId }
+        return Result.success(Unit)
+    }
 }

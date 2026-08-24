@@ -17,4 +17,7 @@ interface PlayerDao {
 
     @Query("UPDATE players SET lastPlayedAt = :timestamp WHERE id = :playerId")
     suspend fun updateLastPlayedAt(playerId: String, timestamp: Long)
+
+    @Query("DELETE FROM players WHERE id = :playerId")
+    suspend fun deletePlayer(playerId: String)
 }

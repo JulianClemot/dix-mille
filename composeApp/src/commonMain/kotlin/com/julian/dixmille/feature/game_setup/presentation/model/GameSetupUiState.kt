@@ -9,6 +9,7 @@ data class GameSetupUiState(
     val targetScore: String = "10000",
     val error: String? = null,
     val quickAddError: String? = null,
+    val deleteErrorMessage: String? = null,
     val isCreating: Boolean = false,
     val showPlayerSelector: Boolean = false,
     val minPlayers: Int = 2,

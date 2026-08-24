@@ -7,4 +7,5 @@ interface SavedPlayerRepository {
     suspend fun addPlayer(player: SavedPlayer): Result<SavedPlayer>
     suspend fun updateLastPlayedAt(playerId: String, timestamp: Long)
     suspend fun playerExistsByNameIgnoreCase(name: String): Boolean
+    suspend fun deletePlayer(playerId: String): Result<Unit>
 }

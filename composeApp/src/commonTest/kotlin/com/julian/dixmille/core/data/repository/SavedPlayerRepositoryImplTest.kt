@@ -138,4 +138,57 @@ class SavedPlayerRepositoryImplTest {
         // Assert
         assertFalse(result)
     }
+
+    @Test
+    fun `should return success and remove player when player exists`() = runTest {
+        // Arrange
+        val alice = SavedPlayer(PlayerId("id-1"), PlayerName("Alice"), 1000L, null)
+        repository.addPlayer(alice)
+
+        // Act
+        val result = repository.deletePlayer("id-1")
+
+        // Assert
+        assertTrue(result.isSuccess)
+        assertFalse(repository.getAllPlayers().any { it.id == PlayerId("id-1") })
+    }
+
+    @Test
+    fun `should return success when deleting a player that does not exist`() = runTest {
+        // Act
+        val result = repository.deletePlayer("ghost-id")
+
+        // Assert
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `should leave other players untouched when deleting one player`() = runTest {
+        // Arrange
+        val alice = SavedPlayer(PlayerId("id-1"), PlayerName("Alice"), 1000L, null)
+        val bob = SavedPlayer(PlayerId("id-2"), PlayerName("Bob"), 2000L, null)
+        repository.addPlayer(alice)
+        repository.addPlayer(bob)
+
+        // Act
+        repository.deletePlayer("id-1")
+
+        // Assert
+        val remaining = repository.getAllPlayers()
+        assertEquals(1, remaining.size)
+        assertEquals(PlayerName("Bob"), remaining.first().name)
+    }
+
+    @Test
+    fun `should remove play history when deleting a player`() = runTest {
+        // Arrange
+        val alice = SavedPlayer(PlayerId("id-1"), PlayerName("Alice"), 9999L, null)
+        repository.addPlayer(alice)
+
+        // Act
+        repository.deletePlayer("id-1")
+
+        // Assert
+        assertFalse(repository.getAllPlayers().any { it.id == PlayerId("id-1") })
+    }
 }

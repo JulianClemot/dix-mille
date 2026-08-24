@@ -32,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -45,6 +46,7 @@ import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiStat
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.add_player_add_button
 import dixmille.composeapp.generated.resources.add_player_confirm_selection_cd
+import dixmille.composeapp.generated.resources.add_player_delete_cd
 import dixmille.composeapp.generated.resources.add_player_existing_players_header
 import dixmille.composeapp.generated.resources.add_player_sheet_title
 import dixmille.composeapp.generated.resources.add_player_subtitle_already_in_game
@@ -55,8 +57,10 @@ import dixmille.composeapp.generated.resources.add_player_subtitle_today
 import dixmille.composeapp.generated.resources.add_player_unified_field_hint
 import dixmille.composeapp.generated.resources.ic_arrow_right
 import dixmille.composeapp.generated.resources.ic_close
+import dixmille.composeapp.generated.resources.ic_delete
 import dixmille.composeapp.generated.resources.ic_search
 import dixmille.composeapp.generated.resources.play_arrow
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.abs
@@ -73,10 +77,19 @@ fun AddPlayerBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val keyboardController = LocalSoftwareKeyboardController.current
+    val coroutineScope = rememberCoroutineScope()
+
+    fun hideSheet(onHidden: () -> Unit = { onEvent(GameSetupEvent.HidePlayerSelector) }) {
+        coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
+            if (!sheetState.isVisible) {
+                onHidden()
+            }
+        }
+    }
 
     ModalBottomSheet(
         sheetGesturesEnabled = false,
-        onDismissRequest = { onEvent(GameSetupEvent.HidePlayerSelector) },
+        onDismissRequest = { hideSheet() },
         sheetState = sheetState,
         modifier = modifier,
     ) {
@@ -91,7 +104,7 @@ fun AddPlayerBottomSheet(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = { onEvent(GameSetupEvent.HidePlayerSelector) }) {
+                    IconButton(onClick = { hideSheet() }) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_close),
                             contentDescription = null,
@@ -156,6 +169,14 @@ fun AddPlayerBottomSheet(
                 }
 
                 state.quickAddError?.let { errorMsg ->
+                    Text(
+                        text = errorMsg,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                state.deleteErrorMessage?.let { errorMsg ->
                     Text(
                         text = errorMsg,
                         color = MaterialTheme.colorScheme.error,
@@ -241,6 +262,18 @@ fun AddPlayerBottomSheet(
                                 },
                                 enabled = isSelected || state.canAddMorePlayers,
                             )
+
+                            IconButton(
+                                onClick = { onEvent(GameSetupEvent.DeleteSavedPlayer(player.id.value)) },
+                            ) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.ic_delete),
+                                    contentDescription = stringResource(
+                                        Res.string.add_player_delete_cd,
+                                        player.name.value,
+                                    ),
+                                )
+                            }
                         }
                     }
                 }
@@ -251,7 +284,9 @@ fun AddPlayerBottomSheet(
             FloatingActionButton(
                 onClick = {
                     if (state.canConfirmSelection) {
-                        onEvent(GameSetupEvent.ConfirmPlayerSelection(state.selectedPlayers))
+                        hideSheet {
+                            onEvent(GameSetupEvent.ConfirmPlayerSelection(state.selectedPlayers))
+                        }
                     }
                 },
                 modifier = Modifier

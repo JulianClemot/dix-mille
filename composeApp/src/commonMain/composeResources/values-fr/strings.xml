@@ -67,6 +67,8 @@
     <string name="add_player_confirm_selection_cd">Confirmer la sélection</string>
     <string name="add_player_error_duplicate">Un joueur avec ce nom existe déjà</string>
     <string name="add_player_error_failed">Impossible d'ajouter le joueur</string>
+    <string name="add_player_delete_cd">Supprimer %1$s</string>
+    <string name="add_player_delete_error_failed">Impossible de supprimer le joueur</string>
     <string name="game_setup_error_need_players">Il faut au moins %1$d joueurs</string>
     <string name="game_setup_error_invalid_target">Score cible invalide</string>
     <string name="game_setup_error_failed_create">Impossible de créer la partie</string>

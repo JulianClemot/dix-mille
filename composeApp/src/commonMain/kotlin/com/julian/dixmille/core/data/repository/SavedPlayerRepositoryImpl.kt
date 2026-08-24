@@ -27,4 +27,8 @@ class SavedPlayerRepositoryImpl(private val playerDao: PlayerDao) : SavedPlayerR
 
     override suspend fun playerExistsByNameIgnoreCase(name: String): Boolean =
         playerDao.existsByNameIgnoreCase(name)
+
+    override suspend fun deletePlayer(playerId: String): Result<Unit> = runCatching {
+        playerDao.deletePlayer(playerId)
+    }
 }

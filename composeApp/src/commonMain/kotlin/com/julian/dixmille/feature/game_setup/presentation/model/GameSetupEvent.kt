@@ -7,6 +7,7 @@ sealed class GameSetupEvent {
     data object HidePlayerSelector : GameSetupEvent()
     data class SelectPlayer(val player: SavedPlayer) : GameSetupEvent()
     data class DeselectPlayer(val playerId: String) : GameSetupEvent()
+    data class DeleteSavedPlayer(val playerId: String) : GameSetupEvent()
     data class ConfirmPlayerSelection(val selectedPlayers: List<SavedPlayer>) : GameSetupEvent()
     data class RemoveSelectedPlayer(val playerId: String) : GameSetupEvent()
     data class MovePlayer(val fromIndex: Int, val toIndex: Int) : GameSetupEvent()

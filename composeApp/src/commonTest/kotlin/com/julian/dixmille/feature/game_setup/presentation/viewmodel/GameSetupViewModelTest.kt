@@ -9,6 +9,7 @@ import com.julian.dixmille.domain.usecase.FakeGameRepository
 import com.julian.dixmille.domain.usecase.FakeGameRulesRepository
 import com.julian.dixmille.feature.game_setup.domain.usecase.AddSavedPlayerUseCase
 import com.julian.dixmille.feature.game_setup.domain.usecase.CreateGameUseCase
+import com.julian.dixmille.feature.game_setup.domain.usecase.DeleteSavedPlayerUseCase
 import com.julian.dixmille.feature.game_setup.domain.usecase.GetSavedPlayersUseCase
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,7 @@ class GameSetupViewModelTest {
     ): GameSetupViewModel {
         val getSavedPlayers = GetSavedPlayersUseCase(repo)
         val addSavedPlayer = AddSavedPlayerUseCase(repo, generateId = { "test-id" }, clock = { 0L })
+        val deleteSavedPlayer = DeleteSavedPlayerUseCase(repo)
         val gameRepo = FakeGameRepository()
         val rulesRepo = FakeGameRulesRepository()
         val createGame = CreateGameUseCase(gameRepo, rulesRepo)
@@ -63,6 +65,7 @@ class GameSetupViewModelTest {
             gameRulesRepository = rulesRepo,
             getSavedPlayersUseCase = getSavedPlayers,
             addSavedPlayerUseCase = addSavedPlayer,
+            deleteSavedPlayerUseCase = deleteSavedPlayer,
         )
     }
 
@@ -781,6 +784,7 @@ class GameSetupViewModelTest {
         val repo = FakeSavedPlayerRepository()
         val getSavedPlayers = GetSavedPlayersUseCase(repo)
         val addSavedPlayer = AddSavedPlayerUseCase(repo, generateId = { "test-id" }, clock = { 0L })
+        val deleteSavedPlayer = DeleteSavedPlayerUseCase(repo)
         val gameRepo = FakeGameRepository()
         val rulesRepo = FakeGameRulesRepository()
         val createGameUseCase = CreateGameUseCase(gameRepo, rulesRepo)
@@ -789,6 +793,7 @@ class GameSetupViewModelTest {
             gameRulesRepository = rulesRepo,
             getSavedPlayersUseCase = getSavedPlayers,
             addSavedPlayerUseCase = addSavedPlayer,
+            deleteSavedPlayerUseCase = deleteSavedPlayer,
         )
         advanceUntilIdle()
         val zara = savedPlayer("1", "Zara")
@@ -872,5 +877,175 @@ class GameSetupViewModelTest {
         advanceUntilIdle()
 
         assertEquals(reordered, viewModel.state.value.selectedPlayers)
+    }
+
+    // ── INCREMENT 5 (Delete Saved Player): DeleteSavedPlayer event ───────────
+
+    @Test
+    fun `should remove player from allPlayers when unselected player is deleted`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        val bob = savedPlayer("2", "Bob")
+        val carol = savedPlayer("3", "Carol")
+        repo.players.add(alice)
+        repo.players.add(bob)
+        repo.players.add(carol)
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(alice))
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(bob))
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(carol.id.value))
+        advanceUntilIdle()
+
+        assertEquals(listOf(alice, bob), viewModel.state.value.allPlayers)
+        assertEquals(listOf(alice, bob), viewModel.state.value.selectedPlayers)
+    }
+
+    @Test
+    fun `should cascade removal from selectedPlayers preserving turn order`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        val bob = savedPlayer("2", "Bob")
+        val carol = savedPlayer("3", "Carol")
+        repo.players.add(alice)
+        repo.players.add(bob)
+        repo.players.add(carol)
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(carol))
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(alice))
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(bob))
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+
+        assertEquals(listOf(carol, bob), viewModel.state.value.selectedPlayers)
+        assertFalse(viewModel.state.value.allPlayers.contains(alice))
+    }
+
+    @Test
+    fun `should disable start game when deletion drops selection below minimum`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        val bob = savedPlayer("2", "Bob")
+        repo.players.add(alice)
+        repo.players.add(bob)
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(alice))
+        viewModel.onEvent(GameSetupEvent.SelectPlayer(bob))
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+
+        assertEquals(listOf(bob), viewModel.state.value.selectedPlayers)
+        assertFalse(viewModel.state.value.canConfirmSelection)
+        assertFalse(viewModel.state.value.canStartGame)
+    }
+
+    @Test
+    fun `should allow adding more players after deletion drops below cap`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val players = (1..6).map { savedPlayer("$it", "Player$it") }
+        players.forEach { repo.players.add(it) }
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        players.forEach { viewModel.onEvent(GameSetupEvent.SelectPlayer(it)) }
+        val alice = players.first()
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+
+        assertEquals(5, viewModel.state.value.selectedPlayers.size)
+        assertTrue(viewModel.state.value.canAddMorePlayers)
+    }
+
+    @Test
+    fun `should preserve filter text after deleting a player`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        val bob = savedPlayer("2", "Bob")
+        val carol = savedPlayer("3", "Carol")
+        repo.players.add(alice)
+        repo.players.add(bob)
+        repo.players.add(carol)
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("a"))
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(carol.id.value))
+        advanceUntilIdle()
+
+        assertEquals("a", viewModel.state.value.unifiedInput)
+        assertEquals(listOf(alice), viewModel.state.value.filteredPlayers)
+    }
+
+    @Test
+    fun `should empty player list when deleting the last remaining player`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        repo.players.add(alice)
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.allPlayers.isEmpty())
+        assertTrue(viewModel.state.value.filteredPlayers.isEmpty())
+    }
+
+    @Test
+    fun `should keep player and set error message when deletion fails`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        repo.players.add(alice)
+        repo.deleteFailure = IllegalStateException("Delete failed")
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.allPlayers.contains(alice))
+        assertNotNull(viewModel.state.value.deleteErrorMessage)
+    }
+
+    @Test
+    fun `should clear error message when a subsequent deletion succeeds`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        val bob = savedPlayer("2", "Bob")
+        repo.players.add(alice)
+        repo.players.add(bob)
+        repo.deleteFailure = IllegalStateException("Delete failed")
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+        assertNotNull(viewModel.state.value.deleteErrorMessage)
+        repo.deleteFailure = null
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(bob.id.value))
+        advanceUntilIdle()
+
+        assertNull(viewModel.state.value.deleteErrorMessage)
+    }
+
+    @Test
+    fun `should re-enable add button when the typed exact-match name is deleted`() = runTest {
+        val repo = FakeSavedPlayerRepository()
+        val alice = savedPlayer("1", "Alice")
+        repo.players.add(alice)
+        val viewModel = createViewModel(repo)
+        advanceUntilIdle()
+        viewModel.onEvent(GameSetupEvent.UpdateUnifiedInput("Alice"))
+        assertFalse(viewModel.state.value.canAddNewPlayer)
+
+        viewModel.onEvent(GameSetupEvent.DeleteSavedPlayer(alice.id.value))
+        advanceUntilIdle()
+
+        assertTrue(viewModel.state.value.canAddNewPlayer)
     }
 }
