@@ -1254,6 +1254,19 @@ Feature: Internationalization (English / French)
 - [ ] Update `lastPlayedAt` when starting a game
 - [ ] Search/filter: case-insensitive "contains" on name
 
+### Phase 14: Player Turn Order 📋
+- [ ] Remove alphabetical sorting of `selectedPlayers` in `GameSetupViewModel` (3 call sites) — default to selection order
+- [ ] Append newly selected / quick-added players to the end of `selectedPlayers`
+- [ ] `GameSetupEvent.MovePlayer(fromIndex, toIndex)` with remove-then-insert semantics and out-of-range guards
+- [ ] `GameSetupUiState.canReorderPlayers` (`selectedPlayers.size >= 2`) driving drag handle visibility
+- [ ] Drag handle icon (≡) drawable in Compose resources
+- [ ] `ReorderablePlayerList` component — `pointerInput` drag with midpoint-crossing swap, lift/drop animation, clamping at list bounds
+- [ ] "Move up" / "Move down" custom accessibility actions per row
+- [ ] Haptic feedback on lift, swap, and drop
+- [ ] Position-change announcement via semantics
+- [ ] English + French string resources for reorder accessibility strings
+- [ ] Verify `CreateGameUseCase` receives `selectedPlayers` in displayed order (index 0 = starting player)
+
 ---
 
 ## UI Flow
@@ -1585,7 +1598,7 @@ Persisted using Room 3 (`androidx.room3:room3-runtime:3.0.0-alpha03`). All DAO f
 - **Max 6 selected**: No more than 6 players can be selected for a game.
 - **Min 2 to start**: The "START GAME" button and the bottom sheet FAB are disabled until 2+ players are selected/checked.
 - **Quick-add auto-selects**: A newly created player is immediately checked in the bottom sheet.
-- **Alphabetical display**: Selected players on the Game Setup screen are displayed in alphabetical order.
+- **Alphabetical display (bottom sheet only)**: The player list inside the selector bottom sheet is displayed in alphabetical order. ⚠️ Superseded for the Game Setup screen: the *selected* players list is no longer alphabetical — it is displayed in user-controlled turn order (see § Player Turn Order).
 - **Subtitles**: Players in the bottom sheet show contextual subtitles:
   - "ALREADY IN GAME" — player is currently selected for this game.
   - "LAST PLAYED X DAYS AGO" — player has a `lastPlayedAt` timestamp.
@@ -1611,11 +1624,13 @@ Feature: Player Library
     And the "+ ADD PLAYER" button is visible
     And the "START GAME" button is disabled
 
-  Scenario: Selected players are displayed in alphabetical order
-    Given I have selected players "Charlie", "Alice", "Bob"
-    When I view the Game Setup screen
-    Then the players are displayed in order: Alice, Bob, Charlie
-    And each player is shown as a chip with a remove (x) button
+  # SUPERSEDED by Feature: Player Turn Order — selected players are displayed in
+  # turn order (selection order by default), not alphabetical order.
+  # Scenario: Selected players are displayed in alphabetical order
+  #   Given I have selected players "Charlie", "Alice", "Bob"
+  #   When I view the Game Setup screen
+  #   Then the players are displayed in order: Alice, Bob, Charlie
+  #   And each player is shown as a chip with a remove (x) button
 
   Scenario: Remove a player via the x button on Game Setup screen
     Given I have selected players "Alice", "Bob", "Charlie"
@@ -2088,6 +2103,347 @@ Feature: Unified Search + Add Field
 
 ---
 
+## Player Turn Order
+
+This feature lets the game organiser re-arrange the selected players on the Game Setup screen by dragging them. The resulting list order **is** the turn order: the player at index 0 takes the first Turn, and Turns rotate down the list and wrap around. It supersedes the alphabetical sorting of the selected players list introduced by the Player Library feature.
+
+### Key Rules
+
+- **List order is turn order**: The selected players list on the Game Setup screen is displayed in turn order. Index 0 is the **starting player**. The list is handed to `CreateGameUseCase` in displayed order and becomes `Game.players` unchanged.
+- **No alphabetical sorting of selected players**: The Game Setup selected list defaults to **selection order** (the order in which players were selected / quick-added). The alphabetical sorting inside the **selector bottom sheet** is unchanged.
+- **Append on add**: Any newly selected or quick-added player is appended to the **end** of the selected list. Manual arrangement of the existing players is never disturbed by an addition.
+- **Drag handle**: Each selected player row carries a drag handle icon (≡). Dragging a row by its handle reorders the list. The handle is **hidden when fewer than 2 players are selected** and remains available up to the 6-player cap.
+- **No position indicators**: No numeric badge, no "starts first" label. Order is conveyed by vertical position alone.
+- **No shuffle**: A randomise-order action is explicitly out of scope.
+- **Ephemeral**: The manual order lives only in `GameSetupUiState`. It is not persisted — it is lost when the Game Setup ViewModel is cleared (leaving the screen, app restart). It does survive for as long as that ViewModel instance lives (e.g. a round trip to the Rules Settings screen).
+- **Accessible by keyboard/screen reader**: Every row exposes "Move up" / "Move down" custom accessibility actions as a non-drag alternative. Haptic feedback fires on lift, on each swap, and on drop. Order changes are announced.
+
+### Assumptions
+
+1. The ViewModel is the single source of truth for order. The UI emits `GameSetupEvent.MovePlayer(fromIndex, toIndex)` each time the dragged row crosses a neighbouring row's vertical midpoint; the rendered list always reflects `state.selectedPlayers`.
+2. `MovePlayer` semantics are remove-then-insert: the player at `fromIndex` is removed and re-inserted at `toIndex`.
+3. `ConfirmPlayerSelection` preserves the order of already-selected players and appends newly checked players in the order they were checked in the bottom sheet.
+4. The existing `.sortedBy { it.name.value.lowercase() }` calls in `GameSetupViewModel` (`selectPlayer`, `ConfirmPlayerSelection`, `quickAddPlayer`) are removed as part of this feature.
+
+### BDD Scenarios
+
+```gherkin
+Feature: Player Turn Order
+  As a game organiser
+  I want to re-arrange the selected players before starting a game
+  So that I control who takes the first Turn and the order in which Turns rotate
+
+  Background:
+    Given I am on the Game Setup screen
+
+  # --- Default Order (supersedes alphabetical sorting) ---
+
+  Scenario: Selected players are displayed in selection order, not alphabetical order
+    When I select "Charlie", then "Alice", then "Bob"
+    Then the selected players list reads, top to bottom: Charlie, Alice, Bob
+
+  Scenario: Confirming a bottom sheet selection appends newly checked players in check order
+    Given the selected players are, in turn order: Zoe, Adam
+    When I open the player selector bottom sheet
+    And I check "Bob", then "Alice"
+    And I confirm the selection
+    Then the selected players list reads, top to bottom: Zoe, Adam, Bob, Alice
+
+  Scenario: A quick-added player is appended last
+    Given the selected players are, in turn order: Zoe, Adam
+    When I quick-add a new player named "Alice"
+    Then the selected players list reads, top to bottom: Zoe, Adam, Alice
+
+  Scenario: The player list inside the bottom sheet stays alphabetical
+    Given the saved players are "Zoe", "Adam", "Bob"
+    And the selected players are, in turn order: Zoe, Adam
+    When I open the player selector bottom sheet
+    Then the bottom sheet player list is displayed in order: Adam, Bob, Zoe
+    And the selected players list on the Game Setup screen still reads: Zoe, Adam
+
+  # --- Drag Handle Visibility ---
+
+  Scenario: No drag handle is shown when no player is selected
+    Given no players are selected
+    Then no drag handle is displayed
+
+  Scenario: No drag handle is shown when exactly one player is selected
+    Given the selected players are, in turn order: Alice
+    Then no drag handle is displayed on "Alice"'s row
+    And the remove (x) button on "Alice"'s row is still displayed
+
+  Scenario: A drag handle appears on every row once a second player is selected
+    Given the selected players are, in turn order: Alice
+    And no drag handle is displayed
+    When I select "Bob"
+    Then a drag handle is displayed on "Alice"'s row
+    And a drag handle is displayed on "Bob"'s row
+
+  Scenario: Drag handles remain available at the 6-player cap
+    Given the selected players are, in turn order: P1, P2, P3, P4, P5, P6
+    Then a drag handle is displayed on each of the 6 rows
+
+  Scenario: Drag handles disappear when the selection drops back to one player
+    Given the selected players are, in turn order: Alice, Bob
+    When I tap the remove (x) button on "Bob"
+    Then only "Alice" remains in the selected players list
+    And no drag handle is displayed
+
+  # --- Reordering by Drag and Drop ---
+
+  Scenario: Drag a player down by one position
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Alice" by its drag handle past the vertical midpoint of "Bob"'s row
+    Then a MovePlayer event is emitted with fromIndex 0 and toIndex 1
+    And the selected players list reads, top to bottom: Bob, Alice, Carol
+
+  Scenario: Drag a player up by one position
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Carol" by its drag handle above the vertical midpoint of "Bob"'s row
+    Then a MovePlayer event is emitted with fromIndex 2 and toIndex 1
+    And the selected players list reads, top to bottom: Alice, Carol, Bob
+
+  Scenario: Drag a player across two positions in a single gesture
+    Given the selected players are, in turn order: Alice, Bob, Carol, Dave
+    When I drag "Dave" by its drag handle above the vertical midpoint of "Bob"'s row
+    Then the selected players list reads, top to bottom: Alice, Dave, Bob, Carol
+
+  Scenario: Dragging the last player to the top makes them the starting player
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Carol" by its drag handle to the top of the list
+    Then the selected players list reads, top to bottom: Carol, Alice, Bob
+    And the starting player is "Carol"
+
+  Scenario: The dragged row follows the pointer and other rows shift to make room
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I press and hold the drag handle on "Alice"
+    Then "Alice"'s row is visually lifted above the other rows
+    And while I drag downward past "Bob", "Bob"'s row shifts upward into "Alice"'s vacated slot
+    And on release "Alice"'s row settles into its new slot
+
+  Scenario: Releasing a drag without crossing any midpoint leaves the order unchanged
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Alice" by its drag handle a distance shorter than half a row height
+    And I release the drag
+    Then no MovePlayer event is emitted
+    And the selected players list still reads: Alice, Bob, Carol
+
+  Scenario: Dragging beyond the top of the list clamps at the first position
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Bob" by its drag handle far above the top of the list
+    Then the selected players list reads, top to bottom: Bob, Alice, Carol
+    And "Bob" is not moved outside the list
+
+  Scenario: Dragging beyond the bottom of the list clamps at the last position
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Bob" by its drag handle far below the bottom of the list
+    Then the selected players list reads, top to bottom: Alice, Carol, Bob
+    And "Bob" is not moved outside the list
+
+  Scenario: An interrupted drag gesture leaves the list in its last committed order
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Alice" past the vertical midpoint of "Bob"'s row
+    And the drag gesture is cancelled by the system
+    Then the selected players list reads, top to bottom: Bob, Alice, Carol
+    And no row remains visually lifted
+
+  Scenario: The remove button is inert while a drag is in progress
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I press and hold the drag handle on "Alice"
+    And I drag over the remove (x) button on "Bob"'s row
+    Then no player is removed from the selected players list
+
+  Scenario Outline: MovePlayer applies remove-then-insert semantics
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When a MovePlayer event is handled with fromIndex <from> and toIndex <to>
+    Then the selected players list reads, top to bottom: <result>
+
+    Examples:
+      | from | to | result            |
+      | 0    | 2  | Bob, Carol, Alice |
+      | 2    | 0  | Carol, Alice, Bob |
+      | 1    | 2  | Alice, Carol, Bob |
+      | 0    | 1  | Bob, Alice, Carol |
+
+  Scenario: Moving a player onto its own position is a no-op
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When a MovePlayer event is handled with fromIndex 1 and toIndex 1
+    Then the selected players list is unchanged: Alice, Bob, Carol
+
+  Scenario Outline: MovePlayer with an out-of-range index leaves the list unchanged
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When a MovePlayer event is handled with fromIndex <from> and toIndex <to>
+    Then the selected players list is unchanged: Alice, Bob, Carol
+    And no error is surfaced to the user
+
+    Examples:
+      | from | to |
+      | -1   | 1  |
+      | 0    | -1 |
+      | 3    | 0  |
+      | 0    | 3  |
+
+  Scenario: MovePlayer on a list of fewer than two players is a no-op
+    Given the selected players are, in turn order: Alice
+    When a MovePlayer event is handled with fromIndex 0 and toIndex 0
+    Then the selected players list is unchanged: Alice
+
+  # --- Interaction with Adding and Removing ---
+
+  Scenario: Removing a middle player preserves the relative order of the rest
+    Given the selected players are, in turn order: Carol, Alice, Dave, Bob
+    When I tap the remove (x) button on "Dave"
+    Then the selected players list reads, top to bottom: Carol, Alice, Bob
+
+  Scenario: Removing the first player promotes the second to starting player
+    Given the selected players are, in turn order: Carol, Alice, Bob
+    When I tap the remove (x) button on "Carol"
+    Then the selected players list reads, top to bottom: Alice, Bob
+    And the starting player is "Alice"
+
+  Scenario: A re-added player goes to the end of the list, not back to its old position
+    Given the selected players are, in turn order: Carol, Alice, Bob
+    When I tap the remove (x) button on "Carol"
+    And I select "Carol" again
+    Then the selected players list reads, top to bottom: Alice, Bob, Carol
+
+  Scenario: Adding a player after a manual reorder does not disturb the manual order
+    Given the selected players are, in turn order: Alice, Bob
+    When I drag "Bob" by its drag handle to the top of the list
+    And I select "Carol"
+    Then the selected players list reads, top to bottom: Bob, Alice, Carol
+
+  Scenario: A player selected at the 6-player cap is rejected without reordering the list
+    Given the selected players are, in turn order: P6, P5, P4, P3, P2, P1
+    When I attempt to select a 7th player "P7"
+    Then "P7" is not added to the selected players list
+    And the selected players list is unchanged: P6, P5, P4, P3, P2, P1
+
+  # --- Order Lifetime (ephemeral) ---
+
+  Scenario: The manual order survives a round trip to the Rules Settings screen
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Carol" by its drag handle to the top of the list
+    And I navigate to the Rules Settings screen
+    And I navigate back to the Game Setup screen
+    Then the selected players list reads, top to bottom: Carol, Alice, Bob
+
+  Scenario: The manual order is discarded when the Game Setup screen is left
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    And I have dragged "Carol" to the top of the list
+    When I navigate back to the Home screen
+    And I open the Game Setup screen again
+    Then the selected players list is empty
+    And no manual order is restored
+
+  # --- Turn Order Feeds the Game ---
+
+  Scenario: The first player in the list takes the first Turn
+    Given the selected players are, in turn order: Carol, Alice, Bob
+    When I tap "START GAME"
+    Then the game is created with players in order: Carol, Alice, Bob
+    And the current player is "Carol"
+    And the round number is 1
+
+  Scenario: A manual reorder is reflected in the created game
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I drag "Carol" by its drag handle to the top of the list
+    And I tap "START GAME"
+    Then the game is created with players in order: Carol, Alice, Bob
+    And the current player is "Carol"
+
+  Scenario: Turns rotate in list order and wrap around
+    Given a game was created with players in order: Carol, Alice, Bob
+    When "Carol" commits her Turn
+    Then the current player is "Alice"
+    When "Alice" commits her Turn
+    Then the current player is "Bob"
+    When "Bob" commits his Turn
+    Then the current player is "Carol"
+    And the round number is 2
+
+  Scenario: A Skip advances to the next player in list order
+    Given a game was created with players in order: Carol, Alice, Bob
+    And it is "Carol"'s Turn
+    When "Carol" skips
+    Then the current player is "Alice"
+
+  Scenario: A Bust advances to the next player in list order
+    Given a game was created with players in order: Carol, Alice, Bob
+    And it is "Carol"'s Turn
+    When "Carol" busts
+    Then the current player is "Alice"
+
+  Scenario: The Final Round follows the configured turn order
+    Given a game was created with players in order: Alice, Bob, Carol, Dave
+    And "Bob" reaches the target score and triggers the Final Round
+    Then the remaining Final Round Turns are played in order: Carol, Dave, Alice
+    And each of them plays exactly one more Turn
+
+  # --- Accessibility ---
+
+  Scenario: Each row exposes Move up and Move down custom actions
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When the screen reader focuses "Bob"'s row
+    Then a "Move up" custom accessibility action is available
+    And a "Move down" custom accessibility action is available
+
+  Scenario: The first row has no Move up action
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When the screen reader focuses "Alice"'s row
+    Then no "Move up" custom accessibility action is available
+    And a "Move down" custom accessibility action is available
+
+  Scenario: The last row has no Move down action
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When the screen reader focuses "Carol"'s row
+    Then a "Move up" custom accessibility action is available
+    And no "Move down" custom accessibility action is available
+
+  Scenario: A single selected player exposes no move actions
+    Given the selected players are, in turn order: Alice
+    When the screen reader focuses "Alice"'s row
+    Then no "Move up" custom accessibility action is available
+    And no "Move down" custom accessibility action is available
+
+  Scenario: Invoking Move up reorders the list
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I invoke the "Move up" action on "Bob"'s row
+    Then a MovePlayer event is emitted with fromIndex 1 and toIndex 0
+    And the selected players list reads, top to bottom: Bob, Alice, Carol
+
+  Scenario: Invoking Move down reorders the list
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I invoke the "Move down" action on "Bob"'s row
+    Then a MovePlayer event is emitted with fromIndex 1 and toIndex 2
+    And the selected players list reads, top to bottom: Alice, Carol, Bob
+
+  Scenario: The new position is announced after a reorder
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I invoke the "Move up" action on "Bob"'s row
+    Then the screen reader announces that "Bob" moved to position 1 of 3
+    And focus remains on "Bob"'s row
+
+  Scenario: The drag handle has a meaningful content description
+    Given the selected players are, in turn order: Alice, Bob
+    Then the drag handle on "Alice"'s row has a content description identifying it as a reorder handle for "Alice"
+
+  Scenario: Haptic feedback marks the lift, each swap, and the drop
+    Given the selected players are, in turn order: Alice, Bob, Carol
+    When I press and hold the drag handle on "Alice"
+    Then a haptic lift feedback is emitted
+    When I drag "Alice" past the vertical midpoint of "Bob"'s row
+    Then a haptic swap feedback is emitted
+    When I release the drag
+    Then a haptic drop feedback is emitted
+
+  Scenario: All reorder accessibility strings come from string resources
+    Then the "Move up", "Move down", drag handle description, and position announcement strings are read from string resources
+    And each has a corresponding entry in both the English and French resource files
+```
+
+---
+
 ## Future Enhancements (Post-Launch)
 
 - Multiple concurrent games
@@ -2108,6 +2464,6 @@ Feature: Unified Search + Add Field
 
 ---
 
-**Version**: 4.0
-**Last Updated**: 2026-05-03
-**Status**: Phases 1-7 Complete ✅ | Phase 8 In Progress 🚧 | Phase 13 Specified 📋
+**Version**: 4.1
+**Last Updated**: 2026-08-24
+**Status**: Phases 1-7 Complete ✅ | Phase 8 In Progress 🚧 | Phases 13-14 Specified 📋

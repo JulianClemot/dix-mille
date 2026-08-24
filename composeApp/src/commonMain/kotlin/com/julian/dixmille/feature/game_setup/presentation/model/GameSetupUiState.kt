@@ -21,6 +21,7 @@ data class GameSetupUiState(
     val canStartGame: Boolean get() = selectedPlayers.size >= minPlayers
     val canAddMorePlayers: Boolean get() = selectedPlayers.size < maxPlayers
     val canConfirmSelection: Boolean get() = selectedPlayers.size >= minPlayers
+    val canReorderPlayers: Boolean get() = selectedPlayers.size >= 2
 
     val canAddNewPlayer: Boolean
         get() {

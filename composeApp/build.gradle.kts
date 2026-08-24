@@ -30,6 +30,9 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
         withHostTest {}
+        withDeviceTest {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
     }
 
     sourceSets {
@@ -58,6 +61,16 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.koin.test)
+        }
+        val androidDeviceTest by getting {
+            dependencies {
+                implementation(libs.compose.uiTest)
+                implementation(libs.androidx.compose.ui.test.junit4)
+                implementation(libs.androidx.compose.ui.test.manifest)
+                implementation(libs.junit4)
+                implementation(libs.androidx.test.ext.junit)
+                implementation(libs.androidx.test.espresso.core)
+            }
         }
     }
 }

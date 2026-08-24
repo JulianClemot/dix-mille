@@ -230,4 +230,54 @@ class GameSetupUiStateTest {
 
         assertFalse(state.canAddNewPlayer)
     }
+
+    // --- canReorderPlayers tests ---
+
+    @Test
+    fun `should have canReorderPlayers false when no players selected`() {
+        val state = GameSetupUiState(selectedPlayers = emptyList())
+
+        assertFalse(state.canReorderPlayers)
+    }
+
+    @Test
+    fun `should have canReorderPlayers false when exactly one player selected`() {
+        val state = GameSetupUiState(selectedPlayers = listOf(savedPlayer("1", "Alice")))
+
+        assertFalse(state.canReorderPlayers)
+    }
+
+    @Test
+    fun `should have canReorderPlayers true when two players selected`() {
+        val state = GameSetupUiState(
+            selectedPlayers = listOf(
+                savedPlayer("1", "Alice"),
+                savedPlayer("2", "Bob"),
+            )
+        )
+
+        assertTrue(state.canReorderPlayers)
+    }
+
+    @Test
+    fun `should have canReorderPlayers true when six players selected`() {
+        val players = (1..6).map { savedPlayer("$it", "Player$it") }
+        val state = GameSetupUiState(selectedPlayers = players)
+
+        assertTrue(state.canReorderPlayers)
+    }
+
+    @Test
+    fun `should have canReorderPlayers false after state rebuilt with one player following a larger selection`() {
+        GameSetupUiState(
+            selectedPlayers = listOf(
+                savedPlayer("1", "Alice"),
+                savedPlayer("2", "Bob"),
+            )
+        )
+
+        val rebuiltState = GameSetupUiState(selectedPlayers = listOf(savedPlayer("1", "Alice")))
+
+        assertFalse(rebuiltState.canReorderPlayers)
+    }
 }

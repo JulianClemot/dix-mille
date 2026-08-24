@@ -151,6 +151,36 @@ class CreateGameUseCaseTest {
         assertTrue(result.isFailure)
     }
 
+    // ── Turn order propagation ────────────────────────────────────────────────
+
+    @Test
+    fun `Should preserve non alphabetical player order when game created`() = runTest {
+        val players = savedPlayers("Carol", "Alice", "Bob")
+        savedPlayerRepository.players.addAll(players)
+
+        val result = useCase(players)
+
+        val game = result.getOrThrow()
+        assertEquals("Carol", game.players[0].name.value)
+        assertEquals("Alice", game.players[1].name.value)
+        assertEquals("Bob", game.players[2].name.value)
+    }
+
+    @Test
+    fun `Should assign first player in list as starting player when game created`() = runTest {
+        val players = savedPlayers("Carol", "Alice", "Bob")
+        savedPlayerRepository.players.addAll(players)
+
+        val result = useCase(players)
+
+        val game = result.getOrThrow()
+        assertEquals(0, game.currentPlayerIndex)
+        assertEquals("Carol", game.currentPlayer.name.value)
+        assertNotNull(game.players[0].currentTurn)
+        assertNull(game.players[1].currentTurn)
+        assertNull(game.players[2].currentTurn)
+    }
+
     // ── UpdateLastPlayedAt integration ────────────────────────────────────────
 
     @Test

@@ -70,6 +70,10 @@
     <string name="game_setup_error_need_players">Need at least %1$d players</string>
     <string name="game_setup_error_invalid_target">Invalid target score</string>
     <string name="game_setup_error_failed_create">Failed to create game</string>
+    <string name="reorder_move_up_action">Move up</string>
+    <string name="reorder_move_down_action">Move down</string>
+    <string name="reorder_drag_handle_cd">Reorder handle for %1$s</string>
+    <string name="reorder_position_announcement">%1$s, position %2$d of %3$d</string>
 
     <!-- Game rules settings screen -->
     <string name="game_rules_title">GAME RULES</string>

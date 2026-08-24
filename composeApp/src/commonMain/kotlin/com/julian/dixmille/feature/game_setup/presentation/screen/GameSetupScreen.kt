@@ -3,7 +3,6 @@ package com.julian.dixmille.feature.game_setup.presentation.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -45,6 +43,7 @@ import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupEvent
 import com.julian.dixmille.feature.game_setup.presentation.model.GameSetupUiState
 import com.julian.dixmille.feature.game_setup.presentation.viewmodel.GameSetupViewModel
 import com.julian.dixmille.feature.game_setup.presentation.component.AddPlayerBottomSheet
+import com.julian.dixmille.feature.game_setup.presentation.component.ReorderablePlayerList
 import com.julian.dixmille.feature.score_sheet.presentation.screen.ScoreSheetRoute
 import dixmille.composeapp.generated.resources.Res
 import dixmille.composeapp.generated.resources.arrow_back
@@ -190,36 +189,16 @@ fun GameSetupContent(
                 )
             }
 
-            state.selectedPlayers.forEach { player ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = player.name.value.first().uppercaseChar().toString(),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                    }
-                    Text(
-                        text = player.name.value,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    IconButton(onClick = { onEvent(GameSetupEvent.RemoveSelectedPlayer(player.id.value)) }) {
-                        Text(text = "✕", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
+            ReorderablePlayerList(
+                players = state.selectedPlayers,
+                canReorderPlayers = state.canReorderPlayers,
+                onMovePlayer = { fromIndex, toIndex ->
+                    onEvent(GameSetupEvent.MovePlayer(fromIndex, toIndex))
+                },
+                onRemovePlayer = { playerId ->
+                    onEvent(GameSetupEvent.RemoveSelectedPlayer(playerId))
+                },
+            )
 
             if (state.canAddMorePlayers) {
                 OutlinedButton(

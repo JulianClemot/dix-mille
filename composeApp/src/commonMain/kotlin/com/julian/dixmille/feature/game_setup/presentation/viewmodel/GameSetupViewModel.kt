@@ -73,7 +73,7 @@ class GameSetupViewModel(
             }
             is GameSetupEvent.ConfirmPlayerSelection -> _state.update {
                 it.copy(
-                    selectedPlayers = event.selectedPlayers.sortedBy { p -> p.name.value.lowercase() },
+                    selectedPlayers = event.selectedPlayers,
                     showPlayerSelector = false,
                     unifiedInput = "",
                 )
@@ -81,6 +81,7 @@ class GameSetupViewModel(
             is GameSetupEvent.RemoveSelectedPlayer -> _state.update { s ->
                 s.copy(selectedPlayers = s.selectedPlayers.filter { it.id.value != event.playerId })
             }
+            is GameSetupEvent.MovePlayer -> movePlayer(event.fromIndex, event.toIndex)
             is GameSetupEvent.UpdateUnifiedInput -> _state.update { it.copy(unifiedInput = event.input) }
             is GameSetupEvent.QuickAddPlayer -> quickAddPlayer(event.name)
             is GameSetupEvent.UpdateTargetScore -> updateTargetScore(event.score)
@@ -91,10 +92,27 @@ class GameSetupViewModel(
     private fun selectPlayer(player: SavedPlayer) {
         _state.update { s ->
             if (s.selectedPlayers.size < s.maxPlayers) {
-                val updated = (s.selectedPlayers + player).sortedBy { it.name.value.lowercase() }
+                val updated = s.selectedPlayers + player
                 s.copy(selectedPlayers = updated)
             } else {
                 s
+            }
+        }
+    }
+
+    private fun movePlayer(fromIndex: Int, toIndex: Int) {
+        _state.update { s ->
+            val players = s.selectedPlayers
+            if (fromIndex == toIndex ||
+                fromIndex !in players.indices ||
+                toIndex !in players.indices
+            ) {
+                s
+            } else {
+                val mutable = players.toMutableList()
+                val player = mutable.removeAt(fromIndex)
+                mutable.add(toIndex, player)
+                s.copy(selectedPlayers = mutable)
             }
         }
     }
@@ -106,7 +124,7 @@ class GameSetupViewModel(
                     _state.update { s ->
                         val updatedAll = (s.allPlayers + player).sortedBy { it.name.value.lowercase() }
                         val updatedSelected = if (s.selectedPlayers.size < s.maxPlayers) {
-                            (s.selectedPlayers + player).sortedBy { it.name.value.lowercase() }
+                            s.selectedPlayers + player
                         } else {
                             s.selectedPlayers
                         }
