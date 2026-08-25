@@ -1,5 +1,7 @@
 # Dix Mille
 
+[![CI](https://github.com/JulianClemot/dix-mille/actions/workflows/ci.yml/badge.svg)](https://github.com/JulianClemot/dix-mille/actions/workflows/ci.yml)
+
 A Kotlin Multiplatform score sheet app for the French dice game "Dix Mille" (10,000). Players roll physical dice and use the app to track scores with strict rule enforcement. Targets Android and iOS using Compose Multiplatform with Material 3.
 
 ## Prerequisites
