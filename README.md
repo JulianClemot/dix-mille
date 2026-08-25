@@ -20,16 +20,16 @@ The project uses Gradle Wrapper (`./gradlew`), so no separate Gradle installatio
 Build and install on a connected device or emulator:
 
 ```bash
-./gradlew :composeApp:installDebug
+./gradlew :androidApp:installDebug
 ```
 
 Or build the APK only:
 
 ```bash
-./gradlew :composeApp:assembleDebug
+./gradlew :androidApp:assembleDebug
 ```
 
-The APK is output to `composeApp/build/outputs/apk/debug/`.
+The APK is output to `androidApp/build/outputs/apk/debug/`. `:androidApp` is a thin launcher module; the shared UI and logic live in `:composeApp`.
 
 ### iOS
 
@@ -57,9 +57,9 @@ Select your target device/simulator in Xcode and press Run. Xcode handles framew
 
 | Command | Description |
 |---------|-------------|
-| `./gradlew :composeApp:assembleDebug` | Build Android debug APK |
-| `./gradlew :composeApp:installDebug` | Build and install on Android device/emulator |
-| `./gradlew :composeApp:assembleRelease` | Build Android release APK |
+| `./gradlew :androidApp:assembleDebug` | Build Android debug APK |
+| `./gradlew :androidApp:installDebug` | Build and install on Android device/emulator |
+| `./gradlew :androidApp:assembleRelease` | Build Android release APK |
 | `./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64` | Build iOS framework for simulator |
 | `./gradlew :composeApp:linkDebugFrameworkIosArm64` | Build iOS framework for device |
 | `./gradlew build` | Full build (all targets) |
@@ -67,31 +67,27 @@ Select your target device/simulator in Xcode and press Run. Xcode handles framew
 
 ## Running Tests
 
-All tests are in `composeApp/src/commonTest/` and run on the JVM.
+All tests are in `composeApp/src/commonTest/`.
 
 ```bash
-# Run all tests
+# Run all tests (JVM + iOS simulator)
 ./gradlew :composeApp:allTests
 
-# Run common tests only
-./gradlew :composeApp:commonTest
-
 # Run a specific test class
-./gradlew :composeApp:commonTest --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest"
-
-# Run a single test method
-./gradlew :composeApp:commonTest --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest.someMethod"
+./gradlew :composeApp:allTests --tests "com.julian.dixmille.domain.validation.ScoreValidatorTest"
 ```
 
 ## Project Structure
 
 ```
 DixMille/
+├── androidApp/
+│   └── src/main/              Thin Android launcher (MainActivity, manifest, res)
 ├── composeApp/
 │   └── src/
-│       ├── commonMain/        Shared code (domain, data, presentation)
+│       ├── commonMain/        Shared code, organized as vertical feature slices
 │       ├── commonTest/        Shared tests
-│       ├── androidMain/       Android-specific (MainActivity, SharedPreferences, DI)
+│       ├── androidMain/       Android-specific (SharedPreferences, DI)
 │       └── iosMain/           iOS-specific (MainViewController, NSUserDefaults, DI)
 ├── iosApp/
 │   ├── iosApp.xcodeproj/     Xcode project
@@ -105,36 +101,40 @@ DixMille/
 
 ### Architecture
 
-Three-layer Clean Architecture with MVVM:
+Feature-based Clean Architecture + DDD with MVVM presentation. Each feature under `feature/` is a vertical slice owning its own `domain/`, `data/`, and `presentation/` layers; shared primitives live in `core/`.
 
 ```
-presentation/          domain/              data/
-  screen/                model/               repository/
-  viewmodel/             usecase/             source/
-  component/             validation/
-  model/                 repository/ (interfaces)
-  navigation/
+com.julian.dixmille/
+  feature/
+    home/                game_setup/         score_sheet/        game_end/     game_rules/
+  core/
+    domain/               data/               presentation/
+      model/                source/             theme/
+      repository/                               navigation/
+      util/                                     component/
+  di/
+    AppModule.kt
 ```
 
-Platform-specific code uses Kotlin `expect`/`actual` declarations for `LocalStorage` (SharedPreferences on Android, NSUserDefaults on iOS) and `UuidGenerator`. Dependency injection is handled by Koin with platform modules.
+`Game` is the Aggregate Root; domain-meaningful primitives are wrapped in Value Objects (`Score`, `PlayerId`, `TargetScore`, …). Platform-specific code uses Kotlin `expect`/`actual` declarations for `LocalStorage` (SharedPreferences on Android, NSUserDefaults on iOS) and `UuidGenerator`. Dependency injection is handled by Koin with feature-scoped modules aggregated in `AppModule.kt`. See `CLAUDE.md` for full DDD conventions.
 
 ## Key Versions
 
 | Dependency | Version |
 |------------|---------|
-| Kotlin | 2.3.10 |
-| Compose Multiplatform | 1.10.0 |
-| AGP | 8.11.2 |
-| Gradle | 8.14.3 |
-| Koin | 4.1.1 |
-| kotlinx-serialization | 1.10.0 |
-| Navigation3 | 1.0.0-alpha06 |
+| Kotlin | 2.4.10 |
+| Compose Multiplatform | 1.12.0 |
+| AGP | 9.2.0 |
+| Gradle | 9.4.1 |
+| Koin | 4.2.2 |
+| kotlinx-serialization | 1.11.0 |
+| Navigation3 | 1.1.1 |
 
 ### Android Targets
 
-- **compileSdk**: 36 (Android 15)
+- **compileSdk**: 37
 - **minSdk**: 24 (Android 7.0)
-- **targetSdk**: 36
+- **targetSdk**: 37
 
 ### iOS Target
 
