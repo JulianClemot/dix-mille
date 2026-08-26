@@ -1,23 +1,28 @@
 ---
 name: design-tests
-description: Design exhaustive test conditions for the current increment before writing any code. Covers happy paths, edge cases, and error states. Use after /plan-increments, before /tdd-step.
+description: Design exhaustive test conditions for the current increment, then implement it via TDD and continue the pipeline automatically. Covers happy paths, edge cases, and error states. Use to start or resume the pipeline from the test-design stage.
 user-invocable: true
-effort: medium
-allowed-tools: Read
-tags: [testing, tdd, bdd, test-design, workflow]
+effort: high
+allowed-tools: Read, Grep, Glob, Bash, Write, Edit, Agent
+tags: [testing, tdd, bdd, test-design, workflow, automated]
 ---
 
-# New Feature Workflow — Step 3: Test Design
+# Feature Workflow — Test Design (auto-continues to TDD and review)
 
-You are on **Step 3 of 5** of the DixMille feature development workflow.
+This is a re-entry point into the automated DixMille feature pipeline. It designs the
+test conditions for the current increment, then hands straight to the `tdd-engineer`
+agent and keeps going through the remaining increments and the feature review — no
+confirmation gates — stopping before commit.
 
 ## What you will do
 
-Produce a complete list of test conditions for the current increment — before writing any implementation code. This is the thinking phase that makes the TDD loop fast and focused.
+Produce a complete list of test conditions for the current increment — before writing
+any implementation code — then proceed directly to implementation.
 
 ## Instructions
 
-Ask the user which increment they are on (or infer from context). Then produce a test condition table:
+Determine the current increment from context (the increment plan and which increments
+are already implemented). Then produce the test condition list.
 
 ### For each BDD scenario in this increment:
 
@@ -38,12 +43,12 @@ Ask the user which increment they are on (or infer from context). Then produce a
 **Then:** <expected outcome>
 **Edge:** <why this case matters>
 
-Test method name: should_<expectedBehavior>_when_<condition>
+Test method name: `Should <expectedBehavior> when <condition>`
 ```
 
 ## Completeness Checklist
 
-Before presenting the list, verify:
+Before moving on, verify:
 - [ ] Happy path covered
 - [ ] Empty/null inputs covered (where applicable)
 - [ ] Minimum valid input covered
@@ -52,23 +57,29 @@ Before presenting the list, verify:
 - [ ] Failure path covered (what happens when dependencies fail)
 - [ ] Domain rule interactions covered (busts, entry threshold, final round, score collision)
 
-## After presenting the test conditions
+## After designing the test conditions
 
-Ask the user: "Do these test conditions fully cover the increment? Any cases to add or remove?"
+Do not ask the user whether the conditions are complete. Record them and continue
+immediately:
 
-Once confirmed, tell the user:
-> "Test conditions locked. Run `/tdd-step` to start the red-green-refactor cycle for this increment."
+1. Invoke the `tdd-engineer` agent with this increment's number, its BDD scenarios,
+   and these test conditions.
+2. When it reports back, if more increments remain, repeat this test-design step for
+   the next increment and invoke `tdd-engineer` again.
+3. When all increments are done, run the feature review (`feature-review` logic):
+   implement integration and E2E tests, run the full suite, report the summary.
+4. Stop. **Do not invoke `/commit`.**
 
 ## Workflow Map
 
 ```
-/new-feature        ← Define BDD spec
+/new-feature        ← Define BDD spec (asks questions once)
     ↓
 /plan-increments    ← Break spec into increments
     ↓
-/design-tests       ← YOU ARE HERE
+/design-tests       ← YOU ARE HERE — designs conditions, then auto-runs TDD + review
     ↓
-/tdd-step           ← Implement (red → green → refactor)
+(per increment)  tdd-engineer
     ↓
-/feature-review     ← Integration tests, E2E tests, commit
+feature review      → STOP before /commit
 ```

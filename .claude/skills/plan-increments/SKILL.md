@@ -1,21 +1,29 @@
 ---
 name: plan-increments
-description: Break confirmed BDD scenarios into the smallest independently shippable implementation increments. Use after /new-feature spec is confirmed.
+description: Break confirmed BDD scenarios into the smallest independently shippable implementation increments, then run each increment (test design + TDD) and the feature review automatically. Use to start or resume the pipeline from the increment-planning stage.
 user-invocable: true
-effort: medium
-allowed-tools: Read, Agent
-tags: [workflow, bdd, planning, increments, tdd]
+effort: high
+allowed-tools: Read, Grep, Glob, Bash, Write, Edit, Agent
+tags: [workflow, bdd, planning, increments, tdd, automated]
 ---
 
-# New Feature Workflow — Step 2: Increment Planning
+# Feature Workflow — Increment Planning (auto-continues to the end)
 
-You are on **Step 2 of 5** of the DixMille feature development workflow.
+This is a re-entry point into the automated DixMille feature pipeline. It assumes the
+BDD spec already exists in `docs/SPEC.md`. It plans the increments and then runs the
+rest of the pipeline automatically — no confirmation gates — stopping before commit.
 
 ## What you will do
 
-1. Invoke the `increment-planner` agent to decompose the BDD scenarios into ordered increments
-2. Each increment is the smallest unit that compiles, passes tests, and produces a product change
-3. Present the ordered plan to the user for confirmation
+1. Invoke the `increment-planner` agent to decompose the BDD scenarios into ordered
+   increments. Each increment is the smallest unit that compiles, passes tests, and
+   produces a product change.
+2. Note the ordered plan (no user confirmation).
+3. For each increment, in order: design its test conditions (`design-tests` logic),
+   then implement it with the `tdd-engineer` agent.
+4. Run the feature review (`feature-review` logic): implement integration and E2E
+   tests, run the full suite.
+5. Report the final summary and stop. **Do not invoke `/commit`.**
 
 ## Instructions
 
@@ -23,18 +31,15 @@ Invoke the `increment-planner` agent. It will:
 - Read `docs/SPEC.md` to find the feature's BDD scenarios
 - Identify which architecture layers each scenario touches (domain / data / presentation)
 - Produce an ordered increment list with acceptance criteria
-- Ask the user to confirm the ordering
 
-## After the agent completes
-
-Once the user confirms the increment plan, tell them:
-> "Increment plan confirmed. Run `/design-tests` to generate test conditions for Increment 1."
-
-If the user wants to adjust the plan, ask the agent to revise.
+Do not wait for the user to confirm the ordering. As soon as the plan is reported,
+proceed through every increment and then the review, exactly as the `new-feature`
+skill describes for Steps 3–5.
 
 ## What a Good Increment Plan Looks Like
 
-Each increment must compile, pass tests, and produce a visible product change. Example for the three-bust penalty feature:
+Each increment must compile, pass tests, and produce a visible product change. Example
+for the three-bust penalty feature:
 
 ```
 Increment 1 — Domain model: add consecutiveBusts and scoreBeforeStreak to Player
@@ -63,7 +68,7 @@ Increment 5 — UI: show bust warning indicator on second consecutive bust
 - Each increment touches as few files as possible
 - No increment combines a model change with a use case change
 
-## Reminder: Increment Sizing Rules
+## Increment Sizing Rules
 
 - Domain model change = 1 increment
 - Use case = 1 increment per distinct behavior
@@ -75,13 +80,11 @@ Increment 5 — UI: show bust warning indicator on second consecutive bust
 ## Workflow Map
 
 ```
-/new-feature        ← Define BDD spec
+/new-feature        ← Define BDD spec (asks questions once)
     ↓
-/plan-increments    ← YOU ARE HERE
+/plan-increments    ← YOU ARE HERE — plans, then auto-runs every increment + review
     ↓
-/design-tests       ← Design test conditions per increment
+(per increment)  test design → tdd-engineer
     ↓
-/tdd-step           ← Implement (red → green → refactor)
-    ↓
-/feature-review     ← Integration tests, E2E tests, commit
+feature review      → STOP before /commit
 ```

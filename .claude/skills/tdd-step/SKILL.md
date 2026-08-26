@@ -1,19 +1,22 @@
 ---
 name: tdd-step
-description: Execute one TDD red-green-refactor cycle for the current increment. Writes a failing test, runs it, implements minimum code, runs tests again. Use after /design-tests for each increment.
+description: Execute the TDD red-green-refactor cycle for the current increment via the tdd-engineer agent, then automatically design and implement the remaining increments and run the feature review. Use to start or resume the pipeline from the implementation stage.
 user-invocable: true
 effort: high
-allowed-tools: Read, Bash, Agent
-tags: [tdd, workflow, testing, red-green-refactor, implementation]
+allowed-tools: Read, Grep, Glob, Bash, Write, Edit, Agent
+tags: [tdd, workflow, testing, red-green-refactor, implementation, automated]
 ---
 
-# New Feature Workflow — Step 4: TDD Implementation
+# Feature Workflow — TDD Implementation (auto-continues through all increments + review)
 
-You are on **Step 4 of 5** of the DixMille feature development workflow.
+This is a re-entry point into the automated DixMille feature pipeline. It runs the TDD
+loop for the current increment and then keeps going — designing tests for and
+implementing every remaining increment, then running the feature review — with no
+confirmation gates, stopping before commit.
 
 ## What you will do
 
-Execute the TDD loop for the current increment using the `tdd-engineer` agent. The agent will:
+For the current increment, invoke the `tdd-engineer` agent. It will:
 
 1. Pick the next test condition (simplest first)
 2. Write a failing test in `commonTest`
@@ -26,13 +29,16 @@ Execute the TDD loop for the current increment using the `tdd-engineer` agent. T
 
 ## Instructions
 
-Invoke the `tdd-engineer` agent. Pass the current increment number, the BDD scenario, and the designed test conditions.
+Invoke the `tdd-engineer` agent. Pass the current increment number, its BDD scenarios,
+and the designed test conditions. If test conditions for this increment have not been
+designed yet, design them first (see the `design-tests` skill) — do not stop to ask.
 
-The agent runs tests automatically — no manual intervention needed during the loop.
+The agent runs tests automatically — no manual intervention during the loop.
 
 ## RED phase is mandatory
 
-If a test passes before any implementation is written, the test is wrong. The agent will catch this and fix the test before proceeding.
+If a test passes before any implementation is written, the test is wrong. The agent
+will catch this and fix the test before proceeding.
 
 ## What a Healthy RED→GREEN Cycle Looks Like
 
@@ -72,32 +78,29 @@ Stop. The test asserts nothing meaningful. Fix the assertion before proceeding.
 
 ## After the agent completes
 
-The agent will report which tests are passing and what was implemented.
+The agent reports which tests pass and what was implemented. Then, without asking the
+user:
 
-- If **more increments remain**: tell the user to run `/design-tests` for the next increment, then `/tdd-step`
-- If **all increments are done**: tell the user to run `/feature-review`
+- **If more increments remain:** design test conditions for the next increment
+  (`design-tests` logic) and invoke `tdd-engineer` again. Repeat until every increment
+  is done.
+- **When all increments are done:** run the feature review (`feature-review` logic) —
+  implement integration and E2E tests, run the full suite, present the summary, and
+  stop. **Do not invoke `/commit`.**
+
+Stop early only on a hard failure you cannot resolve (broken build, an impossible test
+condition, a spec contradiction).
 
 ## Workflow Map
 
 ```
-/new-feature        ← Define BDD spec
+/new-feature        ← Define BDD spec (asks questions once)
     ↓
 /plan-increments    ← Break spec into increments
     ↓
 /design-tests       ← Design test conditions
     ↓
-/tdd-step           ← YOU ARE HERE (repeat per increment)
+/tdd-step           ← YOU ARE HERE — implements this increment, then auto-loops the rest + review
     ↓
-/feature-review     ← Integration tests, E2E tests, commit
-```
-
-## Loop reminder
-
-For a feature with N increments:
-```
-/design-tests  →  /tdd-step    (Increment 1)
-/design-tests  →  /tdd-step    (Increment 2)
-...
-/design-tests  →  /tdd-step    (Increment N)
-/feature-review
+feature review      → STOP before /commit
 ```
