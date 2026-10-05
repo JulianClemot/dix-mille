@@ -56,7 +56,7 @@
     <!-- Add player bottom sheet -->
     <string name="add_player_sheet_title">SELECT PLAYER</string>
     <string name="add_player_sheet_close_cd">Close</string>
-    <string name="add_player_unified_field_hint">Search or add your player\'s name</string>
+    <string name="add_player_unified_field_hint">Search or add your player's name</string>
     <string name="add_player_add_button">ADD</string>
     <string name="add_player_existing_players_header">Existing players</string>
     <string name="add_player_subtitle_already_in_game">ALREADY IN GAME</string>
